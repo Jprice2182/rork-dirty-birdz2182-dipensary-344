@@ -24,12 +24,13 @@ export default function CheckoutScreen() {
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showAddressError, setShowAddressError] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const cartTotal = getCartTotal();
   const deliveryFee = deliveryMethod === 'express' ? 10 : 5;
   const taxRate = 0.08; // 8% tax
   
-  // Apply 20% discount for new users who haven't used their discount
+  // Apply 20% discount for new users who have not used their discount
   const isDiscountApplicable = isNewUser && !hasUsedDiscount;
   const discountRate = isDiscountApplicable ? 0.2 : 0;
   const discountAmount = cartTotal * discountRate;
@@ -42,7 +43,7 @@ export default function CheckoutScreen() {
   const totalAmount = subtotalAfterDiscount + deliveryFee + taxAmount;
   
   const selectedAddress = addresses[selectedAddressIndex];
-  const hasAddress = addresses.length > 0;
+  const hasAddress = addresses.length > 0 && selectedAddressIndex < addresses.length;
 
   // Check if address is needed and show error if not present
   useEffect(() => {
@@ -55,10 +56,10 @@ export default function CheckoutScreen() {
 
   // Auto-open address modal if no address is available
   useEffect(() => {
-    if (items.length > 0 && !hasAddress) {
+    if (items.length > 0 && !hasAddress && !showAddressModal) {
       setShowAddressModal(true);
     }
-  }, []);
+  }, [items.length, hasAddress, showAddressModal]);
 
   // Ensure we have a valid selected address index
   useEffect(() => {
@@ -66,6 +67,13 @@ export default function CheckoutScreen() {
       selectAddress(0);
     }
   }, [addresses, selectedAddressIndex, selectAddress]);
+
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (items.length === 0) {
+      router.replace('/cart');
+    }
+  }, [items.length, router]);
 
   // Estimated processing and delivery times
   const getProcessingTime = () => {
@@ -105,61 +113,130 @@ export default function CheckoutScreen() {
     setShowAddressModal(true);
   };
 
-  const handlePlaceOrder = () => {
+  const validateCardDetails = () => {
+    if (paymentMethod !== 'card') return true;
+    
+    if (!cardNumber.trim()) {
+      Alert.alert('Error', 'Please enter your card number');
+      return false;
+    }
+    
+    if (!cardExpiry.trim()) {
+      Alert.alert('Error', 'Please enter card expiry date');
+      return false;
+    }
+    
+    if (!cardCvv.trim()) {
+      Alert.alert('Error', 'Please enter CVV');
+      return false;
+    }
+    
+    // Basic card number validation (remove spaces and check length)
+    const cleanCardNumber = cardNumber.replace(/\s/g, '');
+    if (cleanCardNumber.length < 13 || cleanCardNumber.length > 19) {
+      Alert.alert('Error', 'Please enter a valid card number');
+      return false;
+    }
+    
+    // Basic expiry validation
+    const expiryParts = cardExpiry.split('/');
+    if (expiryParts.length !== 2) {
+      Alert.alert('Error', 'Please enter expiry in MM/YY format');
+      return false;
+    }
+    
+    const month = parseInt(expiryParts[0], 10);
+    const year = parseInt(expiryParts[1], 10);
+    
+    if (month < 1 || month > 12) {
+      Alert.alert('Error', 'Please enter a valid month');
+      return false;
+    }
+    
+    // Check if card is expired
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits
+    const currentMonth = currentDate.getMonth() + 1;
+    
+    if (year < currentYear || (year === currentYear && month < currentMonth)) {
+      Alert.alert('Error', 'Card has expired');
+      return false;
+    }
+    
+    // Basic CVV validation
+    if (cardCvv.length < 3 || cardCvv.length > 4) {
+      Alert.alert('Error', 'Please enter a valid CVV');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handlePlaceOrder = async () => {
+    if (isProcessing) return;
+    
     if (!hasAddress) {
       Alert.alert('Error', 'Please add a delivery address');
       setShowAddressModal(true);
       return;
     }
     
-    if (paymentMethod === 'card' && (!cardNumber || !cardExpiry || !cardCvv)) {
-      Alert.alert('Error', 'Please enter all payment details');
+    if (!validateCardDetails()) {
       return;
     }
     
-    // Create a new order
-    const orderId = Math.random().toString(36).substring(2, 10);
-    const now = new Date();
-    const formattedDate = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+    setIsProcessing(true);
     
-    const addressString = `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state} ${selectedAddress.zipCode}`;
-    
-    // Calculate estimated delivery time
-    const estimatedDelivery = getEstimatedDeliveryTime();
-    const estimatedProcessingTime = getProcessingTime();
-    
-    const newOrder = {
-      id: orderId,
-      items: [...items],
-      total: totalAmount,
-      date: formattedDate,
-      status: 'pending' as const,
-      deliveryAddress: addressString,
-      estimatedDelivery,
-      estimatedProcessingTime,
-      discountApplied: isDiscountApplicable ? discountAmount : 0,
-      promoCodeApplied: promoDiscount > 0 ? appInfo.promoCode : undefined,
-      tipAmount: 0, // Initialize tip amount to 0
-      estimatedArrival: 'on-time' as const, // Set default estimated arrival
-    };
-    
-    // Mark discount as used if it was applied
-    if (isDiscountApplicable) {
-      markDiscountAsUsed();
+    try {
+      // Create a new order
+      const orderId = Math.random().toString(36).substring(2, 10);
+      const now = new Date();
+      const formattedDate = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+      
+      const addressString = `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state} ${selectedAddress.zipCode}`;
+      
+      // Calculate estimated delivery time
+      const estimatedDelivery = getEstimatedDeliveryTime();
+      const estimatedProcessingTime = getProcessingTime();
+      
+      const newOrder = {
+        id: orderId,
+        items: [...items],
+        total: totalAmount,
+        date: formattedDate,
+        status: 'pending' as const,
+        deliveryAddress: addressString,
+        estimatedDelivery,
+        estimatedProcessingTime,
+        discountApplied: isDiscountApplicable ? discountAmount : 0,
+        promoCodeApplied: promoDiscount > 0 ? appInfo.promoCode : undefined,
+        tipAmount: 0, // Initialize tip amount to 0
+        estimatedArrival: 'on-time' as const, // Set default estimated arrival
+      };
+      
+      // Mark discount as used if it was applied
+      if (isDiscountApplicable) {
+        markDiscountAsUsed();
+      }
+      
+      addOrder(newOrder);
+      clearCart();
+      
+      router.push({
+        pathname: '/order-confirmation',
+        params: { orderId }
+      });
+    } catch (error) {
+      console.error('Error placing order:', error);
+      Alert.alert('Error', 'Failed to place order. Please try again.');
+    } finally {
+      setIsProcessing(false);
     }
-    
-    addOrder(newOrder);
-    clearCart();
-    
-    router.push({
-      pathname: '/order-confirmation',
-      params: { orderId }
-    });
   };
 
   const handleCloseAddressModal = () => {
     setShowAddressModal(false);
-    // If we still don't have an address, show the error
+    // If we still do not have an address, show the error
     if (!hasAddress) {
       setShowAddressError(true);
     }
@@ -167,7 +244,7 @@ export default function CheckoutScreen() {
 
   // Format card number with spaces
   const formatCardNumber = (text: string) => {
-    const cleaned = text.replace(/\s+/g, '');
+    const cleaned = text.replace(/\s+/g, '').replace(/[^0-9]/g, '');
     const groups = [];
     
     for (let i = 0; i < cleaned.length; i += 4) {
@@ -190,12 +267,21 @@ export default function CheckoutScreen() {
 
   const handleCardNumberChange = (text: string) => {
     const formatted = formatCardNumber(text);
-    setCardNumber(formatted);
+    if (formatted.length <= 23) { // Max length for formatted card number
+      setCardNumber(formatted);
+    }
   };
 
   const handleCardExpiryChange = (text: string) => {
     const formatted = formatCardExpiry(text);
     setCardExpiry(formatted);
+  };
+
+  const handleCardCvvChange = (text: string) => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+    if (cleaned.length <= 4) {
+      setCardCvv(cleaned);
+    }
   };
 
   return (
@@ -337,7 +423,7 @@ export default function CheckoutScreen() {
                 keyboardType="number-pad"
                 value={cardNumber}
                 onChangeText={handleCardNumberChange}
-                maxLength={19}
+                maxLength={23}
               />
             </View>
             
@@ -363,8 +449,9 @@ export default function CheckoutScreen() {
                   placeholderTextColor={Colors.dark.subtext}
                   keyboardType="number-pad"
                   value={cardCvv}
-                  onChangeText={setCardCvv}
-                  maxLength={3}
+                  onChangeText={handleCardCvvChange}
+                  maxLength={4}
+                  secureTextEntry
                 />
               </View>
             </View>
@@ -430,12 +517,20 @@ export default function CheckoutScreen() {
       
       <View style={styles.footer}>
         <Pressable 
-          style={[styles.placeOrderButton, !hasAddress && styles.disabledButton]}
+          style={[
+            styles.placeOrderButton, 
+            (!hasAddress || isProcessing) && styles.disabledButton
+          ]}
           onPress={handlePlaceOrder}
-          disabled={!hasAddress}
+          disabled={!hasAddress || isProcessing}
         >
           <Text style={styles.placeOrderButtonText}>
-            {!hasAddress ? 'Add Address to Continue' : 'Place Order'}
+            {isProcessing 
+              ? 'Processing...' 
+              : !hasAddress 
+                ? 'Add Address to Continue' 
+                : 'Place Order'
+            }
           </Text>
         </Pressable>
       </View>
@@ -640,6 +735,8 @@ const styles = StyleSheet.create({
     padding: 12,
     color: Colors.dark.text,
     fontSize: 14,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   cardDetailsRow: {
     flexDirection: 'row',

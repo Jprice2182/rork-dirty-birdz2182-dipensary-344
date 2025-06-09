@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, Text, View, FlatList, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Package, Clock, CheckCircle, Truck, AlertCircle } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -8,6 +8,7 @@ import { useOrderStore } from '@/store/orderStore';
 export default function OrdersScreen() {
   const router = useRouter();
   const { orders } = useOrderStore();
+  const [refreshing, setRefreshing] = useState(false);
 
   const navigateToCart = () => {
     router.push('/cart');
@@ -16,6 +17,22 @@ export default function OrdersScreen() {
   const navigateToOrderDetails = (orderId: string) => {
     router.push(`/order/${orderId}`);
   };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // Simulate refreshing order data
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real app, you would fetch fresh order data here
+      // await refreshOrders();
+      
+    } catch (error) {
+      console.error('Error refreshing orders:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -51,13 +68,30 @@ export default function OrdersScreen() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return Colors.dark.warning;
+      case 'processing':
+        return Colors.dark.primary;
+      case 'out-for-delivery':
+        return Colors.dark.secondary;
+      case 'delivered':
+        return Colors.dark.success;
+      case 'cancelled':
+        return Colors.dark.error;
+      default:
+        return Colors.dark.warning;
+    }
+  };
+
   const renderEmptyOrders = () => (
     <View style={styles.emptyContainer}>
       <Package size={60} color={Colors.dark.subtext} style={styles.emptyIcon} />
       <Text style={styles.emptyTitle}>No orders yet</Text>
-      <Text style={styles.emptyText}>Your order history will appear here</Text>
+      <Text style={styles.emptyText}>Your order history will appear here once you place your first order</Text>
       <Pressable style={styles.shopButton} onPress={navigateToCart}>
-        <Text style={styles.shopButtonText}>Go to Cart</Text>
+        <Text style={styles.shopButtonText}>Start Shopping</Text>
       </Pressable>
     </View>
   );
@@ -68,27 +102,45 @@ export default function OrdersScreen() {
       onPress={() => navigateToOrderDetails(item.id)}
     >
       <View style={styles.orderHeader}>
-        <Text style={styles.orderId}>Order #{item.id.slice(0, 8)}</Text>
+        <Text style={styles.orderId}>Order #{item.id.slice(0, 8).toUpperCase()}</Text>
         <Text style={styles.orderDate}>{item.date}</Text>
       </View>
       
       <View style={styles.orderDetails}>
         <View style={styles.orderInfo}>
           <Text style={styles.orderTotal}>${item.total.toFixed(2)}</Text>
-          <Text style={styles.orderItems}>{item.items.length} items</Text>
+          <Text style={styles.orderItems}>
+            {item.items.length} {item.items.length === 1 ? 'item' : 'items'}
+          </Text>
         </View>
         
-        <View style={styles.statusContainer}>
+        <View style={[styles.statusContainer, { backgroundColor: `${getStatusColor(item.status)}20` }]}>
           {getStatusIcon(item.status)}
-          <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
+          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+            {getStatusText(item.status)}
+          </Text>
         </View>
       </View>
+      
+      {item.estimatedDelivery && (
+        <View style={styles.deliveryInfo}>
+          <Clock size={14} color={Colors.dark.subtext} />
+          <Text style={styles.deliveryText}>
+            Estimated delivery: {item.estimatedDelivery}
+          </Text>
+        </View>
+      )}
     </Pressable>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Orders</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Your Orders</Text>
+        <Text style={styles.subtitle}>
+          {orders.length > 0 ? `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}` : 'No orders'}
+        </Text>
+      </View>
       
       <FlatList
         data={orders}
@@ -96,6 +148,16 @@ export default function OrdersScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={renderEmptyOrders}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.dark.primary}
+            colors={[Colors.dark.primary]}
+            progressBackgroundColor={Colors.dark.card}
+          />
+        }
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -107,20 +169,36 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.dark.background,
     padding: 16,
   },
+  header: {
+    marginBottom: 16,
+  },
   title: {
     color: Colors.dark.text,
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 4,
+  },
+  subtitle: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
   },
   listContent: {
     flexGrow: 1,
+    paddingBottom: 16,
   },
   orderCard: {
     backgroundColor: Colors.dark.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   orderHeader: {
     flexDirection: 'row',
@@ -140,6 +218,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
   },
   orderInfo: {
     flex: 1,
@@ -157,14 +236,26 @@ const styles = StyleSheet.create({
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.dark.background,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   statusText: {
-    color: Colors.dark.text,
     fontSize: 14,
+    marginLeft: 6,
+    fontWeight: '500',
+  },
+  deliveryInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: Colors.dark.border,
+  },
+  deliveryText: {
+    color: Colors.dark.subtext,
+    fontSize: 12,
     marginLeft: 6,
   },
   emptyContainer: {
@@ -187,6 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 24,
+    lineHeight: 22,
   },
   shopButton: {
     backgroundColor: Colors.dark.primary,

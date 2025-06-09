@@ -1,7 +1,7 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingBag } from 'lucide-react-native';
+import { ShoppingBag, ArrowLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useCartStore } from '@/store/cartStore';
 import CartItem from '@/components/CartItem';
@@ -9,7 +9,24 @@ import CartItem from '@/components/CartItem';
 export default function CartScreen() {
   const router = useRouter();
   const { items, getCartTotal, clearCart } = useCartStore();
+  const [refreshing, setRefreshing] = useState(false);
   const cartTotal = getCartTotal();
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // Simulate refreshing cart data
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, you might sync cart with server here
+      // await syncCartWithServer();
+      
+    } catch (error) {
+      console.error('Error refreshing cart:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   const handleCheckout = () => {
     router.push('/checkout');
@@ -19,27 +36,71 @@ export default function CartScreen() {
     router.back();
   };
 
+  const handleGoHome = () => {
+    router.push('/(tabs)');
+  };
+
   if (items.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <ShoppingBag size={60} color={Colors.dark.subtext} style={styles.emptyIcon} />
-        <Text style={styles.emptyTitle}>Your cart is empty</Text>
-        <Text style={styles.emptyText}>Add some products to your cart</Text>
-        <Pressable style={styles.shopButton} onPress={handleContinueShopping}>
-          <Text style={styles.shopButtonText}>Continue Shopping</Text>
-        </Pressable>
+      <View style={styles.container}>
+        <ScrollView 
+          contentContainerStyle={styles.emptyContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={Colors.dark.primary}
+              colors={[Colors.dark.primary]}
+              progressBackgroundColor={Colors.dark.card}
+            />
+          }
+        >
+          <ShoppingBag size={60} color={Colors.dark.subtext} style={styles.emptyIcon} />
+          <Text style={styles.emptyTitle}>Your cart is empty</Text>
+          <Text style={styles.emptyText}>Add some premium cannabis products to your cart and enjoy fast delivery in Atlanta</Text>
+          
+          <View style={styles.emptyButtonsContainer}>
+            <Pressable style={styles.shopButton} onPress={handleGoHome}>
+              <Text style={styles.shopButtonText}>Browse Products</Text>
+            </Pressable>
+            
+            <Pressable style={styles.backButton} onPress={handleContinueShopping}>
+              <ArrowLeft size={16} color={Colors.dark.subtext} />
+              <Text style={styles.backButtonText}>Go Back</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.itemsContainer}>
-        <Text style={styles.title}>Your Cart</Text>
+      <ScrollView 
+        style={styles.itemsContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.dark.primary}
+            colors={[Colors.dark.primary]}
+            progressBackgroundColor={Colors.dark.card}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Your Cart</Text>
+          <Text style={styles.itemCount}>
+            {items.length} {items.length === 1 ? 'item' : 'items'}
+          </Text>
+        </View>
         
-        {items.map(item => (
-          <CartItem key={item.id} id={item.id} quantity={item.quantity} />
-        ))}
+        <View style={styles.itemsList}>
+          {items.map(item => (
+            <CartItem key={item.id} id={item.id} quantity={item.quantity} />
+          ))}
+        </View>
         
         <Pressable onPress={clearCart} style={styles.clearButton}>
           <Text style={styles.clearButtonText}>Clear Cart</Text>
@@ -48,13 +109,22 @@ export default function CartScreen() {
       
       <View style={styles.footer}>
         <View style={styles.totalContainer}>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalAmount}>${cartTotal.toFixed(2)}</Text>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Subtotal</Text>
+            <Text style={styles.totalAmount}>${cartTotal.toFixed(2)}</Text>
+          </View>
+          <Text style={styles.taxNote}>Taxes and delivery fees calculated at checkout</Text>
         </View>
         
-        <Pressable style={styles.checkoutButton} onPress={handleCheckout}>
-          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-        </Pressable>
+        <View style={styles.footerButtons}>
+          <Pressable style={styles.continueButton} onPress={handleContinueShopping}>
+            <Text style={styles.continueButtonText}>Continue Shopping</Text>
+          </Pressable>
+          
+          <Pressable style={styles.checkoutButton} onPress={handleCheckout}>
+            <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -69,10 +139,20 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  header: {
+    marginBottom: 16,
+  },
   title: {
     color: Colors.dark.text,
     fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  itemCount: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+  },
+  itemsList: {
     marginBottom: 16,
   },
   clearButton: {
@@ -92,18 +172,42 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.dark.border,
   },
   totalContainer: {
+    marginBottom: 16,
+  },
+  totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 4,
   },
   totalLabel: {
     color: Colors.dark.text,
     fontSize: 18,
+    fontWeight: '600',
   },
   totalAmount: {
     color: Colors.dark.primary,
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  taxNote: {
+    color: Colors.dark.subtext,
+    fontSize: 12,
+  },
+  footerButtons: {
+    gap: 8,
+  },
+  continueButton: {
+    backgroundColor: Colors.dark.background,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+  },
+  continueButtonText: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: '500',
   },
   checkoutButton: {
     backgroundColor: Colors.dark.primary,
@@ -120,8 +224,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: Colors.dark.background,
+    padding: 24,
   },
   emptyIcon: {
     marginBottom: 16,
@@ -137,16 +240,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 24,
+    lineHeight: 22,
+  },
+  emptyButtonsContainer: {
+    width: '100%',
+    gap: 12,
   },
   shopButton: {
     backgroundColor: Colors.dark.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 12,
+    alignItems: 'center',
   },
   shopButtonText: {
     color: Colors.dark.text,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  backButtonText: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+    marginLeft: 6,
   },
 });

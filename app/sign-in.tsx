@@ -29,21 +29,28 @@ export default function SignInScreen() {
 
   useEffect(() => {
     const checkBiometrics = async () => {
-      const result = await checkBiometricAvailability();
-      setBiometricInfo(result);
+      if (Platform.OS !== 'web') {
+        try {
+          const result = await checkBiometricAvailability();
+          setBiometricInfo(result);
+        } catch (error) {
+          console.error('Error checking biometric availability:', error);
+          setBiometricInfo({ available: false, biometryType: null });
+        }
+      }
     };
     
-    if (Platform.OS !== 'web') {
-      checkBiometrics();
-    }
+    checkBiometrics();
   }, [checkBiometricAvailability]);
 
   const handleSignIn = async () => {
+    if (isLoading) return;
+    
     setError('');
     setIsLoading(true);
     
     try {
-      const success = await signIn(email, password);
+      const success = await signIn(email.trim(), password);
       
       if (success) {
         setVerified(true);
@@ -53,13 +60,15 @@ export default function SignInScreen() {
       }
     } catch (err) {
       setError('An error occurred during sign in');
-      console.error(err);
+      console.error('Sign in error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleBiometricAuth = async () => {
+    if (isLoading) return;
+    
     setError('');
     setIsLoading(true);
     
@@ -74,7 +83,7 @@ export default function SignInScreen() {
       }
     } catch (err) {
       setError('An error occurred during biometric authentication');
-      console.error(err);
+      console.error('Biometric auth error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -86,6 +95,13 @@ export default function SignInScreen() {
     }
     return <Fingerprint size={24} color={Colors.dark.text} />;
   };
+
+  const getBiometricDisplayName = () => {
+    return biometricInfo.biometryType || 'Biometric';
+  };
+
+  const isFormValid = email.trim().length > 0 && password.trim().length > 0;
+  const showBiometricButton = Platform.OS !== 'web' && biometricInfo.available && useBiometrics;
 
   return (
     <View style={styles.container}>
@@ -111,6 +127,8 @@ export default function SignInScreen() {
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
+            autoCorrect={false}
+            editable={!isLoading}
           />
         </View>
         
@@ -123,15 +141,20 @@ export default function SignInScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            editable={!isLoading}
+            onSubmitEditing={handleSignIn}
           />
         </View>
         
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
         
         <Pressable 
-          style={[styles.signInButton, isLoading && styles.disabledButton]}
+          style={[
+            styles.signInButton, 
+            (!isFormValid || isLoading) && styles.disabledButton
+          ]}
           onPress={handleSignIn}
-          disabled={isLoading || !email.trim() || !password.trim()}
+          disabled={!isFormValid || isLoading}
         >
           {isLoading ? (
             <ActivityIndicator size="small" color={Colors.dark.text} />
@@ -140,29 +163,33 @@ export default function SignInScreen() {
           )}
         </Pressable>
         
-        {biometricInfo.available && useBiometrics && (
+        {showBiometricButton && (
           <Pressable 
-            style={styles.biometricButton}
+            style={[styles.biometricButton, isLoading && styles.disabledButton]}
             onPress={handleBiometricAuth}
             disabled={isLoading}
           >
             {getBiometricIcon()}
             <Text style={styles.biometricButtonText}>
-              Sign in with {biometricInfo.biometryType}
+              Sign in with {getBiometricDisplayName()}
             </Text>
           </Pressable>
         )}
         
         <View style={styles.linksContainer}>
           <Link href="/sign-up" asChild>
-            <Pressable>
-              <Text style={styles.linkText}>Create Account</Text>
+            <Pressable disabled={isLoading}>
+              <Text style={[styles.linkText, isLoading && styles.disabledText]}>
+                Create Account
+              </Text>
             </Pressable>
           </Link>
           
           <Link href="/forgot-password" asChild>
-            <Pressable>
-              <Text style={styles.linkText}>Forgot Password?</Text>
+            <Pressable disabled={isLoading}>
+              <Text style={[styles.linkText, isLoading && styles.disabledText]}>
+                Forgot Password?
+              </Text>
             </Pressable>
           </Link>
         </View>
@@ -220,6 +247,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   inputIcon: {
     marginRight: 12,
@@ -234,6 +263,7 @@ const styles = StyleSheet.create({
     color: Colors.dark.error,
     fontSize: 14,
     marginBottom: 16,
+    textAlign: 'center',
   },
   signInButton: {
     backgroundColor: Colors.dark.primary,
@@ -244,7 +274,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   disabledButton: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   signInButtonText: {
     color: Colors.dark.text,
@@ -259,6 +289,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   biometricButtonText: {
     color: Colors.dark.text,
@@ -273,6 +305,9 @@ const styles = StyleSheet.create({
   linkText: {
     color: Colors.dark.primary,
     fontSize: 14,
+  },
+  disabledText: {
+    opacity: 0.6,
   },
   footer: {
     marginBottom: 24,

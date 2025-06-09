@@ -18,7 +18,18 @@ export const unstable_settings = {
 };
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -30,7 +41,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (error) {
-      console.error(error);
+      console.error("Font loading error:", error);
       throw error;
     }
   }, [error]);
@@ -95,6 +106,7 @@ function RootLayoutNav() {
             contentStyle: {
               backgroundColor: Colors.dark.background,
             },
+            headerBackTitleVisible: false,
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -132,6 +144,7 @@ function RootLayoutNav() {
               title: "Order Confirmation",
               headerBackTitle: "Home",
               gestureEnabled: false,
+              headerLeft: () => null,
             }} 
           />
           <Stack.Screen 

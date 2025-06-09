@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, FlatList, Pressable, RefreshControl } from 'rea
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-import { getProductsByCategory } from '@/mocks/products';
+import { getProductsByCategory, getProductCountsByCategory } from '@/mocks/products';
 import ProductCard from '@/components/ProductCard';
 import { categories } from '@/constants/categories';
 import { Product } from '@/types/product';
@@ -17,7 +17,14 @@ export default function CategoryScreen() {
 
   const loadProducts = () => {
     if (id) {
+      console.log(`Loading products for category ${id}`);
       const categoryProducts = getProductsByCategory(id);
+      console.log(`Found ${categoryProducts.length} products for category ${id}`);
+      
+      // Debug: Log all category counts
+      const counts = getProductCountsByCategory();
+      console.log('Product counts by category:', counts);
+      
       setProducts(categoryProducts);
     }
   };
@@ -32,6 +39,7 @@ export default function CategoryScreen() {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
+    console.log('Refreshing products...');
     loadProducts();
     setTimeout(() => {
       setRefreshing(false);
@@ -50,6 +58,21 @@ export default function CategoryScreen() {
     );
   };
 
+  const renderProduct = ({ item }: { item: Product }) => (
+    <View style={styles.productWrapper}>
+      <ProductCard
+        id={item.id}
+        name={item.name}
+        price={item.price}
+        image={item.image}
+        thc={item.thc}
+        weight={item.weight}
+        count={item.count}
+        volume={item.volume}
+      />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <Stack.Screen 
@@ -64,22 +87,17 @@ export default function CategoryScreen() {
       {products.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No products found in this category</Text>
+          <Text style={styles.emptySubtext}>
+            Category ID: {id} | Expected products but found none
+          </Text>
+          <Pressable style={styles.refreshButton} onPress={onRefresh}>
+            <Text style={styles.refreshButtonText}>Refresh</Text>
+          </Pressable>
         </View>
       ) : (
         <FlatList
           data={products}
-          renderItem={({ item }) => (
-            <ProductCard
-              id={item.id}
-              name={item.name}
-              price={item.price}
-              image={item.image}
-              thc={item.thc}
-              weight={item.weight}
-              count={item.count}
-              volume={item.volume}
-            />
-          )}
+          renderItem={renderProduct}
           keyExtractor={item => item.id}
           numColumns={2}
           contentContainerStyle={styles.productsContainer}
@@ -99,7 +117,9 @@ export default function CategoryScreen() {
                 Browse our selection of premium {category?.name.toLowerCase()} products. 
                 All products are lab-tested and of the highest quality.
               </Text>
-              <Text style={styles.resultsCount}>{products.length} products</Text>
+              <Text style={styles.resultsCount}>
+                {products.length} {products.length === 1 ? 'product' : 'products'} available
+              </Text>
             </View>
           )}
         />
@@ -150,6 +170,7 @@ const styles = StyleSheet.create({
   resultsCount: {
     color: Colors.dark.subtext,
     fontSize: 14,
+    fontWeight: '600',
   },
   productsContainer: {
     padding: 8,
@@ -159,6 +180,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 8,
   },
+  productWrapper: {
+    width: '48%',
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -167,7 +191,26 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: Colors.dark.text,
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  refreshButton: {
+    backgroundColor: Colors.dark.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  refreshButtonText: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

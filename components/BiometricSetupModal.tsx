@@ -15,6 +15,8 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
     biometryType: string | null;
   }>({ available: false, biometryType: null });
   
+  const [isLoading, setIsLoading] = useState(false);
+  
   const { 
     checkBiometricAvailability, 
     toggleBiometrics,
@@ -24,18 +26,30 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
   useEffect(() => {
     const checkBiometrics = async () => {
       if (Platform.OS !== 'web' && visible) {
-        const result = await checkBiometricAvailability();
-        setBiometricInfo(result);
+        setIsLoading(true);
+        try {
+          const result = await checkBiometricAvailability();
+          setBiometricInfo(result);
+        } catch (error) {
+          console.error('Error checking biometric availability:', error);
+          setBiometricInfo({ available: false, biometryType: null });
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
     
     checkBiometrics();
   }, [visible, checkBiometricAvailability]);
 
-  const handleToggleBiometrics = (enabled: boolean) => {
-    toggleBiometrics(enabled);
-    if (!enabled) {
-      onClose();
+  const handleToggleBiometrics = async (enabled: boolean) => {
+    try {
+      await toggleBiometrics(enabled);
+      if (!enabled) {
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error toggling biometrics:', error);
     }
   };
 
@@ -44,6 +58,10 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
       return <Scan size={60} color={Colors.dark.primary} />;
     }
     return <Fingerprint size={60} color={Colors.dark.primary} />;
+  };
+
+  const getBiometricDisplayName = () => {
+    return biometricInfo.biometryType || 'Biometric';
   };
 
   if (Platform.OS === 'web') {
@@ -68,13 +86,17 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
           </View>
           
           <Text style={styles.title}>
-            {biometricInfo.biometryType || 'Biometric'} Authentication
+            {getBiometricDisplayName()} Authentication
           </Text>
           
-          {biometricInfo.available ? (
+          {isLoading ? (
+            <Text style={styles.description}>
+              Checking biometric availability...
+            </Text>
+          ) : biometricInfo.available ? (
             <>
               <Text style={styles.description}>
-                Use {biometricInfo.biometryType} for faster, more secure sign-in to your account.
+                Use {getBiometricDisplayName()} for faster, more secure sign-in to your account.
               </Text>
               
               <View style={styles.optionsContainer}>
@@ -86,7 +108,7 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
                   onPress={() => handleToggleBiometrics(true)}
                 >
                   <View style={styles.optionContent}>
-                    <Text style={styles.optionText}>Enable {biometricInfo.biometryType}</Text>
+                    <Text style={styles.optionText}>Enable {getBiometricDisplayName()}</Text>
                     <Text style={styles.optionDescription}>
                       Sign in quickly and securely
                     </Text>

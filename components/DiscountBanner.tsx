@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Tag, X } from 'lucide-react-native';
+import { Tag, X, Sparkles } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import appInfo from '@/constants/appInfo';
 
@@ -28,12 +28,22 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
         pressed && styles.pressed
       ]}
       onPress={handlePress}
+      accessibilityLabel="20% off first order promotion"
+      accessibilityRole="button"
     >
+      <View style={styles.sparkleContainer}>
+        <Sparkles size={16} color={Colors.dark.text} style={styles.sparkle1} />
+        <Sparkles size={12} color={Colors.dark.text} style={styles.sparkle2} />
+      </View>
+      
       <View style={styles.content}>
-        <Tag size={20} color={Colors.dark.text} style={styles.icon} />
+        <View style={styles.iconContainer}>
+          <Tag size={20} color={Colors.dark.text} />
+        </View>
         <View style={styles.textContainer}>
-          <Text style={styles.title}>20% OFF YOUR FIRST ORDER</Text>
-          <Text style={styles.subtitle}>Use code "{appInfo.promoCode}" at checkout!</Text>
+          <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
+          <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
+          <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
         </View>
       </View>
       
@@ -41,9 +51,11 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
         <Pressable 
           style={styles.closeButton} 
           onPress={handleClose}
-          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+          accessibilityLabel="Close promotion banner"
+          accessibilityRole="button"
         >
-          <X size={18} color={Colors.dark.text} />
+          <X size={16} color={Colors.dark.text} />
         </Pressable>
       )}
     </Pressable>
@@ -53,45 +65,89 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.dark.primary,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 20,
     position: 'relative',
+    overflow: 'hidden',
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   pressed: {
     opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
+  sparkleContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  sparkle1: {
+    position: 'absolute',
+    top: 12,
+    right: 50,
+    opacity: 0.7,
+  },
+  sparkle2: {
+    position: 'absolute',
+    bottom: 16,
+    left: 20,
+    opacity: 0.5,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 32,
+    paddingRight: 36,
   },
-  icon: {
-    marginRight: 12,
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
   },
   textContainer: {
     flex: 1,
   },
   title: {
     color: Colors.dark.text,
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+    letterSpacing: 0.3,
   },
   subtitle: {
     color: Colors.dark.text,
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  promoCode: {
+    color: Colors.dark.text,
+    fontSize: 12,
     opacity: 0.9,
+    fontWeight: '500',
   },
   closeButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 24,
-    height: 24,
+    top: 14,
+    right: 14,
+    width: 28,
+    height: 28,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
+    borderRadius: 14,
   },
 });

@@ -39,9 +39,9 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
       return;
     }
     
-    const dayNum = parseInt(day);
-    const monthNum = parseInt(month);
-    const yearNum = parseInt(year);
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
     
     // Check if numbers are valid
     if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) {
@@ -79,11 +79,17 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
       return;
     }
     
+    // Check if birth date is in the future
+    if (birthDate > today) {
+      setError('Birth date cannot be in the future');
+      return;
+    }
+    
     // Calculate age precisely
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     
-    // Adjust age if birthday hasn't occurred yet this year
+    // Adjust age if birthday has not occurred yet this year
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
@@ -100,38 +106,39 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
 
   // Handle text input changes with validation
   const handleDayChange = (text: string) => {
-    // Only allow numbers
-    if (/^\d*$/.test(text)) {
-      setDay(text);
+    // Only allow numbers and limit to 2 digits
+    const cleaned = text.replace(/[^0-9]/g, '');
+    if (cleaned.length <= 2) {
+      setDay(cleaned);
     }
   };
 
   const handleMonthChange = (text: string) => {
-    // Only allow numbers
-    if (/^\d*$/.test(text)) {
-      setMonth(text);
+    // Only allow numbers and limit to 2 digits
+    const cleaned = text.replace(/[^0-9]/g, '');
+    if (cleaned.length <= 2) {
+      setMonth(cleaned);
     }
   };
 
   const handleYearChange = (text: string) => {
-    // Only allow numbers
-    if (/^\d*$/.test(text)) {
-      setYear(text);
+    // Only allow numbers and limit to 4 digits
+    const cleaned = text.replace(/[^0-9]/g, '');
+    if (cleaned.length <= 4) {
+      setYear(cleaned);
     }
   };
 
   // Auto-focus next field when current field is filled
   const handleDayComplete = (text: string) => {
-    if (text.length === 2) {
-      // Focus month input
-      monthInputRef?.focus();
+    if (text.length === 2 && monthInputRef) {
+      monthInputRef.focus();
     }
   };
 
   const handleMonthComplete = (text: string) => {
-    if (text.length === 2) {
-      // Focus year input
-      yearInputRef?.focus();
+    if (text.length === 2 && yearInputRef) {
+      yearInputRef.focus();
     }
   };
 
@@ -204,8 +211,9 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
             
             <Pressable
-              style={styles.verifyButton}
+              style={[styles.verifyButton, (!day || !month || !year) && styles.disabledButton]}
               onPress={verifyAge}
+              disabled={!day || !month || !year}
             >
               <Text style={styles.verifyButtonText}>Verify Age</Text>
             </Pressable>
@@ -235,15 +243,14 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
             <Pressable
               style={styles.exitButton}
               onPress={() => {
-                // In a real app, you might want to close the app here
-                // For this demo, we'll just reset the form
+                // Reset the form to allow retry
                 setDay('');
                 setMonth('');
                 setYear('');
                 setUnderageError(false);
+                setError('');
                 
                 if (Platform.OS === 'android') {
-                  // This would exit the app on Android in a real app
                   Alert.alert(
                     "Exit App",
                     "This app is only for users 21 and older.",
@@ -252,7 +259,7 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
                 }
               }}
             >
-              <Text style={styles.exitButtonText}>Exit</Text>
+              <Text style={styles.exitButtonText}>Try Again</Text>
             </Pressable>
           </View>
         )}
@@ -370,6 +377,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     width: 60,
     textAlign: 'center',
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   yearInput: {
     backgroundColor: Colors.dark.background,
@@ -379,6 +388,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     width: 80,
     textAlign: 'center',
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   dateSeparator: {
     color: Colors.dark.text,
@@ -399,13 +410,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  disabledButton: {
+    backgroundColor: Colors.dark.subtext,
+    opacity: 0.6,
+  },
   verifyButtonText: {
     color: Colors.dark.text,
     fontSize: 16,
     fontWeight: 'bold',
   },
   exitButton: {
-    backgroundColor: Colors.dark.error,
+    backgroundColor: Colors.dark.primary,
     borderRadius: 12,
     padding: 16,
     width: '100%',

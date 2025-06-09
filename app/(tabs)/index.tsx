@@ -17,24 +17,33 @@ export default function HomeScreen() {
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const navigateToCart = () => {
+  const navigateToCart = useCallback(() => {
     router.push('/cart');
-  };
+  }, [router]);
 
-  const handleCloseBanner = () => {
+  const handleCloseBanner = useCallback(() => {
     setShowDiscountBanner(false);
     // Mark user as no longer new when they dismiss the banner
     if (isNewUser) {
       markAsExistingUser();
     }
-  };
+  }, [isNewUser, markAsExistingUser]);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate a refresh
-    setTimeout(() => {
+    try {
+      // Simulate refreshing data - in a real app, you'd fetch fresh data here
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // You could refresh categories, products, user data, etc. here
+      // For example: await refreshCategories();
+      // await refreshUserData();
+      
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
       setRefreshing(false);
-    }, 1000);
+    }
   }, []);
 
   // Show discount banner only for new users who haven't used discount and haven't dismissed it
@@ -50,13 +59,15 @@ export default function HomeScreen() {
             onRefresh={onRefresh}
             tintColor={Colors.dark.primary}
             colors={[Colors.dark.primary]}
+            progressBackgroundColor={Colors.dark.card}
           />
         }
+        contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.greeting}>
-              {name ? `Welcome, ${name}` : 'Welcome'}
+              {name ? `Welcome back, ${name}` : 'Welcome to Atlanta'}
             </Text>
             <Text style={styles.title}>{appInfo.name}</Text>
             <Text style={styles.subtitle}>{appInfo.slogan}</Text>
@@ -65,6 +76,8 @@ export default function HomeScreen() {
           <Pressable 
             style={styles.cartButton} 
             onPress={navigateToCart}
+            accessibilityLabel={`Shopping cart with ${cartItemsCount} items`}
+            accessibilityRole="button"
           >
             <ShoppingCart size={24} color={Colors.dark.text} />
             {cartItemsCount > 0 && (
@@ -82,45 +95,61 @@ export default function HomeScreen() {
         )}
 
         <View style={styles.biographySection}>
-          <Text style={styles.biographyTitle}>Atlanta: The Phoenix City</Text>
-          <Text style={styles.biographySubtitle}>Cannabis Culture & Urban Evolution</Text>
+          <Text style={styles.biographyTitle}>Atlanta: The Heart of the South</Text>
+          <Text style={styles.biographySubtitle}>Where Culture Meets Cannabis Freedom</Text>
           
-          <Text style={styles.biographyText}>
-            Atlanta, Georgia stands as a testament to resilience and transformation. Rising from the ashes of the Civil War like a phoenix, this magnificent city has evolved into the cultural and economic heart of the New South.
-          </Text>
-          
-          <Text style={styles.biographyText}>
-            Founded in 1837 as a railroad terminus, Atlanta has always been a city of movement and progress. From its reconstruction after Sherman's march to its emergence as a civil rights epicenter led by Dr. Martin Luther King Jr., Atlanta has consistently pushed boundaries and embraced change.
-          </Text>
-          
-          <Text style={styles.biographyText}>
-            Today, Atlanta represents a new chapter in cannabis culture and policy reform. As Georgia navigates the evolving landscape of medical cannabis legislation, Atlanta serves as the progressive beacon, fostering discussions about wellness, medicine, and personal freedom. The city's diverse communities have embraced cannabis not just as medicine, but as part of a broader conversation about social justice and economic opportunity.
-          </Text>
-          
-          <Text style={styles.biographyText}>
-            From the bustling streets of Midtown to the historic charm of Virginia-Highland, from the artistic energy of Little Five Points to the modern skyline of Buckhead, Atlanta continues to grow and adapt. The city's cannabis community reflects this diversity - bringing together patients, advocates, entrepreneurs, and educators who are shaping the future of cannabis in the Southeast.
-          </Text>
-          
-          <Text style={styles.biographyText}>
-            As we look toward the future, Atlanta remains what it has always been: a city of opportunity, innovation, and hope. Whether you are exploring cannabis for wellness, medicine, or simply seeking quality products in a welcoming environment, Atlanta's evolving cannabis landscape offers something for everyone in this beautiful, ever-changing metropolis.
-          </Text>
+          <View style={styles.biographyContent}>
+            <Text style={styles.biographyText}>
+              Atlanta is a city that captivates the soul. From the moment you experience its warm Southern hospitality to the vibrant energy that pulses through its tree-lined streets, Atlanta offers an unmatched blend of historic charm and modern sophistication that makes it one of America's most beautiful cities.
+            </Text>
+            
+            <Text style={styles.biographyText}>
+              The city's stunning skyline rises majestically above a canopy of towering oaks and dogwoods, earning Atlanta its nickname "The City in a Forest." Whether you are strolling through the artistic corridors of the High Museum, exploring the bustling markets of Ponce City Market, or enjoying the scenic beauty of Piedmont Park, Atlanta's natural beauty and architectural marvels create an atmosphere unlike anywhere else.
+            </Text>
+            
+            <Text style={styles.biographyText}>
+              Atlanta's culture is as rich and diverse as its landscape. This is the birthplace of civil rights, the home of world-class cuisine, and a hub for music that has shaped generations. From the soulful sounds of hip-hop born in its neighborhoods to the elegant symphony performances at the Fox Theatre, Atlanta's cultural tapestry weaves together tradition and innovation in the most beautiful way.
+            </Text>
+            
+            <Text style={styles.biographyText}>
+              The vibe here is infectious - a perfect blend of laid-back Southern charm and metropolitan energy. People gather in cozy coffee shops in Virginia-Highland, celebrate at rooftop bars overlooking the city, and connect in the eclectic neighborhoods that each tell their own unique story. Atlanta embraces everyone with open arms and genuine warmth.
+            </Text>
+            
+            <View style={styles.cannabisSection}>
+              <Text style={styles.cannabisTitle}>Cannabis Freedom in Georgia</Text>
+              <Text style={styles.biographyText}>
+                Georgia has embraced a progressive approach to cannabis, with medical marijuana now legal and accessible to qualified patients. Atlanta leads the way in creating a welcoming, regulated environment where patients can access quality cannabis products safely and legally. This milestone represents not just policy change, but Atlanta's continued commitment to health, wellness, and personal freedom.
+              </Text>
+              
+              <Text style={styles.biographyText}>
+                In this beautiful city where tradition meets progress, cannabis legalization has opened doors to new opportunities for wellness, community, and economic growth. Atlanta's cannabis culture reflects the city itself - diverse, welcoming, and forward-thinking, creating a space where everyone can find what they need in a safe, legal, and beautiful environment.
+              </Text>
+              
+              <Text style={styles.biographyText}>
+                From premium flower grown with Georgia's rich soil to innovative edibles and concentrates, our dispensary brings you the finest cannabis products available. We are proud to serve Atlanta's cannabis community with the same warmth and excellence that defines this incredible city.
+              </Text>
+            </View>
+          </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Categories</Text>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesContainer}
-        >
-          {categories.map(category => (
-            <CategoryCard 
-              key={category.id}
-              id={category.id}
-              name={category.name}
-              icon={category.icon}
-            />
-          ))}
-        </ScrollView>
+        <View style={styles.categoriesSection}>
+          <Text style={styles.sectionTitle}>Shop Categories</Text>
+          <Text style={styles.sectionSubtitle}>Discover premium cannabis products</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesContainer}
+          >
+            {categories.map(category => (
+              <CategoryCard 
+                key={category.id}
+                id={category.id}
+                name={category.name}
+                icon={category.icon}
+              />
+            ))}
+          </ScrollView>
+        </View>
       </ScrollView>
     </View>
   );
@@ -130,12 +159,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.dark.background,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 32,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 24,
   },
   headerText: {
@@ -145,17 +177,19 @@ const styles = StyleSheet.create({
   greeting: {
     color: Colors.dark.subtext,
     fontSize: 16,
+    marginBottom: 4,
   },
   title: {
     color: Colors.dark.text,
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    flexWrap: 'wrap',
+    lineHeight: 34,
+    marginBottom: 4,
   },
   subtitle: {
     color: Colors.dark.primary,
     fontSize: 14,
-    marginTop: 4,
+    fontWeight: '500',
   },
   cartButton: {
     width: 48,
@@ -165,11 +199,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   cartBadge: {
     position: 'absolute',
-    right: -2,
-    top: -2,
+    right: -4,
+    top: -4,
     backgroundColor: Colors.dark.primary,
     borderRadius: 12,
     minWidth: 24,
@@ -177,6 +219,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 6,
+    borderWidth: 2,
+    borderColor: Colors.dark.background,
   },
   cartBadgeText: {
     color: Colors.dark.text,
@@ -185,35 +229,69 @@ const styles = StyleSheet.create({
   },
   biographySection: {
     backgroundColor: Colors.dark.card,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     marginBottom: 32,
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   biographyTitle: {
     color: Colors.dark.text,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 6,
+    textAlign: 'center',
   },
   biographySubtitle: {
     color: Colors.dark.primary,
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  biographyContent: {
+    gap: 16,
   },
   biographyText: {
     color: Colors.dark.subtext,
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 24,
+    textAlign: 'left',
+  },
+  cannabisSection: {
+    marginTop: 8,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.dark.border,
+    gap: 16,
+  },
+  cannabisTitle: {
+    color: Colors.dark.primary,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  categoriesSection: {
     marginBottom: 16,
   },
   sectionTitle: {
     color: Colors.dark.text,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
     marginBottom: 16,
   },
   categoriesContainer: {
-    paddingBottom: 24,
+    paddingBottom: 8,
   },
 });
