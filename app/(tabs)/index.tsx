@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ShoppingCart } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -8,6 +8,7 @@ import CategoryCard from '@/components/CategoryCard';
 import DiscountBanner from '@/components/DiscountBanner';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
+import { getProductCountsByCategory, validateProducts } from '@/mocks/products';
 import appInfo from '@/constants/appInfo';
 
 export default function HomeScreen() {
@@ -16,6 +17,22 @@ export default function HomeScreen() {
   const { isNewUser, hasUsedDiscount, name, markAsExistingUser } = useUserStore();
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Validate products and cart on mount
+  useEffect(() => {
+    const validation = validateProducts();
+    if (!validation.valid) {
+      console.warn('Product validation errors:', validation.errors);
+      Alert.alert(
+        'Data Warning', 
+        'Some product data may be invalid. Please refresh the app.',
+        [{ text: 'OK' }]
+      );
+    }
+
+    // Validate cart
+    useCartStore.getState().validateCart();
+  }, []);
 
   const navigateToCart = useCallback(() => {
     router.push('/cart');
@@ -32,15 +49,33 @@ export default function HomeScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      // Simulate refreshing data - in a real app, you'd fetch fresh data here
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log('Refreshing home screen data...');
       
-      // You could refresh categories, products, user data, etc. here
-      // For example: await refreshCategories();
-      // await refreshUserData();
+      // Simulate refreshing data - in a real app, you'd fetch fresh data here
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Validate products after refresh
+      const validation = validateProducts();
+      if (!validation.valid) {
+        console.warn('Product validation errors after refresh:', validation.errors);
+      }
+      
+      // Log product counts for debugging
+      const counts = getProductCountsByCategory();
+      console.log('Product counts after refresh:', counts);
+      
+      // Refresh cart to ensure consistency
+      await useCartStore.getState().refreshCart();
+      
+      console.log('Home screen refresh completed');
       
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      console.error('Error refreshing home screen data:', error);
+      Alert.alert(
+        'Refresh Error',
+        'Failed to refresh data. Please try again.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setRefreshing(false);
     }

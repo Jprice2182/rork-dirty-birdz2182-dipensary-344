@@ -1,35 +1,60 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, Text, View, TextInput, FlatList, Pressable, RefreshControl } from 'react-native';
 import { Search as SearchIcon, X, Filter } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-import { products, getProductCountsByCategory } from '@/mocks/products';
+import { products, getProductCountsByCategory, validateProducts } from '@/mocks/products';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types/product';
 
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    console.log('Search effect triggered, query:', searchQuery);
-    console.log('Total products available:', products.length);
-    
-    if (searchQuery.trim() === '') {
-      setFilteredProducts(products);
-      console.log('Empty query, showing all products:', products.length);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = products.filter(product => 
-        product.name.toLowerCase().includes(query) || 
-        product.description.toLowerCase().includes(query) ||
-        product.effects.some(effect => effect.toLowerCase().includes(query))
-      );
-      setFilteredProducts(filtered);
-      console.log(`Filtered products for "${query}":`, filtered.length);
+  // Memoize the search function to prevent unnecessary re-renders
+  const searchProducts = useCallback((query: string): Product[] => {
+    if (!query.trim()) {
+      return products;
     }
-  }, [searchQuery]);
+
+    const searchTerm = query.toLowerCase().trim();
+    return products.filter(product => 
+      product.name.toLowerCase().includes(searchTerm) || 
+      product.description.toLowerCase().includes(searchTerm) ||
+      product.effects.some(effect => effect.toLowerCase().includes(searchTerm)) ||
+      product.category === searchTerm
+    );
+  }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    setLoading(true);
+    const timeoutId = setTimeout(() => {
+      console.log('Search effect triggered, query:', searchQuery);
+      console.log('Total products available:', products.length);
+      
+      const results = searchProducts(searchQuery);
+      setFilteredProducts(results);
+      
+      console.log(`Search results for "${searchQuery}":`, results.length);
+      setLoading(false);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, searchProducts]);
+
+  // Initialize with all products
+  useEffect(() => {
+    setFilteredProducts(products);
+    
+    // Validate products on mount
+    const validation = validateProducts();
+    if (!validation.valid) {
+      console.warn('Product validation errors:', validation.errors);
+    }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -37,53 +62,42 @@ export default function SearchScreen() {
     
     try {
       // Simulate refreshing product data
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Debug: Log product counts
       const counts = getProductCountsByCategory();
       console.log('Product counts after refresh:', counts);
       
-      // Reset search if needed
-      if (searchQuery.trim() === '') {
-        setFilteredProducts(products);
-        console.log('Reset to all products after refresh:', products.length);
-      } else {
-        // Re-run the search
-        const query = searchQuery.toLowerCase();
-        const filtered = products.filter(product => 
-          product.name.toLowerCase().includes(query) || 
-          product.description.toLowerCase().includes(query) ||
-          product.effects.some(effect => effect.toLowerCase().includes(query))
-        );
-        setFilteredProducts(filtered);
-        console.log('Re-filtered products after refresh:', filtered.length);
-      }
+      // Re-run the search with current query
+      const results = searchProducts(searchQuery);
+      setFilteredProducts(results);
+      console.log('Re-filtered products after refresh:', results.length);
       
     } catch (error) {
       console.error('Error refreshing products:', error);
     } finally {
       setRefreshing(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, searchProducts]);
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setSearchQuery('');
-  };
+  }, []);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     
     // Add to recent searches if it's not empty and not already in the list
     if (query.trim() && !recentSearches.includes(query.trim())) {
       setRecentSearches(prev => [query.trim(), ...prev.slice(0, 4)]); // Keep only 5 recent searches
     }
-  };
+  }, [recentSearches]);
 
-  const handleRecentSearchPress = (search: string) => {
+  const handleRecentSearchPress = useCallback((search: string) => {
     setSearchQuery(search);
-  };
+  }, []);
 
-  const renderProduct = ({ item }: { item: Product }) => (
+  const renderProduct = useCallback(({ item }: { item: Product }) => (
     <View style={styles.productCardWrapper}>
       <ProductCard
         id={item.id}
@@ -96,9 +110,9 @@ export default function SearchScreen() {
         volume={item.volume}
       />
     </View>
-  );
+  ), []);
 
-  const renderEmptyList = () => (
+  const renderEmptyList = useCallback(() => (
     <View style={styles.emptyContainer}>
       <SearchIcon size={60} color={Colors.dark.subtext} style={styles.emptyIcon} />
       <Text style={styles.emptyText}>
@@ -116,9 +130,9 @@ export default function SearchScreen() {
         </Text>
       )}
     </View>
-  );
+  ), [searchQuery]);
 
-  const renderRecentSearches = () => {
+  const renderRecentSearches = useCallback(() => {
     if (searchQuery.trim() || recentSearches.length === 0) return null;
     
     return (
@@ -126,7 +140,7 @@ export default function SearchScreen() {
         <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
         {recentSearches.map((search, index) => (
           <Pressable 
-            key={index}
+            key={`${search}-${index}`}
             style={styles.recentSearchItem}
             onPress={() => handleRecentSearchPress(search)}
           >
@@ -136,9 +150,9 @@ export default function SearchScreen() {
         ))}
       </View>
     );
-  };
+  }, [searchQuery, recentSearches, handleRecentSearchPress]);
 
-  const renderHeader = () => (
+  const renderHeader = useCallback(() => (
     <View>
       {renderRecentSearches()}
       {filteredProducts.length > 0 && searchQuery.trim() && (
@@ -148,7 +162,21 @@ export default function SearchScreen() {
           </Text>
         </View>
       )}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Searching...</Text>
+        </View>
+      )}
     </View>
+  ), [renderRecentSearches, filteredProducts.length, searchQuery, loading]);
+
+  // Memoize the key extractor
+  const keyExtractor = useCallback((item: Product) => item.id, []);
+
+  // Memoize the column wrapper style
+  const columnWrapperStyle = useMemo(() => 
+    filteredProducts.length > 0 ? styles.productRow : undefined, 
+    [filteredProducts.length]
   );
 
   return (
@@ -163,6 +191,8 @@ export default function SearchScreen() {
           onChangeText={handleSearch}
           returnKeyType="search"
           autoCorrect={false}
+          autoCapitalize="none"
+          clearButtonMode="while-editing"
         />
         {searchQuery.length > 0 && (
           <Pressable onPress={clearSearch} style={styles.clearButton}>
@@ -174,9 +204,9 @@ export default function SearchScreen() {
       <FlatList
         data={filteredProducts}
         renderItem={renderProduct}
-        keyExtractor={item => item.id}
+        keyExtractor={keyExtractor}
         numColumns={2}
-        columnWrapperStyle={filteredProducts.length > 0 ? styles.productRow : undefined}
+        columnWrapperStyle={columnWrapperStyle}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={renderEmptyList}
         ListHeaderComponent={renderHeader}
@@ -190,6 +220,15 @@ export default function SearchScreen() {
           />
         }
         showsVerticalScrollIndicator={false}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        removeClippedSubviews={true}
+        getItemLayout={(data, index) => ({
+          length: 200, // Approximate item height
+          offset: 200 * Math.floor(index / 2),
+          index,
+        })}
       />
     </View>
   );
@@ -259,6 +298,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  loadingContainer: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
   listContent: {
     paddingBottom: 16,
     flexGrow: 1,
@@ -275,6 +323,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 60,
     paddingHorizontal: 24,
+    minHeight: 300,
   },
   emptyIcon: {
     marginBottom: 16,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
@@ -14,10 +14,15 @@ interface ProductCardProps {
   volume?: string;
 }
 
-export default function ProductCard({ id, name, price, image, thc, weight, count, volume }: ProductCardProps) {
+const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }: ProductCardProps) => {
   const router = useRouter();
 
   const handlePress = () => {
+    if (!id) {
+      console.warn('Product card pressed but no ID provided');
+      return;
+    }
+    
     console.log(`Navigating to product ${id}: ${name}`);
     router.push(`/product/${id}`);
   };
@@ -29,6 +34,20 @@ export default function ProductCard({ id, name, price, image, thc, weight, count
     return '';
   };
 
+  const formatPrice = (price: number) => {
+    if (typeof price !== 'number' || isNaN(price)) {
+      return '$0.00';
+    }
+    return `$${price.toFixed(2)}`;
+  };
+
+  const formatTHC = (thc: number) => {
+    if (typeof thc !== 'number' || isNaN(thc)) {
+      return 'THC: 0%';
+    }
+    return `THC: ${thc}%`;
+  };
+
   return (
     <Pressable 
       style={({ pressed }) => [
@@ -36,23 +55,32 @@ export default function ProductCard({ id, name, price, image, thc, weight, count
         pressed && styles.pressed
       ]}
       onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={`${name}, ${formatPrice(price)}, ${formatTHC(thc)}`}
     >
       <Image 
         source={{ uri: image }} 
         style={styles.image}
         defaultSource={require('@/assets/images/icon.png')}
+        resizeMode="cover"
       />
       <View style={styles.content}>
-        <Text style={styles.name} numberOfLines={2}>{name}</Text>
-        <Text style={styles.thc}>THC: {thc}%</Text>
+        <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
+          {name || 'Unnamed Product'}
+        </Text>
+        <Text style={styles.thc}>{formatTHC(thc)}</Text>
         {getDisplayUnit() && (
           <Text style={styles.detail}>{getDisplayUnit()}</Text>
         )}
-        <Text style={styles.price}>${price.toFixed(2)}</Text>
+        <Text style={styles.price}>{formatPrice(price)}</Text>
       </View>
     </Pressable>
   );
-}
+});
+
+ProductCard.displayName = 'ProductCard';
+
+export default ProductCard;
 
 const styles = StyleSheet.create({
   container: {
@@ -76,7 +104,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 150,
-    resizeMode: 'cover',
     backgroundColor: Colors.dark.background,
   },
   content: {
@@ -88,6 +115,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 4,
     minHeight: 40,
+    lineHeight: 20,
   },
   thc: {
     color: Colors.dark.subtext,

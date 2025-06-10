@@ -1,7 +1,7 @@
 import { Product } from '@/types/product';
 
 export const products: Product[] = [
-  // FLOWER PRODUCTS (Category '1') - 25 products
+  // FLOWER PRODUCTS (Category '1') - 30 products
   {
     id: '1',
     name: 'Northern Lights',
@@ -249,7 +249,6 @@ export const products: Product[] = [
     effects: ['Energetic', 'Happy', 'Uplifting'],
     featured: true,
   },
-  // Additional Flower Products
   {
     id: '63',
     name: 'Zkittlez',
@@ -328,8 +327,73 @@ export const products: Product[] = [
     effects: ['Euphoric', 'Happy', 'Creative'],
     featured: true,
   },
+  {
+    id: '101',
+    name: 'Lemon Haze',
+    category: '1',
+    thc: 21,
+    cbd: 0.2,
+    price: 30,
+    weight: '3.5g',
+    image: 'https://images.unsplash.com/photo-1603909223429-69bb7101f420?q=80&w=1000',
+    description: "Lemon Haze is a sativa-dominant strain with bright citrus flavors and energizing effects. Perfect for creative endeavors.",
+    effects: ['Energetic', 'Creative', 'Uplifting'],
+    featured: false,
+  },
+  {
+    id: '102',
+    name: 'Cheese',
+    category: '1',
+    thc: 19,
+    cbd: 0.1,
+    price: 30,
+    weight: '3.5g',
+    image: 'https://images.unsplash.com/photo-1589140915708-20ff586fe767?q=80&w=1000',
+    description: "Cheese is an indica-dominant strain with a distinctive aroma and relaxing effects. Known for its unique flavor profile.",
+    effects: ['Relaxed', 'Happy', 'Sleepy'],
+    featured: false,
+  },
+  {
+    id: '103',
+    name: 'AK-47',
+    category: '1',
+    thc: 20,
+    cbd: 0.1,
+    price: 30,
+    weight: '3.5g',
+    image: 'https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?q=80&w=1000',
+    description: "AK-47 is a sativa-dominant hybrid that delivers a steady and long-lasting cerebral buzz. Known for its complex flavor.",
+    effects: ['Creative', 'Euphoric', 'Relaxed'],
+    featured: true,
+  },
+  {
+    id: '104',
+    name: 'Critical Mass',
+    category: '1',
+    thc: 22,
+    cbd: 0.2,
+    price: 30,
+    weight: '3.5g',
+    image: 'https://images.unsplash.com/photo-1590856029826-c7a73142bbf1?q=80&w=1000',
+    description: "Critical Mass is an indica-dominant strain known for its heavy yields and relaxing effects. Perfect for evening use.",
+    effects: ['Relaxed', 'Sleepy', 'Happy'],
+    featured: false,
+  },
+  {
+    id: '105',
+    name: 'Super Silver Haze',
+    category: '1',
+    thc: 23,
+    cbd: 0.1,
+    price: 30,
+    weight: '3.5g',
+    image: 'https://images.unsplash.com/photo-1603909223429-69bb7101f420?q=80&w=1000',
+    description: "Super Silver Haze is a sativa-dominant strain with energizing effects and a complex flavor profile. Great for daytime use.",
+    effects: ['Energetic', 'Creative', 'Focused'],
+    featured: true,
+  },
 
-  // PRE-ROLL PRODUCTS (Category '2') - 15 products
+  // PRE-ROLL PRODUCTS (Category '2') - 20 products
   {
     id: '6',
     name: 'Classic Joint',
@@ -473,7 +537,6 @@ export const products: Product[] = [
     effects: ['Balanced', 'Therapeutic', 'Functional'],
     featured: true,
   },
-  // Additional Pre-Roll Products
   {
     id: '69',
     name: 'Blunt Pack',
@@ -526,8 +589,73 @@ export const products: Product[] = [
     effects: ['Sleepy', 'Relaxed', 'Calm'],
     featured: false,
   },
+  {
+    id: '106',
+    name: 'Artisan Pre-Roll',
+    category: '2',
+    thc: 25,
+    cbd: 0.1,
+    price: 12,
+    count: '1 artisan',
+    image: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=1000',
+    description: "Hand-rolled with premium flower and finished with a glass tip. Each artisan pre-roll is a work of art.",
+    effects: ['Premium', 'Smooth', 'Refined'],
+    featured: true,
+  },
+  {
+    id: '107',
+    name: 'Variety Pack',
+    category: '2',
+    thc: 20,
+    cbd: 0.1,
+    price: 30,
+    count: '6 pack mixed',
+    image: 'https://images.unsplash.com/photo-1595189592930-831489da9b1e?q=80&w=1000',
+    description: "A variety pack featuring 2 indica, 2 sativa, and 2 hybrid pre-rolls. Perfect for trying different strains.",
+    effects: ['Variety', 'Exploration', 'Balanced'],
+    featured: false,
+  },
+  {
+    id: '108',
+    name: 'Solventless Pre-Roll',
+    category: '2',
+    thc: 28,
+    cbd: 0.2,
+    price: 14,
+    count: '1 solventless',
+    image: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=1000',
+    description: "Made with solventless rosin for the purest experience. No chemicals, just heat and pressure extraction.",
+    effects: ['Pure', 'Clean', 'Potent'],
+    featured: true,
+  },
+  {
+    id: '109',
+    name: 'Outdoor Grown Pack',
+    category: '2',
+    thc: 17,
+    cbd: 0.3,
+    price: 16,
+    count: '4 pack',
+    image: 'https://images.unsplash.com/photo-1595189592930-831489da9b1e?q=80&w=1000',
+    description: "Pre-rolls made from sun-grown outdoor flower. Environmentally friendly and full of natural terpenes.",
+    effects: ['Natural', 'Earthy', 'Sustainable'],
+    featured: false,
+  },
+  {
+    id: '110',
+    name: 'Kief-Dusted Pre-Roll',
+    category: '2',
+    thc: 32,
+    cbd: 0.1,
+    price: 13,
+    count: '1 kief-dusted',
+    image: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=1000',
+    description: "Premium flower pre-roll dusted with high-quality kief for extra potency and flavor.",
+    effects: ['Enhanced', 'Potent', 'Flavorful'],
+    featured: true,
+  },
 
-  // EDIBLE PRODUCTS (Category '3') - 15 products
+  // EDIBLE PRODUCTS (Category '3') - 20 products
   {
     id: '7',
     name: 'Gummy Bears',
@@ -671,7 +799,6 @@ export const products: Product[] = [
     effects: ['Energizing', 'Recovery', 'Balanced'],
     featured: true,
   },
-  // Additional Edible Products
   {
     id: '73',
     name: 'Hard Candies',
@@ -724,8 +851,73 @@ export const products: Product[] = [
     effects: ['Fun', 'Flavorful', 'Long-lasting'],
     featured: true,
   },
+  {
+    id: '111',
+    name: 'Gourmet Macarons',
+    category: '3',
+    thc: 100,
+    cbd: 0,
+    price: 28,
+    count: '6 macarons (16mg each)',
+    image: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?q=80&w=1000',
+    description: "Elegant French macarons infused with premium cannabis extract. Available in lavender, vanilla, and chocolate flavors.",
+    effects: ['Sophisticated', 'Relaxed', 'Euphoric'],
+    featured: true,
+  },
+  {
+    id: '112',
+    name: 'Energy Bars',
+    category: '3',
+    thc: 50,
+    cbd: 25,
+    price: 22,
+    count: '5 bars (10mg each)',
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1000',
+    description: "Nutritious energy bars with nuts, seeds, and dried fruit. Each bar contains 10mg THC and 5mg CBD for balanced energy.",
+    effects: ['Energizing', 'Nutritious', 'Balanced'],
+    featured: false,
+  },
+  {
+    id: '113',
+    name: 'Fruit Leather',
+    category: '3',
+    thc: 100,
+    cbd: 0,
+    price: 18,
+    count: '10 strips (10mg each)',
+    image: 'https://images.unsplash.com/photo-1587132137056-bfbf0166836e?q=80&w=1000',
+    description: "All-natural fruit leather made from real fruit puree and cannabis extract. No artificial flavors or colors.",
+    effects: ['Natural', 'Fruity', 'Clean'],
+    featured: true,
+  },
+  {
+    id: '114',
+    name: 'Sparkling Water',
+    category: '3',
+    thc: 5,
+    cbd: 5,
+    price: 6,
+    volume: '12oz',
+    image: 'https://images.unsplash.com/photo-1523362628745-0c100150b504?q=80&w=1000',
+    description: "Refreshing sparkling water with a balanced 1:1 ratio of THC and CBD. Perfect for microdosing throughout the day.",
+    effects: ['Refreshing', 'Mild', 'Hydrating'],
+    featured: false,
+  },
+  {
+    id: '115',
+    name: 'Artisan Chocolates',
+    category: '3',
+    thc: 200,
+    cbd: 0,
+    price: 45,
+    count: '20 pieces (10mg each)',
+    image: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?q=80&w=1000',
+    description: "Hand-crafted artisan chocolates with unique flavor combinations. Each piece contains 10mg THC in premium Belgian chocolate.",
+    effects: ['Luxurious', 'Gourmet', 'Relaxed'],
+    featured: true,
+  },
 
-  // VAPE PRODUCTS (Category '4') - 15 products
+  // VAPE PRODUCTS (Category '4') - 20 products
   {
     id: '8',
     name: 'Premium Vape Cartridge',
@@ -869,7 +1061,6 @@ export const products: Product[] = [
     effects: ['Balanced', 'Therapeutic', 'Mild'],
     featured: true,
   },
-  // Additional Vape Products
   {
     id: '77',
     name: 'Indica Vape Pod',
@@ -922,8 +1113,73 @@ export const products: Product[] = [
     effects: ['Reliable', 'Adjustable', 'Long-lasting'],
     featured: false,
   },
+  {
+    id: '116',
+    name: 'Strain-Specific Vape',
+    category: '4',
+    thc: 87,
+    cbd: 0,
+    price: 28,
+    volume: '1g',
+    image: 'https://images.unsplash.com/photo-1560999448-1be675dd1310?q=80&w=1000',
+    description: "Single-strain vape cartridge featuring Gelato. Preserves the unique terpene profile and effects of this popular strain.",
+    effects: ['Strain-specific', 'Authentic', 'Flavorful'],
+    featured: true,
+  },
+  {
+    id: '117',
+    name: 'High-CBD Vape',
+    category: '4',
+    thc: 10,
+    cbd: 70,
+    price: 26,
+    volume: '1g',
+    image: 'https://images.unsplash.com/photo-1581101767113-7b6e54c1b7c0?q=80&w=1000',
+    description: "High-CBD vape cartridge perfect for therapeutic use. Minimal psychoactive effects with maximum therapeutic benefits.",
+    effects: ['Therapeutic', 'Clear-headed', 'Calming'],
+    featured: false,
+  },
+  {
+    id: '118',
+    name: 'Terpene-Enhanced Vape',
+    category: '4',
+    thc: 84,
+    cbd: 0,
+    price: 32,
+    volume: '1g',
+    image: 'https://images.unsplash.com/photo-1563298723-dcfebaa392e3?q=80&w=1000',
+    description: "Enhanced with additional botanical terpenes for amplified flavor and effects. Available in citrus, berry, and pine profiles.",
+    effects: ['Enhanced', 'Flavorful', 'Aromatic'],
+    featured: true,
+  },
+  {
+    id: '119',
+    name: 'Micro-Dose Vape',
+    category: '4',
+    thc: 50,
+    cbd: 25,
+    price: 22,
+    volume: '0.5g',
+    image: 'https://images.unsplash.com/photo-1561041695-d2faaf38e42a?q=80&w=1000',
+    description: "Designed for micro-dosing with controlled, measured doses. Perfect for beginners or those seeking subtle effects.",
+    effects: ['Controlled', 'Mild', 'Precise'],
+    featured: false,
+  },
+  {
+    id: '120',
+    name: 'Full-Spectrum Vape',
+    category: '4',
+    thc: 82,
+    cbd: 3,
+    price: 29,
+    volume: '1g',
+    image: 'https://images.unsplash.com/photo-1533423996279-f9938f12a0ce?q=80&w=1000',
+    description: "Full-spectrum cannabis oil preserving all cannabinoids and terpenes. Experience the entourage effect in every puff.",
+    effects: ['Full-spectrum', 'Entourage', 'Complete'],
+    featured: true,
+  },
 
-  // TOPICAL PRODUCTS (Category '7') - 10 products
+  // TOPICAL PRODUCTS (Category '7') - 15 products
   {
     id: '19',
     name: 'Relief Cream',
@@ -1054,6 +1310,71 @@ export const products: Product[] = [
     effects: ['Hydrating', 'Soothing', 'Protective'],
     featured: true,
   },
+  {
+    id: '121',
+    name: 'Bath Bomb',
+    category: '7',
+    thc: 25,
+    cbd: 25,
+    price: 18,
+    volume: '4oz',
+    image: 'https://images.unsplash.com/photo-1617952385804-7b9c41f9e593?q=80&w=1000',
+    description: "Luxurious bath bomb infused with cannabis extract and essential oils. Transform your bath into a spa-like experience.",
+    effects: ['Relaxing', 'Luxurious', 'Aromatic'],
+    featured: true,
+  },
+  {
+    id: '122',
+    name: 'Transdermal Patch',
+    category: '7',
+    thc: 20,
+    cbd: 0,
+    price: 25,
+    volume: '4 patches',
+    image: 'https://images.unsplash.com/photo-1617952385804-7b9c41f9e593?q=80&w=1000',
+    description: "Long-lasting transdermal patches deliver consistent doses over 8-12 hours. Perfect for all-day relief.",
+    effects: ['Long-lasting', 'Consistent', 'Discreet'],
+    featured: false,
+  },
+  {
+    id: '123',
+    name: 'Intimate Lubricant',
+    category: '7',
+    thc: 5,
+    cbd: 10,
+    price: 28,
+    volume: '2oz',
+    image: 'https://images.unsplash.com/photo-1617952385804-7b9c41f9e593?q=80&w=1000',
+    description: "Cannabis-infused intimate lubricant designed to enhance sensation and relaxation. Made with natural, body-safe ingredients.",
+    effects: ['Enhancing', 'Relaxing', 'Intimate'],
+    featured: true,
+  },
+  {
+    id: '124',
+    name: 'Foot Cream',
+    category: '7',
+    thc: 0,
+    cbd: 40,
+    price: 24,
+    volume: '3oz',
+    image: 'https://images.unsplash.com/photo-1617952385804-7b9c41f9e593?q=80&w=1000',
+    description: "Specialized foot cream with CBD and peppermint for tired, aching feet. Perfect after long days on your feet.",
+    effects: ['Soothing', 'Cooling', 'Refreshing'],
+    featured: false,
+  },
+  {
+    id: '125',
+    name: 'Sunscreen SPF 30',
+    category: '7',
+    thc: 0,
+    cbd: 20,
+    price: 32,
+    volume: '4oz',
+    image: 'https://images.unsplash.com/photo-1617952385804-7b9c41f9e593?q=80&w=1000',
+    description: "Broad-spectrum sunscreen with CBD for skin protection and anti-inflammatory benefits. Water-resistant for up to 80 minutes.",
+    effects: ['Protective', 'Anti-inflammatory', 'Hydrating'],
+    featured: true,
+  },
 ];
 
 export const getFeaturedProducts = (): Product[] => {
@@ -1061,12 +1382,22 @@ export const getFeaturedProducts = (): Product[] => {
 };
 
 export const getProductsByCategory = (categoryId: string): Product[] => {
+  if (!categoryId || typeof categoryId !== 'string') {
+    console.warn('Invalid category ID provided:', categoryId);
+    return [];
+  }
+  
   const filteredProducts = products.filter(product => product.category === categoryId);
   console.log(`Category ${categoryId} has ${filteredProducts.length} products`);
   return filteredProducts;
 };
 
 export const getProductById = (id: string): Product | undefined => {
+  if (!id || typeof id !== 'string') {
+    console.warn('Invalid product ID provided:', id);
+    return undefined;
+  }
+  
   return products.find(product => product.id === id);
 };
 
@@ -1076,5 +1407,30 @@ export const getProductCountsByCategory = () => {
   products.forEach(product => {
     counts[product.category] = (counts[product.category] || 0) + 1;
   });
+  console.log('Product counts by category:', counts);
   return counts;
+};
+
+// Utility function to get all unique categories
+export const getAllCategories = (): string[] => {
+  const categories = [...new Set(products.map(product => product.category))];
+  return categories.sort();
+};
+
+// Utility function to validate product data
+export const validateProducts = (): { valid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  products.forEach((product, index) => {
+    if (!product.id) errors.push(`Product at index ${index} missing ID`);
+    if (!product.name) errors.push(`Product ${product.id} missing name`);
+    if (!product.category) errors.push(`Product ${product.id} missing category`);
+    if (typeof product.price !== 'number') errors.push(`Product ${product.id} has invalid price`);
+    if (typeof product.thc !== 'number') errors.push(`Product ${product.id} has invalid THC value`);
+  });
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
 };
