@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
-import { Colors } from '@/constants/colors';
+import Colors from '@/constants/colors';
 import { useState } from 'react';
 
 type AgeVerificationModalProps = {
