@@ -27,21 +27,31 @@ export default function PrivacyScreen() {
         <Text style={styles.section}>1. Information We Collect</Text>
         <Text style={styles.text}>
           We collect information that you provide directly to us, including:
-          {'\n'}- Name and contact information
-          {'\n'}- Date of birth and age verification data
-          {'\n'}- Delivery address
-          {'\n'}- Payment information
-          {'\n'}- Order history
+          {'
+'}- Name and contact information
+          {'
+'}- Date of birth and age verification data
+          {'
+'}- Delivery address
+          {'
+'}- Payment information
+          {'
+'}- Order history
         </Text>
 
         <Text style={styles.section}>2. How We Use Your Information</Text>
         <Text style={styles.text}>
           We use the information we collect to:
-          {'\n'}- Process your orders
-          {'\n'}- Verify your age and identity
-          {'\n'}- Provide customer support
-          {'\n'}- Send order updates and notifications
-          {'\n'}- Improve our services
+          {'
+'}- Process your orders
+          {'
+'}- Verify your age and identity
+          {'
+'}- Provide customer support
+          {'
+'}- Send order updates and notifications
+          {'
+'}- Improve our services
         </Text>
 
         <Text style={styles.section}>3. Data Security</Text>
@@ -52,18 +62,25 @@ export default function PrivacyScreen() {
         <Text style={styles.section}>4. Information Sharing</Text>
         <Text style={styles.text}>
           We do not sell your personal information. We share your information only with:
-          {'\n'}- Delivery partners (only delivery details)
-          {'\n'}- Payment processors
-          {'\n'}- Legal authorities when required by law
+          {'
+'}- Delivery partners (only delivery details)
+          {'
+'}- Payment processors
+          {'
+'}- Legal authorities when required by law
         </Text>
 
         <Text style={styles.section}>5. Your Rights</Text>
         <Text style={styles.text}>
           You have the right to:
-          {'\n'}- Access your personal data
-          {'\n'}- Correct inaccurate data
-          {'\n'}- Request deletion of your data
-          {'\n'}- Opt out of marketing communications
+          {'
+'}- Access your personal data
+          {'
+'}- Correct inaccurate data
+          {'
+'}- Request deletion of your data
+          {'
+'}- Opt out of marketing communications
         </Text>
 
         <Text style={styles.section}>6. Data Retention</Text>
@@ -79,8 +96,10 @@ export default function PrivacyScreen() {
         <Text style={styles.section}>8. Contact Us</Text>
         <Text style={styles.text}>
           If you have any questions about this Privacy Policy, please contact us at:
-          {'\n'}Email: {appInfo.supportEmail}
-          {'\n'}Phone: {appInfo.supportPhone}
+          {'
+'}Email: {appInfo.supportEmail}
+          {'
+'}Phone: {appInfo.supportPhone}
         </Text>
 
         <Text style={styles.encryptionNote}>

@@ -63,8 +63,10 @@ export default function TermsScreen() {
         <Text style={styles.section}>9. Contact Information</Text>
         <Text style={styles.text}>
           For questions about these Terms of Service, please contact us at:
-          {'\n'}Email: {appInfo.supportEmail}
-          {'\n'}Phone: {appInfo.supportPhone}
+          {'
+'}Email: {appInfo.supportEmail}
+          {'
+'}Phone: {appInfo.supportPhone}
         </Text>
 
         <Text style={styles.disclaimer}>

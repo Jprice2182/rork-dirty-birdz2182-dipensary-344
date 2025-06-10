@@ -5,7 +5,7 @@ import { Calendar, LogIn, UserPlus } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useUserStore } from '@/store/userStore';
 import { useAuthStore } from '@/store/authStore';
-import AgeVerificationModal from '@/components/AgeVerificationModal';
+import { AgeVerificationModal } from '@/components/AgeVerificationModal';
 import appInfo from '@/constants/appInfo';
 
 export default function Index() {
@@ -103,8 +103,12 @@ export default function Index() {
       </View>
 
       <AgeVerificationModal 
-        visible={showAgeVerification} 
+        isVisible={showAgeVerification} 
         onClose={() => setShowAgeVerification(false)}
+        onVerified={() => {
+          setShowAgeVerification(false);
+          useUserStore.getState().setVerified(true);
+        }}
       />
     </View>
   );
