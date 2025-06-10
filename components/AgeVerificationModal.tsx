@@ -1,6 +1,4 @@
-import { useState } from 'react';
-import { View, Text, Modal, Platform, StyleSheet, Pressable } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
 import Colors from '@/constants/colors';
 import appInfo from '@/constants/appInfo';
 
@@ -11,30 +9,12 @@ interface AgeVerificationModalProps {
 }
 
 export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVerificationModalProps) {
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
-
-  const calculateAge = (birthDate: Date) => {
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+  const handleYes = () => {
+    onVerified();
   };
 
-  const handleDateChange = (_: any, selectedDate?: Date) => {
-    const currentDate = selectedDate || date;
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
-    setDate(currentDate);
-
-    const age = calculateAge(currentDate);
-    if (age >= appInfo.minAge) {
-      onVerified();
-    }
+  const handleNo = () => {
+    onClose();
   };
 
   return (
@@ -48,34 +28,25 @@ export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVeri
         <View style={styles.modalView}>
           <Text style={styles.title}>Age Verification Required</Text>
           <Text style={styles.subtitle}>
-            You must be {appInfo.minAge} or older to use this app
+            You must be {appInfo.minAge} or older to use this app.
+          </Text>
+          <Text style={styles.question}>
+            Are you {appInfo.minAge} years of age or older?
           </Text>
 
-          {Platform.OS === 'android' && (
-            <Pressable
-              style={styles.dateButton}
-              onPress={() => setShowPicker(true)}
-            >
-              <Text style={styles.dateButtonText}>
-                Select Birth Date
-              </Text>
+          <View style={styles.buttonContainer}>
+            <Pressable style={styles.noButton} onPress={handleNo}>
+              <Text style={styles.noButtonText}>No</Text>
             </Pressable>
-          )}
+            
+            <Pressable style={styles.yesButton} onPress={handleYes}>
+              <Text style={styles.yesButtonText}>Yes</Text>
+            </Pressable>
+          </View>
 
-          {showPicker && (
-            <DateTimePicker
-              value={date}
-              mode="date"
-              display="spinner"
-              onChange={handleDateChange}
-              maximumDate={new Date()}
-              minimumDate={new Date(1900, 0, 1)}
-            />
-          )}
-
-          <Pressable style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeText}>Close</Text>
-          </Pressable>
+          <Text style={styles.disclaimer}>
+            {appInfo.legalDisclaimer}
+          </Text>
         </View>
       </View>
     </Modal>
@@ -87,13 +58,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   modalView: {
     width: '90%',
     backgroundColor: Colors.dark.card,
     borderRadius: 20,
-    padding: 20,
+    padding: 24,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -108,38 +79,58 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: Colors.dark.text,
-    marginBottom: 8,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: Colors.dark.subtext,
     marginBottom: 20,
     textAlign: 'center',
+    lineHeight: 22,
   },
-  dateButton: {
+  question: {
+    fontSize: 18,
+    color: Colors.dark.text,
+    marginBottom: 30,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+    marginBottom: 20,
+  },
+  noButton: {
+    flex: 1,
+    backgroundColor: Colors.dark.error,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  noButtonText: {
+    color: Colors.dark.text,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  yesButton: {
+    flex: 1,
     backgroundColor: Colors.dark.primary,
-    padding: 15,
-    borderRadius: 10,
-    width: '100%',
-    marginBottom: 15,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  dateButtonText: {
+  yesButtonText: {
     color: Colors.dark.text,
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
-  closeButton: {
+  disclaimer: {
+    fontSize: 12,
+    color: Colors.dark.subtext,
+    textAlign: 'center',
+    lineHeight: 16,
     marginTop: 10,
-    padding: 15,
-    borderRadius: 10,
-    backgroundColor: Colors.dark.border,
-    width: '100%',
-  },
-  closeText: {
-    color: Colors.dark.text,
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
