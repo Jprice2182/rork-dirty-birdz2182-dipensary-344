@@ -28,24 +28,24 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
         <Sparkles size={12} color={Colors.dark.text} style={styles.sparkle2} />
       </View>
       
-      <View style={styles.content}>
+      <Pressable 
+        style={({ pressed }) => [
+          styles.content,
+          pressed && styles.pressed
+        ]}
+        onPress={handlePress}
+        accessibilityLabel="20% off first order promotion"
+        accessibilityRole="button"
+      >
         <View style={styles.iconContainer}>
           <Tag size={20} color={Colors.dark.text} />
         </View>
-        <Pressable 
-          style={({ pressed }) => [
-            styles.textContainer,
-            pressed && styles.pressed
-          ]}
-          onPress={handlePress}
-          accessibilityLabel="20% off first order promotion"
-          accessibilityRole="button"
-        >
+        <View style={styles.textContainer}>
           <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
           <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
           <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
-        </Pressable>
-      </View>
+        </View>
+      </Pressable>
       
       {onClose && (
         <Pressable 
@@ -104,6 +104,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingRight: 40,
   },
+  pressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
   iconContainer: {
     width: 40,
     height: 40,
@@ -115,10 +119,6 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-  },
-  pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
   },
   title: {
     color: Colors.dark.text,

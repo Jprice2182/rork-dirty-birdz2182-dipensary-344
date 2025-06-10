@@ -98,7 +98,7 @@ function RootLayoutNav() {
             contentStyle: {
               backgroundColor: Colors.dark.background,
             },
-            headerBackTitleVisible: false,
+            headerBackTitle: "Back",
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -106,35 +106,30 @@ function RootLayoutNav() {
             name="product/[id]" 
             options={{ 
               title: "Product Details",
-              headerBackTitle: "Back",
             }} 
           />
           <Stack.Screen 
             name="category/[id]" 
             options={{ 
               title: "Category",
-              headerBackTitle: "Back",
             }} 
           />
           <Stack.Screen 
             name="cart" 
             options={{ 
               title: "Your Cart",
-              headerBackTitle: "Back",
             }} 
           />
           <Stack.Screen 
             name="checkout" 
             options={{ 
               title: "Checkout",
-              headerBackTitle: "Back",
             }} 
           />
           <Stack.Screen 
             name="order-confirmation" 
             options={{ 
               title: "Order Confirmation",
-              headerBackTitle: "Home",
               gestureEnabled: false,
               headerLeft: () => null,
             }} 
@@ -143,7 +138,6 @@ function RootLayoutNav() {
             name="order/[id]" 
             options={{ 
               title: "Order Details",
-              headerBackTitle: "Back",
             }} 
           />
           <Stack.Screen 
