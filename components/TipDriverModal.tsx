@@ -3,72 +3,63 @@ import { StyleSheet, Text, View, Modal, Pressable, TextInput, ActivityIndicator 
 import { X, DollarSign } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useOrderStore } from '@/store/orderStore';
+import appInfo from '@/constants/appInfo';
 
 interface TipDriverModalProps {
   visible: boolean;
   onClose: () => void;
-  orderId: string;
-  driverName?: string;
+  orderId?: string;
+  subtotal: number;
+  onSelectTip: (amount: number) => void;
+  initialTip?: number;
 }
 
 export default function TipDriverModal({ 
   visible, 
   onClose, 
   orderId,
-  driverName = "your driver"
+  subtotal,
+  onSelectTip,
+  initialTip = 0
 }: TipDriverModalProps) {
-  const [selectedTip, setSelectedTip] = useState<number | null>(null);
-  const [customTip, setCustomTip] = useState('');
+  const [selectedPercentage, setSelectedPercentage] = useState<number | null>(null);
+  const [customTip, setCustomTip] = useState(initialTip ? initialTip.toFixed(2) : '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { getOrderById, updateOrderTip } = useOrderStore();
-  const order = getOrderById(orderId);
+  const tipPercentages = appInfo.defaultTipPercentages;
 
-  const tipOptions = [2, 5, 10, 15, 20];
-
-  const handleSelectTip = (amount: number) => {
-    setSelectedTip(amount);
-    setCustomTip('');
+  const handleSelectPercentage = (percentage: number) => {
+    const tipAmount = (subtotal * (percentage / 100));
+    setSelectedPercentage(percentage);
+    setCustomTip(tipAmount.toFixed(2));
+    onSelectTip(tipAmount);
   };
 
   const handleCustomTipChange = (text: string) => {
     // Allow only numbers and decimal point
     if (/^\d*\.?\d*$/.test(text)) {
       setCustomTip(text);
-      setSelectedTip(null);
+      setSelectedPercentage(null);
+      const tipAmount = parseFloat(text) || 0;
+      onSelectTip(tipAmount);
     }
   };
 
   const getTipAmount = () => {
-    if (selectedTip !== null) {
-      return selectedTip;
-    }
-    
     if (customTip) {
-      return parseFloat(customTip);
+      return parseFloat(customTip) || 0;
     }
-    
     return 0;
+  };
+
+  const getTipPercentage = (amount: number) => {
+    return ((amount / subtotal) * 100).toFixed(1);
   };
 
   const handleSubmit = () => {
     const tipAmount = getTipAmount();
-    
-    if (tipAmount <= 0) {
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    // Simulate network request
-    setTimeout(() => {
-      updateOrderTip(orderId, tipAmount);
-      
-      setIsSubmitting(false);
-      setSelectedTip(null);
-      setCustomTip('');
-      onClose();
-    }, 1000);
+    onSelectTip(tipAmount);
+    onClose();
   };
 
   return (
@@ -81,38 +72,47 @@ export default function TipDriverModal({
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <View style={styles.header}>
-            <Text style={styles.title}>Tip Your Driver</Text>
+            <Text style={styles.title}>Add a Tip</Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
               <X size={24} color={Colors.dark.text} />
             </Pressable>
           </View>
           
           <View style={styles.content}>
-            <Text style={styles.driverName}>
-              Add a tip for {driverName}
+            <Text style={styles.subtitle}>
+              Show your appreciation for great service
             </Text>
             
-            <Text style={styles.tipNote}>
-              100% of tips go directly to drivers
-            </Text>
+            <View style={styles.subtotalContainer}>
+              <Text style={styles.subtotalLabel}>Order Subtotal:</Text>
+              <Text style={styles.subtotalValue}>${subtotal.toFixed(2)}</Text>
+            </View>
             
-            <View style={styles.tipOptionsContainer}>
-              {tipOptions.map((amount) => (
+            <View style={styles.percentagesContainer}>
+              {tipPercentages.map((percentage) => (
                 <Pressable
-                  key={amount}
+                  key={percentage}
                   style={[
-                    styles.tipOption,
-                    selectedTip === amount && styles.selectedTipOption
+                    styles.percentageOption,
+                    selectedPercentage === percentage && styles.selectedPercentageOption
                   ]}
-                  onPress={() => handleSelectTip(amount)}
+                  onPress={() => handleSelectPercentage(percentage)}
                 >
                   <Text 
                     style={[
-                      styles.tipOptionText,
-                      selectedTip === amount && styles.selectedTipOptionText
+                      styles.percentageText,
+                      selectedPercentage === percentage && styles.selectedPercentageText
                     ]}
                   >
-                    ${amount}
+                    {percentage}%
+                  </Text>
+                  <Text 
+                    style={[
+                      styles.percentageAmount,
+                      selectedPercentage === percentage && styles.selectedPercentageText
+                    ]}
+                  >
+                    ${(subtotal * (percentage / 100)).toFixed(2)}
                   </Text>
                 </Pressable>
               ))}
@@ -131,13 +131,11 @@ export default function TipDriverModal({
                   keyboardType="decimal-pad"
                 />
               </View>
-            </View>
-            
-            <View style={styles.totalContainer}>
-              <Text style={styles.totalLabel}>Tip Amount:</Text>
-              <Text style={styles.totalValue}>
-                ${getTipAmount().toFixed(2)}
-              </Text>
+              {customTip && parseFloat(customTip) > 0 && (
+                <Text style={styles.tipPercentage}>
+                  ({getTipPercentage(parseFloat(customTip))}% of subtotal)
+                </Text>
+              )}
             </View>
           </View>
           
@@ -152,13 +150,18 @@ export default function TipDriverModal({
             {isSubmitting ? (
               <ActivityIndicator size="small" color={Colors.dark.text} />
             ) : (
-              <Text style={styles.submitButtonText}>Add Tip</Text>
+              <Text style={styles.submitButtonText}>
+                Add ${getTipAmount().toFixed(2)} Tip
+              </Text>
             )}
           </Pressable>
           
           <Pressable 
             style={styles.skipButton}
-            onPress={onClose}
+            onPress={() => {
+              onSelectTip(0);
+              onClose();
+            }}
             disabled={isSubmitting}
           >
             <Text style={styles.skipButtonText}>No Tip</Text>
@@ -209,42 +212,58 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
   },
-  driverName: {
+  subtitle: {
+    color: Colors.dark.subtext,
+    fontSize: 16,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  subtotalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: Colors.dark.background,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  subtotalLabel: {
     color: Colors.dark.text,
     fontSize: 16,
-    marginBottom: 8,
-    textAlign: 'center',
   },
-  tipNote: {
-    color: Colors.dark.success,
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 24,
-    textAlign: 'center',
+  subtotalValue: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  tipOptionsContainer: {
+  percentagesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginBottom: 24,
   },
-  tipOption: {
-    width: '30%',
+  percentageOption: {
+    width: '48%',
     backgroundColor: Colors.dark.background,
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
     marginBottom: 12,
   },
-  selectedTipOption: {
+  selectedPercentageOption: {
     backgroundColor: Colors.dark.success,
   },
-  tipOptionText: {
+  percentageText: {
     color: Colors.dark.text,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
+    marginBottom: 4,
   },
-  selectedTipOptionText: {
+  percentageAmount: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+  },
+  selectedPercentageText: {
     color: Colors.dark.text,
   },
   customTipContainer: {
@@ -252,7 +271,7 @@ const styles = StyleSheet.create({
   },
   customTipLabel: {
     color: Colors.dark.text,
-    fontSize: 14,
+    fontSize: 16,
     marginBottom: 8,
   },
   customTipInputContainer: {
@@ -271,24 +290,11 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     fontSize: 16,
   },
-  totalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: Colors.dark.background,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  totalLabel: {
-    color: Colors.dark.text,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  totalValue: {
-    color: Colors.dark.success,
-    fontSize: 20,
-    fontWeight: 'bold',
+  tipPercentage: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'right',
   },
   submitButton: {
     backgroundColor: Colors.dark.success,

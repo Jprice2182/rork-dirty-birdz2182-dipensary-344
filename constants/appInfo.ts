@@ -15,6 +15,7 @@ const appInfo = {
   deliveryFee: 5.99,
   freeDeliveryMinimum: 50,
   estimatedDeliveryTime: "30-45 minutes",
+  defaultTipPercentages: [15, 18, 20, 25],
   operatingHours: {
     monday: "9:00 AM - 10:00 PM",
     tuesday: "9:00 AM - 10:00 PM", 
