@@ -130,7 +130,7 @@ export default function SearchScreen() {
       <Text style={styles.emptySubtext}>
         {searchQuery.trim() 
           ? 'Try a different search term or browse categories' 
-          : 'Find flower, edibles, vapes, and more'
+          : 'Find flower, edibles, cartridges, and more'
         }
       </Text>
       {searchQuery.trim() && (
@@ -194,7 +194,7 @@ export default function SearchScreen() {
         <SearchIcon size={20} color={Colors.dark.subtext} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search flower, edibles, vapes..."
+          placeholder="Search flower, edibles, cartridges..."
           placeholderTextColor={Colors.dark.subtext}
           value={searchQuery}
           onChangeText={handleSearch}

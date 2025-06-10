@@ -140,7 +140,7 @@ export default function CategoryScreen() {
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>No products found</Text>
         <Text style={styles.emptySubtext}>
-          This category doesn't have any products yet. Check back soon!
+          This category does not have any products yet. Check back soon!
         </Text>
         <Text style={styles.debugText}>
           Category ID: {id}

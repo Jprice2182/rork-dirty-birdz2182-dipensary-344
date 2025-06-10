@@ -24,12 +24,12 @@ export const categories: Category[] = [
   },
   {
     id: '4',
-    name: 'Vapes',
+    name: 'Cartridges',
     icon: Zap,
   },
   {
     id: '20',
-    name: 'Vape Pens',
+    name: 'Cartridge Pens',
     icon: Usb,
   },
 ];
