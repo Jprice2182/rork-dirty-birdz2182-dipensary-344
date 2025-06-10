@@ -22,30 +22,32 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
   };
 
   return (
-    <Pressable 
-      style={({ pressed }) => [
-        styles.container,
-        pressed && styles.pressed
-      ]}
-      onPress={handlePress}
-      accessibilityLabel="20% off first order promotion"
-      accessibilityRole="button"
-    >
+    <View style={styles.container}>
       <View style={styles.sparkleContainer}>
         <Sparkles size={16} color={Colors.dark.text} style={styles.sparkle1} />
         <Sparkles size={12} color={Colors.dark.text} style={styles.sparkle2} />
       </View>
       
-      <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <Tag size={20} color={Colors.dark.text} />
+      <Pressable 
+        style={({ pressed }) => [
+          styles.mainContent,
+          pressed && styles.pressed
+        ]}
+        onPress={handlePress}
+        accessibilityLabel="20% off first order promotion"
+        accessibilityRole="button"
+      >
+        <View style={styles.content}>
+          <View style={styles.iconContainer}>
+            <Tag size={20} color={Colors.dark.text} />
+          </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
+            <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
+            <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
+          </View>
         </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
-          <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
-          <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
-        </View>
-      </View>
+      </Pressable>
       
       {onClose && (
         <Pressable 
@@ -58,7 +60,7 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
           <X size={16} color={Colors.dark.text} />
         </Pressable>
       )}
-    </Pressable>
+    </View>
   );
 }
 
@@ -66,7 +68,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.dark.primary,
     borderRadius: 16,
-    padding: 18,
     marginBottom: 20,
     position: 'relative',
     overflow: 'hidden',
@@ -79,16 +80,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
-  },
   sparkleContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+    pointerEvents: 'none',
   },
   sparkle1: {
     position: 'absolute',
@@ -102,10 +100,17 @@ const styles = StyleSheet.create({
     left: 20,
     opacity: 0.5,
   },
+  mainContent: {
+    padding: 18,
+    paddingRight: 50,
+  },
+  pressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 36,
   },
   iconContainer: {
     width: 40,
@@ -149,5 +154,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 14,
+    zIndex: 10,
   },
 });

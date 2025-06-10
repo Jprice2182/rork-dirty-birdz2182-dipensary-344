@@ -32,6 +32,10 @@ export default function HomeScreen() {
 
     // Validate cart
     useCartStore.getState().validateCart();
+
+    // Log product counts for debugging
+    const counts = getProductCountsByCategory();
+    console.log('Product counts by category on mount:', counts);
   }, []);
 
   const navigateToCart = useCallback(() => {
