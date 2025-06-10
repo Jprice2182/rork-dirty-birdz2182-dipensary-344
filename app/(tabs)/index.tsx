@@ -19,11 +19,6 @@ export default function HomeScreen() {
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Show age verification if not verified
-  if (!isVerified) {
-    return <AgeVerificationModal visible={true} />;
-  }
-
   // Validate products and cart on mount
   useEffect(() => {
     const validation = validateProducts();
@@ -93,6 +88,11 @@ export default function HomeScreen() {
 
   // Show discount banner only for new users who haven't used discount and haven't dismissed it
   const shouldShowDiscountBanner = isNewUser && !hasUsedDiscount && showDiscountBanner;
+
+  // Don't render main content if age is not verified
+  if (!isVerified) {
+    return null; // Age verification modal will be shown by _layout.tsx
+  }
 
   return (
     <View style={styles.container}>

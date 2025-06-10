@@ -101,6 +101,7 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
     }
     
     // Age verified - set verified status
+    console.log('Age verification successful, setting verified to true');
     setVerified(true);
   };
 

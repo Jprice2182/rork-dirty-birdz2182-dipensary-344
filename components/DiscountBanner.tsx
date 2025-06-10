@@ -28,40 +28,38 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
         <Sparkles size={12} color={Colors.dark.text} style={styles.sparkle2} />
       </View>
       
-      <View style={styles.content}>
+      {/* Close button positioned absolutely outside the main pressable */}
+      {onClose && (
         <Pressable 
-          style={({ pressed }) => [
-            styles.mainContent,
-            pressed && styles.pressed
-          ]}
-          onPress={handlePress}
-          accessibilityLabel="20% off first order promotion"
+          style={styles.closeButton} 
+          onPress={handleClose}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+          accessibilityLabel="Close promotion banner"
           accessibilityRole="button"
         >
-          <View style={styles.iconContainer}>
-            <Tag size={20} color={Colors.dark.text} />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
-            <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
-            <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
-          </View>
+          <X size={16} color={Colors.dark.text} />
         </Pressable>
-        
-        {onClose && (
-          <View style={styles.closeButtonContainer}>
-            <Pressable 
-              style={styles.closeButton} 
-              onPress={handleClose}
-              hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-              accessibilityLabel="Close promotion banner"
-              accessibilityRole="button"
-            >
-              <X size={16} color={Colors.dark.text} />
-            </Pressable>
-          </View>
-        )}
-      </View>
+      )}
+      
+      {/* Main content pressable - no longer contains the close button */}
+      <Pressable 
+        style={({ pressed }) => [
+          styles.mainContent,
+          pressed && styles.pressed
+        ]}
+        onPress={handlePress}
+        accessibilityLabel="20% off first order promotion"
+        accessibilityRole="button"
+      >
+        <View style={styles.iconContainer}>
+          <Tag size={20} color={Colors.dark.text} />
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
+          <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
+          <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
+        </View>
+      </Pressable>
     </View>
   );
 }
@@ -103,15 +101,10 @@ const styles = StyleSheet.create({
     left: 20,
     opacity: 0.5,
   },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   mainContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    paddingRight: 40,
+    paddingRight: 40, // Space for close button
   },
   pressed: {
     opacity: 0.9,
@@ -149,18 +142,16 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     fontWeight: '500',
   },
-  closeButtonContainer: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    zIndex: 10,
-  },
   closeButton: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
     width: 28,
     height: 28,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 14,
+    zIndex: 10,
   },
 });
