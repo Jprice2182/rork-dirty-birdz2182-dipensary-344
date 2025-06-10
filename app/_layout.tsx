@@ -2,13 +2,10 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { useUserStore } from "@/store/userStore";
-import { useAuthStore } from "@/store/authStore";
 import Colors from "@/constants/colors";
 import { BackHandler, Alert, Platform } from "react-native";
-import appInfo from "@/constants/appInfo";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
 
@@ -59,28 +56,6 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const { isVerified } = useUserStore();
-  const { isAuthenticated } = useAuthStore();
-
-  // Handle back button press when age verification is showing
-  useEffect(() => {
-    if (Platform.OS === 'android' && !isVerified) {
-      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-        Alert.alert(
-          "Exit App",
-          "You must verify your age to use this app. Are you sure you want to exit?",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Exit", onPress: () => BackHandler.exitApp() }
-          ]
-        );
-        return true;
-      });
-
-      return () => backHandler.remove();
-    }
-  }, [isVerified]);
-
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
@@ -160,6 +135,18 @@ function RootLayoutNav() {
             options={{ 
               title: "Reset Password",
               headerShown: false,
+            }} 
+          />
+          <Stack.Screen 
+            name="terms" 
+            options={{ 
+              title: "Terms of Service",
+            }} 
+          />
+          <Stack.Screen 
+            name="privacy" 
+            options={{ 
+              title: "Privacy Policy",
             }} 
           />
         </Stack>

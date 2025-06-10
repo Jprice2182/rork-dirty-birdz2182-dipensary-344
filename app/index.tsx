@@ -2,44 +2,50 @@ import { useEffect, useCallback, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/store/userStore';
-import { useAuthStore } from '@/store/authStore';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
 import Colors from '@/constants/colors';
 
 export default function Index() {
   const router = useRouter();
   const isVerified = useUserStore(state => state.isVerified);
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
+  const [hasNavigated, setHasNavigated] = useState(false);
 
   useEffect(() => {
-    console.log('Index: isVerified =', isVerified, 'isAuthenticated =', isAuthenticated);
+    console.log('Index: isVerified =', isVerified, 'hasNavigated =', hasNavigated);
     
-    if (!isVerified) {
+    if (!isVerified && !hasNavigated) {
+      console.log('Index: Showing age verification modal');
       setShowAgeVerification(true);
-    } else if (isVerified && isAuthenticated) {
-      // Navigate to tabs after verification
-      console.log('Index: Navigating to tabs');
+    } else if (isVerified && !hasNavigated) {
+      console.log('Index: User is verified, navigating to tabs');
+      setHasNavigated(true);
       router.replace('/(tabs)');
     }
-  }, [isVerified, isAuthenticated, router]);
+  }, [isVerified, hasNavigated, router]);
 
   const handleVerification = useCallback(() => {
     console.log('Index: Age verification completed');
     setShowAgeVerification(false);
+    
+    // Set verified in store
     useUserStore.getState().setVerified(true);
     
-    // Navigate to tabs immediately after verification
-    setTimeout(() => {
-      console.log('Index: Navigating to tabs after verification');
-      router.replace('/(tabs)');
-    }, 100);
+    // Navigate immediately
+    console.log('Index: Navigating to tabs after verification');
+    setHasNavigated(true);
+    router.replace('/(tabs)');
   }, [router]);
 
   const handleClose = useCallback(() => {
     console.log('Index: Age verification modal closed without verification');
     setShowAgeVerification(false);
   }, []);
+
+  // Don't render anything if we've already navigated
+  if (hasNavigated) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

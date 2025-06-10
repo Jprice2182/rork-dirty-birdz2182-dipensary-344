@@ -10,10 +10,12 @@ interface AgeVerificationModalProps {
 
 export default function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVerificationModalProps) {
   const handleYes = () => {
+    console.log('AgeVerificationModal: User confirmed they are of age');
     onVerified();
   };
 
   const handleNo = () => {
+    console.log('AgeVerificationModal: User denied being of age');
     onClose();
   };
 

@@ -25,11 +25,6 @@ export default function HomeScreen() {
     const validation = validateProducts();
     if (!validation.valid) {
       console.warn('Product validation errors:', validation.errors);
-      Alert.alert(
-        'Data Warning', 
-        'Some product data may be invalid. Please refresh the app.',
-        [{ text: 'OK' }]
-      );
     }
 
     // Validate cart
@@ -90,7 +85,6 @@ export default function HomeScreen() {
   // Show discount banner only for new users who haven't used discount and haven't dismissed it
   const shouldShowDiscountBanner = isNewUser && !hasUsedDiscount && showDiscountBanner;
 
-  // Always render the home screen content - age verification is handled in index.tsx
   console.log('HomeScreen: Rendering home screen, isVerified =', isVerified);
 
   return (

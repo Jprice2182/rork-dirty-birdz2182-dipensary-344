@@ -15,6 +15,9 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: Colors.dark.background,
           borderTopColor: Colors.dark.border,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
         tabBarActiveTintColor: Colors.dark.primary,
         tabBarInactiveTintColor: Colors.dark.subtext,
@@ -24,6 +27,10 @@ export default function TabLayout() {
         headerTintColor: Colors.dark.text,
         headerTitleStyle: {
           fontWeight: 'bold',
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
         },
       }}
     >
