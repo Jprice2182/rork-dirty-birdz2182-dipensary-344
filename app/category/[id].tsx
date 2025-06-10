@@ -13,7 +13,8 @@ import { Product } from '@/types/product';
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { isVerified } = useUserStore();
+  const { isVerified, setVerified } = useUserStore();
+  const [showAgeModal, setShowAgeModal] = useState(!isVerified);
   const [products, setProducts] = useState<Product[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -21,9 +22,26 @@ export default function CategoryScreen() {
   
   const category = categories.find(cat => cat.id === id);
 
+  const handleAgeVerified = () => {
+    setVerified(true);
+    setShowAgeModal(false);
+  };
+
+  const handleAgeModalClose = () => {
+    setShowAgeModal(false);
+    // Redirect to home or show a message that they can't use the app
+    router.replace('/');
+  };
+
   // Show age verification if not verified
-  if (!isVerified) {
-    return <AgeVerificationModal isVisible={true} />;
+  if (showAgeModal) {
+    return (
+      <AgeVerificationModal 
+        isVisible={true} 
+        onClose={handleAgeModalClose}
+        onVerified={handleAgeVerified}
+      />
+    );
   }
 
   const loadProducts = useCallback(async () => {

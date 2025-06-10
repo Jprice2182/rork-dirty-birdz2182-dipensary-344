@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, Text, View, TextInput, FlatList, Pressable, RefreshControl } from 'react-native';
 import { Search as SearchIcon, X, Filter } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { products, getProductCountsByCategory, validateProducts } from '@/mocks/products';
 import ProductCard from '@/components/ProductCard';
@@ -9,18 +10,37 @@ import { useUserStore } from '@/store/userStore';
 import { Product } from '@/types/product';
 
 export default function SearchScreen() {
-  const { isVerified } = useUserStore();
-
-  // Show age verification if not verified - this should be the first thing checked
-  if (!isVerified) {
-    return <AgeVerificationModal isVisible={true} />;
-  }
+  const { isVerified, setVerified } = useUserStore();
+  const router = useRouter();
+  const [showAgeModal, setShowAgeModal] = useState(!isVerified);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const handleAgeVerified = () => {
+    setVerified(true);
+    setShowAgeModal(false);
+  };
+
+  const handleAgeModalClose = () => {
+    setShowAgeModal(false);
+    // Redirect to home or show a message that they can't use the app
+    router.replace('/');
+  };
+
+  // Show age verification if not verified
+  if (showAgeModal) {
+    return (
+      <AgeVerificationModal 
+        isVisible={true} 
+        onClose={handleAgeModalClose}
+        onVerified={handleAgeVerified}
+      />
+    );
+  }
 
   // Memoize the search function to prevent unnecessary re-renders
   const searchProducts = useCallback((query: string): Product[] => {
