@@ -39,6 +39,7 @@ export default function Checkout() {
         name: product.name,
         price: product.price,
         quantity: item.quantity,
+        variant: item.variant,
       };
     }).filter(item => item.price > 0); // Filter out unknown products
   };

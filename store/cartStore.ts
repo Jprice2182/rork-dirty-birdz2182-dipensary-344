@@ -7,6 +7,9 @@ export interface CartItem {
   id: string;
   quantity: number;
   addedAt?: string;
+  name?: string;
+  price?: number;
+  variant?: string;
 }
 
 interface CartState {
@@ -21,6 +24,7 @@ interface CartState {
   refreshCart: () => Promise<void>;
   resetCart: () => void;
   validateCart: () => void;
+  total: number;
 }
 
 export const useCartStore = create<CartState>()(
@@ -28,6 +32,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       lastUpdated: null,
+      total: 0,
       
       addItem: (id: string) => {
         if (!id || typeof id !== 'string' || !id.trim()) {
@@ -56,7 +61,13 @@ export const useCartStore = create<CartState>()(
           console.log(`Updated quantity for product ${id}`);
         } else {
           set({ 
-            items: [...items, { id, quantity: 1, addedAt: now }],
+            items: [...items, { 
+              id, 
+              quantity: 1, 
+              addedAt: now,
+              name: product.name,
+              price: product.price
+            }],
             lastUpdated: now
           });
           console.log(`Added new product ${id} to cart`);
