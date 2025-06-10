@@ -23,7 +23,7 @@ export default function CategoryScreen() {
 
   // Show age verification if not verified
   if (!isVerified) {
-    return <AgeVerificationModal visible={true} />;
+    return <AgeVerificationModal isVisible={true} />;
   }
 
   const loadProducts = useCallback(async () => {
