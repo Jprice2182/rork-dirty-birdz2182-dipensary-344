@@ -2,15 +2,14 @@ import React from 'react';
 import { StyleSheet, Text, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
-import { Flower, Cigarette, Candy, Zap, Droplets, Package, Droplet, Usb } from 'lucide-react-native';
 
 interface CategoryCardProps {
   id: string;
   name: string;
-  icon: string;
+  icon: any;
 }
 
-export default function CategoryCard({ id, name, icon }: CategoryCardProps) {
+export default function CategoryCard({ id, name, icon: IconComponent }: CategoryCardProps) {
   const router = useRouter();
 
   const handlePress = () => {
@@ -24,26 +23,7 @@ export default function CategoryCard({ id, name, icon }: CategoryCardProps) {
       strokeWidth: 1.5
     };
 
-    switch (icon) {
-      case 'flower':
-        return <Flower {...iconProps} />;
-      case 'cigarette':
-        return <Cigarette {...iconProps} />;
-      case 'candy':
-        return <Candy {...iconProps} />;
-      case 'zap':
-        return <Zap {...iconProps} />;
-      case 'droplets':
-        return <Droplets {...iconProps} />;
-      case 'package':
-        return <Package {...iconProps} />;
-      case 'droplet':
-        return <Droplet {...iconProps} />;
-      case 'usb':
-        return <Usb {...iconProps} />;
-      default:
-        return <Package {...iconProps} />;
-    }
+    return <IconComponent {...iconProps} />;
   };
 
   return (

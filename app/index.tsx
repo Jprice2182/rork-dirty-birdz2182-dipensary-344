@@ -12,16 +12,20 @@ export default function Index() {
   const [hasNavigated, setHasNavigated] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isVerified && !hasNavigated) {
-        setShowAgeVerification(true);
-      } else if (isVerified && !hasNavigated) {
-        setHasNavigated(true);
-        router.replace('/(tabs)');
-      }
-    }, 100);
+    // Check verification status immediately
+    if (isVerified && !hasNavigated) {
+      setHasNavigated(true);
+      router.replace('/(tabs)');
+      return;
+    }
 
-    return () => clearTimeout(timer);
+    // Show age verification if not verified
+    if (!isVerified && !hasNavigated) {
+      const timer = setTimeout(() => {
+        setShowAgeVerification(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
   }, [isVerified, hasNavigated, router]);
 
   const handleVerification = useCallback(() => {
@@ -34,6 +38,11 @@ export default function Index() {
   const handleClose = useCallback(() => {
     setShowAgeVerification(false);
   }, []);
+
+  // If already verified, don't render anything while navigating
+  if (isVerified && hasNavigated) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
