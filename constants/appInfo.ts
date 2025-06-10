@@ -5,7 +5,8 @@ export default {
   customerService: {
     email: "support@dirtybirdz2182.com",
     phone: "+1 (404) 555-0123",
-    hours: "Mon-Fri: 9AM-10PM, Sat-Sun: 10AM-9PM"
+    hours: "Mon-Fri: 9AM-10PM, Sat-Sun: 10AM-9PM",
+    address: "123 Cannabis Street, Atlanta, GA 30303"
   },
   supportEmail: "support@dirtybirdz2182.com",
   supportPhone: "+1 (404) 555-0123",

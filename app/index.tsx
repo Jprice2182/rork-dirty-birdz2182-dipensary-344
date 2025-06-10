@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, Pressable, Image, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Calendar, LogIn, UserPlus } from 'lucide-react-native';
@@ -10,9 +10,14 @@ import appInfo from '@/constants/appInfo';
 
 export default function Index() {
   const router = useRouter();
-  const { isVerified } = useUserStore();
-  const { isAuthenticated } = useAuthStore();
+  const isVerified = useUserStore(state => state.isVerified);
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const [showAgeVerification, setShowAgeVerification] = useState(!isVerified);
+
+  const handleVerification = useCallback(() => {
+    setShowAgeVerification(false);
+    useUserStore.getState().setVerified(true);
+  }, []);
 
   // If user is verified and authenticated, go to tabs
   if (isVerified && isAuthenticated) {
@@ -105,10 +110,7 @@ export default function Index() {
       <AgeVerificationModal 
         isVisible={showAgeVerification} 
         onClose={() => setShowAgeVerification(false)}
-        onVerified={() => {
-          setShowAgeVerification(false);
-          useUserStore.getState().setVerified(true);
-        }}
+        onVerified={handleVerification}
       />
     </View>
   );

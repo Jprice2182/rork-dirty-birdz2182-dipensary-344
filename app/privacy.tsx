@@ -8,6 +8,34 @@ import appInfo from '@/constants/appInfo';
 export default function PrivacyScreen() {
   const router = useRouter();
 
+  const bulletPoints = {
+    collect: [
+      "Name and contact information",
+      "Date of birth and age verification data",
+      "Delivery address",
+      "Payment information",
+      "Order history"
+    ],
+    use: [
+      "Process your orders",
+      "Verify your age and identity",
+      "Provide customer support",
+      "Send order updates and notifications",
+      "Improve our services"
+    ],
+    rights: [
+      "Access your personal data",
+      "Correct inaccurate data",
+      "Request deletion of your data",
+      "Opt out of marketing communications"
+    ],
+    share: [
+      "Delivery partners (only delivery details)",
+      "Payment processors",
+      "Legal authorities when required by law"
+    ]
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -27,31 +55,13 @@ export default function PrivacyScreen() {
         <Text style={styles.section}>1. Information We Collect</Text>
         <Text style={styles.text}>
           We collect information that you provide directly to us, including:
-          {'
-'}- Name and contact information
-          {'
-'}- Date of birth and age verification data
-          {'
-'}- Delivery address
-          {'
-'}- Payment information
-          {'
-'}- Order history
+          {bulletPoints.collect.map(point => `\n• ${point}`)}
         </Text>
 
         <Text style={styles.section}>2. How We Use Your Information</Text>
         <Text style={styles.text}>
           We use the information we collect to:
-          {'
-'}- Process your orders
-          {'
-'}- Verify your age and identity
-          {'
-'}- Provide customer support
-          {'
-'}- Send order updates and notifications
-          {'
-'}- Improve our services
+          {bulletPoints.use.map(point => `\n• ${point}`)}
         </Text>
 
         <Text style={styles.section}>3. Data Security</Text>
@@ -62,25 +72,13 @@ export default function PrivacyScreen() {
         <Text style={styles.section}>4. Information Sharing</Text>
         <Text style={styles.text}>
           We do not sell your personal information. We share your information only with:
-          {'
-'}- Delivery partners (only delivery details)
-          {'
-'}- Payment processors
-          {'
-'}- Legal authorities when required by law
+          {bulletPoints.share.map(point => `\n• ${point}`)}
         </Text>
 
         <Text style={styles.section}>5. Your Rights</Text>
         <Text style={styles.text}>
           You have the right to:
-          {'
-'}- Access your personal data
-          {'
-'}- Correct inaccurate data
-          {'
-'}- Request deletion of your data
-          {'
-'}- Opt out of marketing communications
+          {bulletPoints.rights.map(point => `\n• ${point}`)}
         </Text>
 
         <Text style={styles.section}>6. Data Retention</Text>
@@ -95,11 +93,9 @@ export default function PrivacyScreen() {
 
         <Text style={styles.section}>8. Contact Us</Text>
         <Text style={styles.text}>
-          If you have any questions about this Privacy Policy, please contact us at:
-          {'
-'}Email: {appInfo.supportEmail}
-          {'
-'}Phone: {appInfo.supportPhone}
+          If you have any questions about this Privacy Policy, please contact us at:{`\n`}
+          Email: {appInfo.supportEmail}{`\n`}
+          Phone: {appInfo.supportPhone}
         </Text>
 
         <Text style={styles.encryptionNote}>

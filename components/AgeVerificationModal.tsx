@@ -14,7 +14,7 @@ type AgeVerificationModalProps = {
 
 export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVerificationModalProps) {
   const [birthDate, setBirthDate] = useState<Date>(new Date(2000, 0, 1));
-  const [showPicker, setShowPicker] = useState(false);
+  const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [error, setError] = useState('');
 
   const calculateAge = (birthDate: Date) => {
@@ -30,11 +30,10 @@ export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVeri
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || birthDate;
     setShowPicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setBirthDate(selectedDate);
-      setError('');
-    }
+    setBirthDate(currentDate);
+    setError('');
   };
 
   const handleVerification = () => {
@@ -57,24 +56,6 @@ export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVeri
     setShowPicker(true);
   };
 
-  const termsContainer = (
-    <View style={styles.termsContainer}>
-      <Text style={styles.termsTitle}>Terms & Privacy</Text>
-      <Text style={styles.termsText}>
-        By continuing, you agree to our{' '}
-        <Link href="/terms" style={styles.termsLink}>Terms of Service</Link>
-        {' '}and{' '}
-        <Link href="/privacy" style={styles.termsLink}>Privacy Policy</Link>. 
-        All your information is encrypted and we will not share your personal 
-        information with anyone else. Your privacy and security are our top priority.
-      </Text>
-      
-      <Text style={styles.encryptionText}>
-        🔒 Everything is encrypted - Your data is secure
-      </Text>
-    </View>
-  );
-
   return (
     <Modal
       visible={isVisible}
@@ -89,32 +70,62 @@ export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVeri
             Please enter your date of birth to verify your age
           </Text>
 
-          <TouchableOpacity 
-            style={styles.dateButton}
-            onPress={showDatepicker}
-          >
-            <Text style={styles.dateButtonText}>
-              {format(birthDate, 'MMMM d, yyyy')}
-            </Text>
-          </TouchableOpacity>
+          {Platform.OS === 'ios' ? (
+            <View style={styles.datePickerContainer}>
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={birthDate}
+                mode="date"
+                display="spinner"
+                onChange={handleDateChange}
+                maximumDate={new Date()}
+                minimumDate={new Date(1900, 0, 1)}
+              />
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity 
+                style={styles.dateButton}
+                onPress={showDatepicker}
+              >
+                <Text style={styles.dateButtonText}>
+                  {format(birthDate, 'MMMM d, yyyy')}
+                </Text>
+              </TouchableOpacity>
 
-          {showPicker && (
-            <DateTimePicker
-              testID="dateTimePicker"
-              value={birthDate}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleDateChange}
-              maximumDate={new Date()}
-              minimumDate={new Date(1900, 0, 1)}
-            />
+              {showPicker && (
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  value={birthDate}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                  maximumDate={new Date()}
+                  minimumDate={new Date(1900, 0, 1)}
+                />
+              )}
+            </>
           )}
 
           {error ? (
             <Text style={styles.errorText}>{error}</Text>
           ) : null}
 
-          {termsContainer}
+          <View style={styles.termsContainer}>
+            <Text style={styles.termsTitle}>Terms & Privacy</Text>
+            <Text style={styles.termsText}>
+              By continuing, you agree to our{' '}
+              <Link href="/terms" style={styles.termsLink}>Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" style={styles.termsLink}>Privacy Policy</Link>. 
+              All your information is encrypted and we will not share your personal 
+              information with anyone else. Your privacy and security are our top priority.
+            </Text>
+            
+            <Text style={styles.encryptionText}>
+              🔒 Everything is encrypted - Your data is secure
+            </Text>
+          </View>
 
           <TouchableOpacity 
             style={styles.verifyButton}
@@ -154,6 +165,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     color: Colors.dark.text,
+  },
+  datePickerContainer: {
+    backgroundColor: Colors.dark.background,
+    borderRadius: 12,
+    marginBottom: 20,
+    overflow: 'hidden',
   },
   dateButton: {
     backgroundColor: Colors.dark.background,
