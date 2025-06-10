@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import Colors from '@/constants/colors';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import appInfo from '@/constants/appInfo';
@@ -16,6 +16,17 @@ export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVeri
   const [birthDate, setBirthDate] = useState<Date>(new Date(2000, 0, 1));
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
   const [error, setError] = useState('');
+  const [month, setMonth] = useState('');
+  const [day, setDay] = useState('');
+  const [year, setYear] = useState('');
+
+  useEffect(() => {
+    if (birthDate) {
+      setMonth(String(birthDate.getMonth() + 1).padStart(2, '0'));
+      setDay(String(birthDate.getDate()).padStart(2, '0'));
+      setYear(String(birthDate.getFullYear()));
+    }
+  }, [birthDate]);
 
   const calculateAge = (birthDate: Date) => {
     const today = new Date();
@@ -30,10 +41,12 @@ export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVeri
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    const currentDate = selectedDate || birthDate;
-    setShowPicker(Platform.OS === 'ios');
-    setBirthDate(currentDate);
-    setError('');
+    if (selectedDate) {
+      const currentDate = selectedDate || birthDate;
+      setShowPicker(Platform.OS === 'ios');
+      setBirthDate(currentDate);
+      setError('');
+    }
   };
 
   const handleVerification = () => {
@@ -69,6 +82,17 @@ export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVeri
           <Text style={styles.question}>
             Please enter your date of birth to verify your age
           </Text>
+
+          <View style={styles.dateDisplay}>
+            <Text style={styles.dateLabel}>Month</Text>
+            <Text style={styles.dateValue}>{month}</Text>
+            <Text style={styles.dateSeparator}>/</Text>
+            <Text style={styles.dateLabel}>Day</Text>
+            <Text style={styles.dateValue}>{day}</Text>
+            <Text style={styles.dateSeparator}>/</Text>
+            <Text style={styles.dateLabel}>Year</Text>
+            <Text style={styles.dateValue}>{year}</Text>
+          </View>
 
           {Platform.OS === 'ios' ? (
             <View style={styles.datePickerContainer}>
@@ -165,6 +189,30 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     color: Colors.dark.text,
+  },
+  dateDisplay: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: Colors.dark.background,
+    padding: 12,
+    borderRadius: 8,
+  },
+  dateLabel: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+    marginRight: 4,
+  },
+  dateValue: {
+    color: Colors.dark.text,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  dateSeparator: {
+    color: Colors.dark.subtext,
+    fontSize: 18,
+    marginHorizontal: 8,
   },
   datePickerContainer: {
     backgroundColor: Colors.dark.background,

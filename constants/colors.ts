@@ -1,4 +1,4 @@
-export default {
+const Colors = {
   dark: {
     background: '#0F0F0F',
     card: '#1A1A1A',
@@ -12,3 +12,5 @@ export default {
     border: '#2A2A2A',
   }
 };
+
+export default Colors;

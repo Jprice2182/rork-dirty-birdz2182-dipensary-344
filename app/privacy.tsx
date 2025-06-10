@@ -36,6 +36,12 @@ export default function PrivacyScreen() {
     ]
   };
 
+  const renderBulletPoints = (points: string[]) => {
+    return points.map((point, index) => (
+      <Text key={index} style={styles.text}>{`• ${point}`}</Text>
+    ));
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -55,14 +61,14 @@ export default function PrivacyScreen() {
         <Text style={styles.section}>1. Information We Collect</Text>
         <Text style={styles.text}>
           We collect information that you provide directly to us, including:
-          {bulletPoints.collect.map(point => `\n• ${point}`)}
         </Text>
+        {renderBulletPoints(bulletPoints.collect)}
 
         <Text style={styles.section}>2. How We Use Your Information</Text>
         <Text style={styles.text}>
           We use the information we collect to:
-          {bulletPoints.use.map(point => `\n• ${point}`)}
         </Text>
+        {renderBulletPoints(bulletPoints.use)}
 
         <Text style={styles.section}>3. Data Security</Text>
         <Text style={styles.text}>
@@ -72,14 +78,14 @@ export default function PrivacyScreen() {
         <Text style={styles.section}>4. Information Sharing</Text>
         <Text style={styles.text}>
           We do not sell your personal information. We share your information only with:
-          {bulletPoints.share.map(point => `\n• ${point}`)}
         </Text>
+        {renderBulletPoints(bulletPoints.share)}
 
         <Text style={styles.section}>5. Your Rights</Text>
         <Text style={styles.text}>
           You have the right to:
-          {bulletPoints.rights.map(point => `\n• ${point}`)}
         </Text>
+        {renderBulletPoints(bulletPoints.rights)}
 
         <Text style={styles.section}>6. Data Retention</Text>
         <Text style={styles.text}>
@@ -93,10 +99,10 @@ export default function PrivacyScreen() {
 
         <Text style={styles.section}>8. Contact Us</Text>
         <Text style={styles.text}>
-          If you have any questions about this Privacy Policy, please contact us at:{`\n`}
-          Email: {appInfo.supportEmail}{`\n`}
-          Phone: {appInfo.supportPhone}
+          If you have any questions about this Privacy Policy, please contact us at:
         </Text>
+        <Text style={styles.text}>Email: {appInfo.supportEmail}</Text>
+        <Text style={styles.text}>Phone: {appInfo.supportPhone}</Text>
 
         <Text style={styles.encryptionNote}>
           🔒 Your data is encrypted and secure
@@ -150,7 +156,7 @@ const styles = StyleSheet.create({
     color: Colors.dark.subtext,
     fontSize: 16,
     lineHeight: 24,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   encryptionNote: {
     color: Colors.dark.primary,

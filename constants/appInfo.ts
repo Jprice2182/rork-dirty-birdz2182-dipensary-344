@@ -1,4 +1,4 @@
-export default {
+const appInfo = {
   name: "Dirty Birdz2182",
   slogan: "Premium Cannabis Delivered",
   promoCode: "ATLANTA20",
@@ -33,3 +33,5 @@ export default {
   privacyPolicyUrl: "https://dirtybirdz2182.com/privacy",
   termsOfServiceUrl: "https://dirtybirdz2182.com/terms"
 };
+
+export default appInfo;

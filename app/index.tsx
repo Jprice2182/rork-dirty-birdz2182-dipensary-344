@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, Pressable, Image, Platform } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Calendar, LogIn, UserPlus } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -12,20 +12,25 @@ export default function Index() {
   const router = useRouter();
   const isVerified = useUserStore(state => state.isVerified);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const [showAgeVerification, setShowAgeVerification] = useState(!isVerified);
+  const [showAgeVerification, setShowAgeVerification] = useState(false);
+
+  useEffect(() => {
+    if (!isVerified) {
+      setShowAgeVerification(true);
+    }
+  }, [isVerified]);
 
   const handleVerification = useCallback(() => {
     setShowAgeVerification(false);
     useUserStore.getState().setVerified(true);
   }, []);
 
-  // If user is verified and authenticated, go to tabs
-  if (isVerified && isAuthenticated) {
-    router.replace('/(tabs)');
-    return null;
-  }
+  useEffect(() => {
+    if (isVerified && isAuthenticated) {
+      router.replace('/(tabs)');
+    }
+  }, [isVerified, isAuthenticated, router]);
 
-  // If user is verified but not authenticated, show auth options
   if (isVerified && !isAuthenticated) {
     return (
       <View style={styles.container}>
@@ -71,7 +76,6 @@ export default function Index() {
     );
   }
 
-  // If user is not verified, show age verification requirement
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
