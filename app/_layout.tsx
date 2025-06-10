@@ -62,22 +62,14 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const { isVerified } = useUserStore();
   const { isAuthenticated } = useAuthStore();
-  const [showVerification, setShowVerification] = useState(true);
-
-  // Only show verification modal if user is not verified
-  useEffect(() => {
-    if (isVerified) {
-      setShowVerification(false);
-    }
-  }, [isVerified]);
 
   // Handle back button press when age verification is showing
   useEffect(() => {
-    if (Platform.OS === 'android' && showVerification) {
+    if (Platform.OS === 'android' && !isVerified) {
       const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
         Alert.alert(
           "Exit App",
-          "Are you sure you want to exit?",
+          "You must verify your age to use this app. Are you sure you want to exit?",
           [
             { text: "Cancel", style: "cancel" },
             { text: "Exit", onPress: () => BackHandler.exitApp() }
@@ -88,7 +80,7 @@ function RootLayoutNav() {
 
       return () => backHandler.remove();
     }
-  }, [showVerification]);
+  }, [isVerified]);
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
@@ -178,7 +170,8 @@ function RootLayoutNav() {
           />
         </Stack>
         
-        <AgeVerificationModal visible={showVerification} />
+        {/* Show age verification modal globally if not verified */}
+        <AgeVerificationModal visible={!isVerified} />
       </QueryClientProvider>
     </trpc.Provider>
   );

@@ -28,26 +28,24 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
         <Sparkles size={12} color={Colors.dark.text} style={styles.sparkle2} />
       </View>
       
-      <Pressable 
-        style={({ pressed }) => [
-          styles.mainContent,
-          pressed && styles.pressed
-        ]}
-        onPress={handlePress}
-        accessibilityLabel="20% off first order promotion"
-        accessibilityRole="button"
-      >
-        <View style={styles.content}>
-          <View style={styles.iconContainer}>
-            <Tag size={20} color={Colors.dark.text} />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
-            <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
-            <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
-          </View>
+      <View style={styles.content}>
+        <View style={styles.iconContainer}>
+          <Tag size={20} color={Colors.dark.text} />
         </View>
-      </Pressable>
+        <Pressable 
+          style={({ pressed }) => [
+            styles.textContainer,
+            pressed && styles.pressed
+          ]}
+          onPress={handlePress}
+          accessibilityLabel="20% off first order promotion"
+          accessibilityRole="button"
+        >
+          <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
+          <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
+          <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
+        </Pressable>
+      </View>
       
       {onClose && (
         <Pressable 
@@ -79,6 +77,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+    padding: 18,
   },
   sparkleContainer: {
     position: 'absolute',
@@ -100,17 +99,10 @@ const styles = StyleSheet.create({
     left: 20,
     opacity: 0.5,
   },
-  mainContent: {
-    padding: 18,
-    paddingRight: 50,
-  },
-  pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
-  },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingRight: 40,
   },
   iconContainer: {
     width: 40,
@@ -123,6 +115,10 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+  },
+  pressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
   },
   title: {
     color: Colors.dark.text,

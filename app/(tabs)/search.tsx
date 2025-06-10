@@ -4,14 +4,22 @@ import { Search as SearchIcon, X, Filter } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { products, getProductCountsByCategory, validateProducts } from '@/mocks/products';
 import ProductCard from '@/components/ProductCard';
+import AgeVerificationModal from '@/components/AgeVerificationModal';
+import { useUserStore } from '@/store/userStore';
 import { Product } from '@/types/product';
 
 export default function SearchScreen() {
+  const { isVerified } = useUserStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Show age verification if not verified
+  if (!isVerified) {
+    return <AgeVerificationModal visible={true} />;
+  }
 
   // Memoize the search function to prevent unnecessary re-renders
   const searchProducts = useCallback((query: string): Product[] => {

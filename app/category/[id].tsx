@@ -5,18 +5,26 @@ import { ArrowLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { getProductsByCategory, getProductCountsByCategory, validateProducts } from '@/mocks/products';
 import ProductCard from '@/components/ProductCard';
+import AgeVerificationModal from '@/components/AgeVerificationModal';
 import { categories } from '@/constants/categories';
+import { useUserStore } from '@/store/userStore';
 import { Product } from '@/types/product';
 
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { isVerified } = useUserStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const category = categories.find(cat => cat.id === id);
+
+  // Show age verification if not verified
+  if (!isVerified) {
+    return <AgeVerificationModal visible={true} />;
+  }
 
   const loadProducts = useCallback(async () => {
     try {

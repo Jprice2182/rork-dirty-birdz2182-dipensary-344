@@ -100,7 +100,7 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
       return;
     }
     
-    // Age verified
+    // Age verified - set verified status
     setVerified(true);
   };
 
@@ -146,6 +146,11 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
   let monthInputRef: TextInput | null = null;
   let yearInputRef: TextInput | null = null;
 
+  // Don't render if not visible
+  if (!visible) {
+    return null;
+  }
+
   return (
     <Modal
       animationType="fade"
@@ -158,12 +163,12 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
           <View style={styles.modalView}>
             <Calendar size={40} color={Colors.dark.primary} style={styles.icon} />
             
-            <Text style={styles.title}>Age Verification</Text>
+            <Text style={styles.title}>Age Verification Required</Text>
             <Text style={styles.subtitle}>
               Welcome to {appInfo.name}
             </Text>
             <Text style={styles.description}>
-              You must be 21 years or older to access this app.
+              You must be 21 years or older to access this app. Please verify your age to continue.
             </Text>
             
             <Text style={styles.label}>Enter your date of birth:</Text>
@@ -219,7 +224,7 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
             </Pressable>
             
             <Text style={styles.disclaimer}>
-              By entering, you agree to our Terms of Service and Privacy Policy.
+              By entering, you agree to our Terms of Service and Privacy Policy. This app is only for users 21 years and older.
             </Text>
           </View>
         ) : (
@@ -237,7 +242,7 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
             />
             
             <Text style={styles.errorMessage}>
-              We apologize, but due to legal requirements, we cannot allow users under 21 to access this application.
+              We apologize, but due to legal requirements, we cannot allow users under 21 to access this application. This app contains content related to cannabis products which are restricted to adults 21 and older.
             </Text>
             
             <Pressable
@@ -252,8 +257,8 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
                 
                 if (Platform.OS === 'android') {
                   Alert.alert(
-                    "Exit App",
-                    "This app is only for users 21 and older.",
+                    "Age Verification Required",
+                    "This app is only for users 21 and older. Please verify your correct age.",
                     [{ text: "OK" }]
                   );
                 }
@@ -273,10 +278,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    padding: 20,
   },
   modalView: {
-    width: '85%',
+    width: '100%',
+    maxWidth: 400,
     backgroundColor: Colors.dark.card,
     borderRadius: 20,
     padding: 24,
@@ -291,7 +298,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   errorModalView: {
-    width: '85%',
+    width: '100%',
+    maxWidth: 400,
     backgroundColor: Colors.dark.card,
     borderRadius: 20,
     padding: 24,
@@ -330,6 +338,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 24,
     textAlign: 'center',
+    lineHeight: 22,
   },
   errorTitle: {
     color: Colors.dark.error,
@@ -363,6 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     alignSelf: 'flex-start',
     marginBottom: 8,
+    fontWeight: '600',
   },
   dateInputContainer: {
     flexDirection: 'row',
@@ -435,5 +445,6 @@ const styles = StyleSheet.create({
     color: Colors.dark.subtext,
     fontSize: 12,
     textAlign: 'center',
+    lineHeight: 16,
   },
 });

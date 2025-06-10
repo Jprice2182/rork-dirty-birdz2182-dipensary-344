@@ -1,37 +1,30 @@
-export const categories = [
+import { Flower, Cigarette, Cookie, Zap } from 'lucide-react-native';
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: any;
+}
+
+export const categories: Category[] = [
   {
     id: '1',
     name: 'Flower',
-    icon: 'flower',
+    icon: Flower,
   },
   {
     id: '2',
     name: 'Pre-Rolls',
-    icon: 'cigarette',
+    icon: Cigarette,
   },
   {
     id: '3',
     name: 'Edibles',
-    icon: 'candy',
+    icon: Cookie,
   },
   {
     id: '4',
     name: 'Vapes',
-    icon: 'zap',
-  },
-  {
-    id: '5',
-    name: 'Concentrates',
-    icon: 'droplets',
-  },
-  {
-    id: '6',
-    name: 'Accessories',
-    icon: 'package',
-  },
-  {
-    id: '7',
-    name: 'Topicals',
-    icon: 'droplet',
+    icon: Zap,
   },
 ];

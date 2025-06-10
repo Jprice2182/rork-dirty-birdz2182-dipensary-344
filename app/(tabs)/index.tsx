@@ -6,6 +6,7 @@ import Colors from '@/constants/colors';
 import { categories } from '@/constants/categories';
 import CategoryCard from '@/components/CategoryCard';
 import DiscountBanner from '@/components/DiscountBanner';
+import AgeVerificationModal from '@/components/AgeVerificationModal';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
 import { getProductCountsByCategory, validateProducts } from '@/mocks/products';
@@ -14,9 +15,14 @@ import appInfo from '@/constants/appInfo';
 export default function HomeScreen() {
   const router = useRouter();
   const cartItemsCount = useCartStore(state => state.getCartItemsCount());
-  const { isNewUser, hasUsedDiscount, name, markAsExistingUser } = useUserStore();
+  const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified } = useUserStore();
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Show age verification if not verified
+  if (!isVerified) {
+    return <AgeVerificationModal visible={true} />;
+  }
 
   // Validate products and cart on mount
   useEffect(() => {

@@ -99,6 +99,7 @@ export const useUserStore = create<UserState>()(
       
       setVerified: (verified: boolean) => {
         const now = new Date().toISOString();
+        console.log('Setting user verification status:', verified);
         set({ isVerified: verified, lastUpdated: now });
       },
       
@@ -290,6 +291,7 @@ export const useUserStore = create<UserState>()(
       },
       
       resetUserData: () => {
+        console.log('Resetting user data to initial state');
         set(initialState);
       },
     }),

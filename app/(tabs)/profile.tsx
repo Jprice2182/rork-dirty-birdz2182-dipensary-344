@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable, TextInput, Alert, Platform, Image, RefreshControl } from 'react-native';
-import { User, MapPin, LogOut, ChevronRight, Edit2, Star, MessageSquare, Mail, Fingerprint, Scan, Trash2, Calendar, Bell, Gift, Camera } from 'lucide-react-native';
+import { User, MapPin, LogOut, ChevronRight, Edit2, Star, MessageSquare, Mail, Fingerprint, Scan, Trash2, Calendar, Bell, Gift, Camera, Lock } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useUserStore } from '@/store/userStore';
 import { useAuthStore } from '@/store/authStore';
@@ -12,6 +12,7 @@ import AddressModal from '@/components/AddressModal';
 import UserAvatarSelector from '@/components/UserAvatarSelector';
 import NotificationPreferencesModal from '@/components/NotificationPreferencesModal';
 import BirthdayPromotionModal from '@/components/BirthdayPromotionModal';
+import AgeVerificationModal from '@/components/AgeVerificationModal';
 import appInfo from '@/constants/appInfo';
 import { useRouter } from 'expo-router';
 
@@ -27,7 +28,8 @@ export default function ProfileScreen() {
     appRating,
     reviews,
     avatars,
-    birthday
+    birthday,
+    isVerified
   } = useUserStore();
   
   const { 
@@ -48,12 +50,20 @@ export default function ProfileScreen() {
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
   const [showBirthdayPromotion, setShowBirthdayPromotion] = useState(false);
+  const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [editAddressIndex, setEditAddressIndex] = useState<number | undefined>(undefined);
   const [biometricInfo, setBiometricInfo] = useState<{
     available: boolean;
     biometryType: string | null;
   }>({ available: false, biometryType: null });
   const [refreshing, setRefreshing] = useState(false);
+
+  // Check age verification on mount
+  useEffect(() => {
+    if (!isVerified) {
+      setShowAgeVerification(true);
+    }
+  }, [isVerified]);
 
   // Check biometric availability
   React.useEffect(() => {
@@ -129,6 +139,11 @@ export default function ProfileScreen() {
       setRefreshing(false);
     }, 1000);
   }, []);
+
+  // Show age verification modal if not verified
+  if (!isVerified) {
+    return <AgeVerificationModal visible={true} />;
+  }
 
   return (
     <ScrollView 
@@ -447,12 +462,13 @@ export default function ProfileScreen() {
         visible={showBirthdayPromotion}
         onClose={() => setShowBirthdayPromotion(false)}
       />
+
+      <AgeVerificationModal
+        visible={showAgeVerification}
+      />
     </ScrollView>
   );
 }
-
-// Add Lock icon import
-import { Lock } from 'lucide-react-native';
 
 const styles = StyleSheet.create({
   container: {
