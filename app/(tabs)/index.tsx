@@ -18,19 +18,14 @@ export default function HomeScreen() {
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Validate products and cart on mount
   useEffect(() => {
-    console.log('HomeScreen: Component mounted, isVerified =', isVerified);
-    
     const validation = validateProducts();
     if (!validation.valid) {
       console.warn('Product validation errors:', validation.errors);
     }
 
-    // Validate cart
     useCartStore.getState().validateCart();
 
-    // Log product counts for debugging
     const counts = getProductCountsByCategory();
     console.log('Product counts by category on mount:', counts);
   }, [isVerified]);
@@ -41,7 +36,6 @@ export default function HomeScreen() {
 
   const handleCloseBanner = useCallback(() => {
     setShowDiscountBanner(false);
-    // Mark user as no longer new when they dismiss the banner
     if (isNewUser) {
       markAsExistingUser();
     }
@@ -50,25 +44,17 @@ export default function HomeScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      console.log('Refreshing home screen data...');
-      
-      // Simulate refreshing data - in a real app, you'd fetch fresh data here
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Validate products after refresh
       const validation = validateProducts();
       if (!validation.valid) {
         console.warn('Product validation errors after refresh:', validation.errors);
       }
       
-      // Log product counts for debugging
       const counts = getProductCountsByCategory();
       console.log('Product counts after refresh:', counts);
       
-      // Refresh cart to ensure consistency
       await useCartStore.getState().refreshCart();
-      
-      console.log('Home screen refresh completed');
       
     } catch (error) {
       console.error('Error refreshing home screen data:', error);
@@ -82,10 +68,7 @@ export default function HomeScreen() {
     }
   }, []);
 
-  // Show discount banner only for new users who haven't used discount and haven't dismissed it
   const shouldShowDiscountBanner = isNewUser && !hasUsedDiscount && showDiscountBanner;
-
-  console.log('HomeScreen: Rendering home screen, isVerified =', isVerified);
 
   return (
     <View style={styles.container}>

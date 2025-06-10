@@ -28,7 +28,6 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
         <Sparkles size={12} color={Colors.dark.text} style={styles.sparkle2} />
       </View>
       
-      {/* Close button positioned absolutely outside the main pressable */}
       {onClose && (
         <View style={styles.closeButtonContainer}>
           <Pressable 
@@ -43,7 +42,6 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
         </View>
       )}
       
-      {/* Main content pressable - completely separate from close button */}
       <Pressable 
         style={({ pressed }) => [
           styles.mainContent,
@@ -121,7 +119,7 @@ const styles = StyleSheet.create({
   mainContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 40, // Space for close button
+    paddingRight: 40,
   },
   pressed: {
     opacity: 0.9,

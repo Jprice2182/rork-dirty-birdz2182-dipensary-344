@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
 import Colors from '@/constants/colors';
 import appInfo from '@/constants/appInfo';
@@ -10,12 +11,10 @@ interface AgeVerificationModalProps {
 
 export default function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVerificationModalProps) {
   const handleYes = () => {
-    console.log('AgeVerificationModal: User confirmed they are of age');
     onVerified();
   };
 
   const handleNo = () => {
-    console.log('AgeVerificationModal: User denied being of age');
     onClose();
   };
 

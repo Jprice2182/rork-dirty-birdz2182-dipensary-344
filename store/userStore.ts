@@ -99,7 +99,6 @@ export const useUserStore = create<UserState>()(
       
       setVerified: (verified: boolean) => {
         const now = new Date().toISOString();
-        console.log('UserStore: Setting user verification status:', verified);
         set({ isVerified: verified, lastUpdated: now });
       },
       
@@ -129,7 +128,7 @@ export const useUserStore = create<UserState>()(
         const now = new Date().toISOString();
         set((state) => {
           if (index < 0 || index >= state.addresses.length) {
-            return state; // Invalid index, no change
+            return state;
           }
           
           const newAddresses = [...state.addresses];
@@ -154,7 +153,7 @@ export const useUserStore = create<UserState>()(
         const now = new Date().toISOString();
         set((state) => {
           if (index < 0 || index >= state.addresses.length) {
-            return state; // Invalid index, no change
+            return state;
           }
           
           const newAddresses = [...state.addresses];
@@ -167,7 +166,7 @@ export const useUserStore = create<UserState>()(
         const now = new Date().toISOString();
         set((state) => {
           if (index < 0 || index >= state.addresses.length) {
-            return state; // Invalid index, no change
+            return state;
           }
           return { selectedAddressIndex: index, lastUpdated: now };
         });
@@ -264,7 +263,6 @@ export const useUserStore = create<UserState>()(
         if (id.trim()) {
           set((state) => {
             const filteredAvatars = state.avatars.filter(avatar => avatar.id !== id);
-            // If we removed the selected avatar, select the first one if available
             if (state.avatars.find(a => a.id === id)?.isSelected && filteredAvatars.length > 0) {
               filteredAvatars[0].isSelected = true;
             }
@@ -285,13 +283,11 @@ export const useUserStore = create<UserState>()(
       },
       
       refreshUserData: async () => {
-        // In a real app, you would fetch fresh user data from server
         const now = new Date().toISOString();
         set({ lastUpdated: now });
       },
       
       resetUserData: () => {
-        console.log('UserStore: Resetting user data to initial state');
         set(initialState);
       },
     }),
