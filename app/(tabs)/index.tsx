@@ -6,7 +6,6 @@ import Colors from '@/constants/colors';
 import { categories } from '@/constants/categories';
 import CategoryCard from '@/components/CategoryCard';
 import DiscountBanner from '@/components/DiscountBanner';
-import AgeVerificationModal from '@/components/AgeVerificationModal';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
 import { getProductCountsByCategory, validateProducts } from '@/mocks/products';
@@ -91,7 +90,7 @@ export default function HomeScreen() {
 
   // Don't render main content if age is not verified
   if (!isVerified) {
-    return null; // Age verification modal will be shown by _layout.tsx
+    return null; // Age verification will be handled by index.tsx
   }
 
   return (

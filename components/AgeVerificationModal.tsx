@@ -7,9 +7,10 @@ import appInfo from '@/constants/appInfo';
 
 interface AgeVerificationModalProps {
   visible: boolean;
+  onClose?: () => void;
 }
 
-export default function AgeVerificationModal({ visible }: AgeVerificationModalProps) {
+export default function AgeVerificationModal({ visible, onClose }: AgeVerificationModalProps) {
   const [day, setDay] = useState('');
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
@@ -103,6 +104,7 @@ export default function AgeVerificationModal({ visible }: AgeVerificationModalPr
     // Age verified - set verified status
     console.log('Age verification successful, setting verified to true');
     setVerified(true);
+    onClose?.();
   };
 
   // Handle text input changes with validation

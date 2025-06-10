@@ -30,18 +30,20 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
       
       {/* Close button positioned absolutely outside the main pressable */}
       {onClose && (
-        <Pressable 
-          style={styles.closeButton} 
-          onPress={handleClose}
-          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-          accessibilityLabel="Close promotion banner"
-          accessibilityRole="button"
-        >
-          <X size={16} color={Colors.dark.text} />
-        </Pressable>
+        <View style={styles.closeButtonContainer}>
+          <Pressable 
+            style={styles.closeButton} 
+            onPress={handleClose}
+            hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+            accessibilityLabel="Close promotion banner"
+            accessibilityRole="button"
+          >
+            <X size={16} color={Colors.dark.text} />
+          </Pressable>
+        </View>
       )}
       
-      {/* Main content pressable - no longer contains the close button */}
+      {/* Main content pressable - completely separate from close button */}
       <Pressable 
         style={({ pressed }) => [
           styles.mainContent,
@@ -101,6 +103,21 @@ const styles = StyleSheet.create({
     left: 20,
     opacity: 0.5,
   },
+  closeButtonContainer: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    zIndex: 10,
+    pointerEvents: 'box-none',
+  },
+  closeButton: {
+    width: 28,
+    height: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 14,
+  },
   mainContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,17 +158,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.9,
     fontWeight: '500',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 14,
-    right: 14,
-    width: 28,
-    height: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 14,
-    zIndex: 10,
   },
 });

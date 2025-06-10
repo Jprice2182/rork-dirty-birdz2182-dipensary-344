@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { useUserStore } from "@/store/userStore";
 import { useAuthStore } from "@/store/authStore";
-import AgeVerificationModal from "@/components/AgeVerificationModal";
 import Colors from "@/constants/colors";
 import { BackHandler, Alert, Platform } from "react-native";
 import appInfo from "@/constants/appInfo";
@@ -14,7 +13,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 export const unstable_settings = {
-  initialRouteName: "(tabs)",
+  initialRouteName: "index",
 };
 
 // Create a client
@@ -101,6 +100,7 @@ function RootLayoutNav() {
             headerBackTitle: "Back",
           }}
         >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen 
             name="product/[id]" 
@@ -163,9 +163,6 @@ function RootLayoutNav() {
             }} 
           />
         </Stack>
-        
-        {/* Show age verification modal globally if not verified */}
-        <AgeVerificationModal visible={!isVerified} />
       </QueryClientProvider>
     </trpc.Provider>
   );

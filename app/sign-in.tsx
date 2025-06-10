@@ -25,7 +25,15 @@ export default function SignInScreen() {
     useBiometrics
   } = useAuthStore();
   
-  const { setVerified } = useUserStore();
+  const { isVerified } = useUserStore();
+
+  // Redirect if not verified
+  useEffect(() => {
+    if (!isVerified) {
+      router.replace('/');
+      return;
+    }
+  }, [isVerified, router]);
 
   useEffect(() => {
     const checkBiometrics = async () => {
@@ -53,8 +61,7 @@ export default function SignInScreen() {
       const success = await signIn(email.trim(), password);
       
       if (success) {
-        setVerified(true);
-        router.replace('/');
+        router.replace('/(tabs)');
       } else {
         setError('Invalid email or password');
       }
@@ -76,8 +83,7 @@ export default function SignInScreen() {
       const success = await authenticateWithBiometrics();
       
       if (success) {
-        setVerified(true);
-        router.replace('/');
+        router.replace('/(tabs)');
       } else {
         setError('Biometric authentication failed');
       }
@@ -102,6 +108,11 @@ export default function SignInScreen() {
 
   const isFormValid = email.trim().length > 0 && password.trim().length > 0;
   const showBiometricButton = Platform.OS !== 'web' && biometricInfo.available && useBiometrics;
+
+  // Don't render if not verified
+  if (!isVerified) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Mail, Lock, User, ArrowLeft } from 'lucide-react-native';
@@ -16,7 +16,15 @@ export default function SignUpScreen() {
   const [error, setError] = useState('');
   
   const { signIn } = useAuthStore();
-  const { updateUserInfo, setVerified } = useUserStore();
+  const { updateUserInfo, isVerified } = useUserStore();
+
+  // Redirect if not verified
+  useEffect(() => {
+    if (!isVerified) {
+      router.replace('/');
+      return;
+    }
+  }, [isVerified, router]);
 
   const handleSignUp = async () => {
     setError('');
@@ -47,8 +55,7 @@ export default function SignUpScreen() {
       const success = await signIn(email, password);
       
       if (success) {
-        setVerified(true);
-        router.replace('/');
+        router.replace('/(tabs)');
       } else {
         setError('Failed to create account');
       }
@@ -59,6 +66,11 @@ export default function SignUpScreen() {
       setIsLoading(false);
     }
   };
+
+  // Don't render if not verified
+  if (!isVerified) {
+    return null;
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
