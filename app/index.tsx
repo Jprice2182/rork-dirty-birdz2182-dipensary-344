@@ -1,4 +1,8 @@
-// Previous imports remain the same...
+import { useEffect, useCallback } from 'react';
+import { useRouter } from 'expo-router';
+import { useUserStore } from '@/store/userStore';
+import { useAuthStore } from '@/store/authStore';
+import { AgeVerificationModal } from '@/components/AgeVerificationModal';
 
 export default function Index() {
   const router = useRouter();
@@ -7,7 +11,6 @@ export default function Index() {
   const [showAgeVerification, setShowAgeVerification] = useState(false);
 
   useEffect(() => {
-    // Move state update to useEffect to avoid render cycle issues
     if (!isVerified) {
       setShowAgeVerification(true);
     }
@@ -24,4 +27,11 @@ export default function Index() {
     }
   }, [isVerified, isAuthenticated, router]);
 
-  // Rest of the component remains the same...
+  return (
+    <AgeVerificationModal 
+      isVisible={showAgeVerification}
+      onClose={() => setShowAgeVerification(false)}
+      onVerified={handleVerification}
+    />
+  );
+}
