@@ -1,7 +1,10 @@
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import Colors from '@/constants/colors';
 import { useState } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
+import appInfo from '@/constants/appInfo';
 
 type AgeVerificationModalProps = {
   isVisible: boolean;
@@ -10,12 +13,48 @@ type AgeVerificationModalProps = {
 };
 
 export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVerificationModalProps) {
-  const [isOver21, setIsOver21] = useState<boolean | null>(null);
+  const [birthDate, setBirthDate] = useState<Date>(new Date(2000, 0, 1));
+  const [showPicker, setShowPicker] = useState(false);
+  const [error, setError] = useState('');
+
+  const calculateAge = (birthDate: Date) => {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowPicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setBirthDate(selectedDate);
+      setError('');
+    }
+  };
 
   const handleVerification = () => {
-    if (isOver21) {
-      onVerified();
+    const age = calculateAge(birthDate);
+    
+    if (age < appInfo.minAge) {
+      setError(`Sorry, you must be ${appInfo.minAge} or older to use this app`);
+      return;
     }
+    
+    if (age > 100) {
+      setError('Please enter a valid birth date');
+      return;
+    }
+    
+    onVerified();
+  };
+
+  const showDatepicker = () => {
+    setShowPicker(true);
   };
 
   const termsContainer = (
@@ -46,40 +85,42 @@ export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVeri
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>Age Verification</Text>
-          <Text style={styles.question}>Are you 21 or older?</Text>
+          <Text style={styles.question}>
+            Please enter your date of birth to verify your age
+          </Text>
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={[
-                styles.button,
-                isOver21 === true && styles.selectedButton
-              ]}
-              onPress={() => setIsOver21(true)}
-            >
-              <Text style={styles.buttonText}>Yes</Text>
-            </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.dateButton}
+            onPress={showDatepicker}
+          >
+            <Text style={styles.dateButtonText}>
+              {format(birthDate, 'MMMM d, yyyy')}
+            </Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[
-                styles.button,
-                isOver21 === false && styles.selectedButton
-              ]}
-              onPress={() => setIsOver21(false)}
-            >
-              <Text style={styles.buttonText}>No</Text>
-            </TouchableOpacity>
-          </View>
+          {showPicker && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={birthDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleDateChange}
+              maximumDate={new Date()}
+              minimumDate={new Date(1900, 0, 1)}
+            />
+          )}
+
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : null}
 
           {termsContainer}
 
           <TouchableOpacity 
-            style={[styles.verifyButton, !isOver21 && styles.disabledButton]}
+            style={styles.verifyButton}
             onPress={handleVerification}
-            disabled={!isOver21}
           >
-            <Text style={styles.verifyButtonText}>
-              {isOver21 === false ? "Sorry, you must be 21+" : "Continue"}
-            </Text>
+            <Text style={styles.verifyButtonText}>Verify Age</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -95,7 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.dark.card,
     borderRadius: 20,
     padding: 20,
     width: '90%',
@@ -106,31 +147,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
+    color: Colors.dark.text,
   },
   question: {
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
+    color: Colors.dark.text,
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  dateButton: {
+    backgroundColor: Colors.dark.background,
+    padding: 16,
+    borderRadius: 12,
     marginBottom: 20,
+    alignItems: 'center',
   },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    backgroundColor: '#f0f0f0',
-    minWidth: 100,
-  },
-  selectedButton: {
-    backgroundColor: Colors.dark.primary,
-  },
-  buttonText: {
-    textAlign: 'center',
-    fontSize: 16,
+  dateButtonText: {
+    fontSize: 18,
+    color: Colors.dark.text,
     fontWeight: '600',
+  },
+  errorText: {
+    color: Colors.dark.error,
+    textAlign: 'center',
+    marginBottom: 20,
+    fontSize: 16,
   },
   termsContainer: {
     marginVertical: 20,
@@ -139,10 +180,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 10,
+    color: Colors.dark.text,
   },
   termsText: {
     fontSize: 14,
-    color: '#666',
+    color: Colors.dark.subtext,
     lineHeight: 20,
   },
   termsLink: {
@@ -151,7 +193,7 @@ const styles = StyleSheet.create({
   },
   encryptionText: {
     fontSize: 14,
-    color: '#666',
+    color: Colors.dark.subtext,
     marginTop: 10,
     textAlign: 'center',
   },
@@ -161,11 +203,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 10,
   },
-  disabledButton: {
-    backgroundColor: '#ccc',
-  },
   verifyButtonText: {
-    color: 'white',
+    color: Colors.dark.text,
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '600',
