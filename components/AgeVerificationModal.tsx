@@ -8,7 +8,7 @@ interface AgeVerificationModalProps {
   onVerified: () => void;
 }
 
-export function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVerificationModalProps) {
+export default function AgeVerificationModal({ isVisible, onClose, onVerified }: AgeVerificationModalProps) {
   const handleYes = () => {
     onVerified();
   };

@@ -5,7 +5,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useOrderStore, OrderItem } from '@/store/orderStore';
 import Colors from '@/constants/colors';
 import appInfo from '@/constants/appInfo';
-import { TipDriverModal } from '@/components/TipDriverModal';
+import TipDriverModal from '@/components/TipDriverModal';
 import { getProductById } from '@/mocks/products';
 
 export default function Checkout() {

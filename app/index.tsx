@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/store/userStore';
 import { useAuthStore } from '@/store/authStore';
-import { AgeVerificationModal } from '@/components/AgeVerificationModal';
+import AgeVerificationModal from '@/components/AgeVerificationModal';
 
 export default function Index() {
   const router = useRouter();

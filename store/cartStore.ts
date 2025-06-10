@@ -15,6 +15,7 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   lastUpdated: string | null;
+  total: number;
   addItem: (id: string) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -24,7 +25,6 @@ interface CartState {
   refreshCart: () => Promise<void>;
   resetCart: () => void;
   validateCart: () => void;
-  total: number;
 }
 
 export const useCartStore = create<CartState>()(
@@ -52,23 +52,29 @@ export const useCartStore = create<CartState>()(
         }
         
         if (existingItem) {
+          const newItems = items.map(item => 
+            item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+          );
+          const newTotal = get().getCartTotal();
           set({
-            items: items.map(item => 
-              item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-            ),
-            lastUpdated: now
+            items: newItems,
+            lastUpdated: now,
+            total: newTotal
           });
           console.log(`Updated quantity for product ${id}`);
         } else {
+          const newItems = [...items, { 
+            id, 
+            quantity: 1, 
+            addedAt: now,
+            name: product.name,
+            price: product.price
+          }];
+          const newTotal = get().getCartTotal();
           set({ 
-            items: [...items, { 
-              id, 
-              quantity: 1, 
-              addedAt: now,
-              name: product.name,
-              price: product.price
-            }],
-            lastUpdated: now
+            items: newItems,
+            lastUpdated: now,
+            total: newTotal
           });
           console.log(`Added new product ${id} to cart`);
         }
@@ -81,9 +87,12 @@ export const useCartStore = create<CartState>()(
         }
         
         const { items } = get();
+        const newItems = items.filter(item => item.id !== id);
+        const newTotal = get().getCartTotal();
         set({ 
-          items: items.filter(item => item.id !== id),
-          lastUpdated: new Date().toISOString()
+          items: newItems,
+          lastUpdated: new Date().toISOString(),
+          total: newTotal
         });
         console.log(`Removed product ${id} from cart`);
       },
@@ -103,9 +112,12 @@ export const useCartStore = create<CartState>()(
         const now = new Date().toISOString();
         
         if (quantity <= 0) {
+          const newItems = items.filter(item => item.id !== id);
+          const newTotal = get().getCartTotal();
           set({ 
-            items: items.filter(item => item.id !== id),
-            lastUpdated: now
+            items: newItems,
+            lastUpdated: now,
+            total: newTotal
           });
           console.log(`Removed product ${id} from cart (quantity 0)`);
         } else {
@@ -116,11 +128,14 @@ export const useCartStore = create<CartState>()(
             return;
           }
           
+          const newItems = items.map(item => 
+            item.id === id ? { ...item, quantity } : item
+          );
+          const newTotal = get().getCartTotal();
           set({
-            items: items.map(item => 
-              item.id === id ? { ...item, quantity } : item
-            ),
-            lastUpdated: now
+            items: newItems,
+            lastUpdated: now,
+            total: newTotal
           });
           console.log(`Updated quantity for product ${id} to ${quantity}`);
         }
@@ -129,7 +144,8 @@ export const useCartStore = create<CartState>()(
       clearCart: () => {
         set({ 
           items: [],
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
+          total: 0
         });
         console.log('Cart cleared');
       },
@@ -192,9 +208,11 @@ export const useCartStore = create<CartState>()(
             return true;
           });
           
+          const newTotal = get().getCartTotal();
           set({ 
             items: validItems,
-            lastUpdated: now 
+            lastUpdated: now,
+            total: newTotal
           });
           
           console.log(`Cart refreshed. ${validItems.length} valid items remaining.`);
@@ -221,7 +239,8 @@ export const useCartStore = create<CartState>()(
       resetCart: () => {
         set({
           items: [],
-          lastUpdated: null
+          lastUpdated: null,
+          total: 0
         });
         console.log('Cart reset to initial state');
       },
@@ -231,7 +250,8 @@ export const useCartStore = create<CartState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({ 
         items: state.items,
-        lastUpdated: state.lastUpdated
+        lastUpdated: state.lastUpdated,
+        total: state.total
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

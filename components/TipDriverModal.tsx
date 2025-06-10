@@ -9,12 +9,12 @@ interface TipDriverModalProps {
   orderTotal: number;
 }
 
-export const TipDriverModal: React.FC<TipDriverModalProps> = ({
+export default function TipDriverModal({
   isVisible,
   onClose,
   onSelectTip,
   orderTotal,
-}) => {
+}: TipDriverModalProps) {
   const [customTip, setCustomTip] = useState('');
 
   const tipOptions = [
@@ -99,7 +99,7 @@ export const TipDriverModal: React.FC<TipDriverModalProps> = ({
       </View>
     </Modal>
   );
-};
+}
 
 const styles = StyleSheet.create({
   overlay: {
