@@ -81,15 +81,18 @@ export default function Checkout() {
         {/* Order Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
-          {items.map((item) => {
+          {items.map((item, index) => {
             const product = getProductById(item.id);
             if (!product) return null;
             
             return (
-              <View key={`${item.id}-${item.quantity}`} style={styles.orderItem}>
+              <View key={`${item.id}-${index}`} style={styles.orderItem}>
                 <View style={styles.itemInfo}>
                   <Text style={styles.itemName}>{product.name}</Text>
                   <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+                  {item.variant && (
+                    <Text style={styles.itemVariant}>Variant: {item.variant}</Text>
+                  )}
                 </View>
                 <Text style={styles.itemPrice}>${(product.price * item.quantity).toFixed(2)}</Text>
               </View>
@@ -218,6 +221,11 @@ const styles = StyleSheet.create({
   },
   itemQuantity: {
     fontSize: 14,
+    color: Colors.dark.subtext,
+    marginTop: 2,
+  },
+  itemVariant: {
+    fontSize: 12,
     color: Colors.dark.subtext,
     marginTop: 2,
   },
