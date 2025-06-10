@@ -7,16 +7,7 @@ export default function Index() {
   const { isVerified } = useUserStore();
   const { isAuthenticated } = useAuthStore();
   
-  // Always show age verification first if not verified
-  if (!isVerified) {
-    return <Redirect href="/(tabs)" />;
-  }
-  
-  // If user is verified but not authenticated, redirect to sign in
-  if (!isAuthenticated) {
-    return <Redirect href="/sign-in" />;
-  }
-  
-  // If user is verified and authenticated, redirect to home
+  // Always redirect to tabs - age verification will be handled by the global modal
+  // This ensures the age verification modal shows up immediately
   return <Redirect href="/(tabs)" />;
 }

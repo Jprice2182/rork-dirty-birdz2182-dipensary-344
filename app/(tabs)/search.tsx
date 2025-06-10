@@ -10,16 +10,17 @@ import { Product } from '@/types/product';
 
 export default function SearchScreen() {
   const { isVerified } = useUserStore();
+
+  // Show age verification if not verified - this should be the first thing checked
+  if (!isVerified) {
+    return <AgeVerificationModal visible={true} />;
+  }
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // Show age verification if not verified
-  if (!isVerified) {
-    return <AgeVerificationModal visible={true} />;
-  }
 
   // Memoize the search function to prevent unnecessary re-renders
   const searchProducts = useCallback((query: string): Product[] => {

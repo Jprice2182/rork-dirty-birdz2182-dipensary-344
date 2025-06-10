@@ -28,36 +28,40 @@ export default function DiscountBanner({ onClose }: DiscountBannerProps) {
         <Sparkles size={12} color={Colors.dark.text} style={styles.sparkle2} />
       </View>
       
-      <Pressable 
-        style={({ pressed }) => [
-          styles.content,
-          pressed && styles.pressed
-        ]}
-        onPress={handlePress}
-        accessibilityLabel="20% off first order promotion"
-        accessibilityRole="button"
-      >
-        <View style={styles.iconContainer}>
-          <Tag size={20} color={Colors.dark.text} />
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
-          <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
-          <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
-        </View>
-      </Pressable>
-      
-      {onClose && (
+      <View style={styles.content}>
         <Pressable 
-          style={styles.closeButton} 
-          onPress={handleClose}
-          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-          accessibilityLabel="Close promotion banner"
+          style={({ pressed }) => [
+            styles.mainContent,
+            pressed && styles.pressed
+          ]}
+          onPress={handlePress}
+          accessibilityLabel="20% off first order promotion"
           accessibilityRole="button"
         >
-          <X size={16} color={Colors.dark.text} />
+          <View style={styles.iconContainer}>
+            <Tag size={20} color={Colors.dark.text} />
+          </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
+            <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
+            <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
+          </View>
         </Pressable>
-      )}
+        
+        {onClose && (
+          <View style={styles.closeButtonContainer}>
+            <Pressable 
+              style={styles.closeButton} 
+              onPress={handleClose}
+              hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+              accessibilityLabel="Close promotion banner"
+              accessibilityRole="button"
+            >
+              <X size={16} color={Colors.dark.text} />
+            </Pressable>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -102,6 +106,11 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  mainContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
     paddingRight: 40,
   },
   pressed: {
@@ -140,16 +149,18 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     fontWeight: '500',
   },
-  closeButton: {
+  closeButtonContainer: {
     position: 'absolute',
-    top: 14,
-    right: 14,
+    top: -4,
+    right: -4,
+    zIndex: 10,
+  },
+  closeButton: {
     width: 28,
     height: 28,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 14,
-    zIndex: 10,
   },
 });

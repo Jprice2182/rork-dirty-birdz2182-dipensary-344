@@ -38,6 +38,11 @@ export default function ProfileScreen() {
     useBiometrics
   } = useAuthStore();
 
+  // Show age verification if not verified - this should be the first thing checked
+  if (!isVerified) {
+    return <AgeVerificationModal visible={true} />;
+  }
+
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(name);
   const [editEmail, setEditEmail] = useState(email);
@@ -50,20 +55,12 @@ export default function ProfileScreen() {
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [showNotificationPreferences, setShowNotificationPreferences] = useState(false);
   const [showBirthdayPromotion, setShowBirthdayPromotion] = useState(false);
-  const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [editAddressIndex, setEditAddressIndex] = useState<number | undefined>(undefined);
   const [biometricInfo, setBiometricInfo] = useState<{
     available: boolean;
     biometryType: string | null;
   }>({ available: false, biometryType: null });
   const [refreshing, setRefreshing] = useState(false);
-
-  // Check age verification on mount
-  useEffect(() => {
-    if (!isVerified) {
-      setShowAgeVerification(true);
-    }
-  }, [isVerified]);
 
   // Check biometric availability
   React.useEffect(() => {
@@ -139,11 +136,6 @@ export default function ProfileScreen() {
       setRefreshing(false);
     }, 1000);
   }, []);
-
-  // Show age verification modal if not verified
-  if (!isVerified) {
-    return <AgeVerificationModal visible={true} />;
-  }
 
   return (
     <ScrollView 
@@ -461,10 +453,6 @@ export default function ProfileScreen() {
       <BirthdayPromotionModal
         visible={showBirthdayPromotion}
         onClose={() => setShowBirthdayPromotion(false)}
-      />
-
-      <AgeVerificationModal
-        visible={showAgeVerification}
       />
     </ScrollView>
   );
