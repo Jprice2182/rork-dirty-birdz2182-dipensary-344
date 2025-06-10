@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
-import { Flower, Cigarette, Candy, Zap, Droplets, Package, Droplet } from 'lucide-react-native';
+import { Flower, Cigarette, Candy, Zap, Droplets, Package, Droplet, Usb } from 'lucide-react-native';
 
 interface CategoryCardProps {
   id: string;
@@ -39,6 +39,8 @@ export default function CategoryCard({ id, name, icon }: CategoryCardProps) {
         return <Package {...iconProps} />;
       case 'droplet':
         return <Droplet {...iconProps} />;
+      case 'usb':
+        return <Usb {...iconProps} />;
       default:
         return <Package {...iconProps} />;
     }

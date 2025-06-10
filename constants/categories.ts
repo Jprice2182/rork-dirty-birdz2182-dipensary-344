@@ -1,4 +1,4 @@
-import { Flower, Cigarette, Cookie, Zap } from 'lucide-react-native';
+import { Flower, Cigarette, Cookie, Zap, Usb } from 'lucide-react-native';
 
 export interface Category {
   id: string;
@@ -26,5 +26,10 @@ export const categories: Category[] = [
     id: '4',
     name: 'Vapes',
     icon: Zap,
+  },
+  {
+    id: '20',
+    name: 'Vape Pens',
+    icon: Usb,
   },
 ];
