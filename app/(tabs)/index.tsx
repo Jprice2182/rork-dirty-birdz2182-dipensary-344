@@ -20,6 +20,8 @@ export default function HomeScreen() {
 
   // Validate products and cart on mount
   useEffect(() => {
+    console.log('HomeScreen: Component mounted, isVerified =', isVerified);
+    
     const validation = validateProducts();
     if (!validation.valid) {
       console.warn('Product validation errors:', validation.errors);
@@ -36,7 +38,7 @@ export default function HomeScreen() {
     // Log product counts for debugging
     const counts = getProductCountsByCategory();
     console.log('Product counts by category on mount:', counts);
-  }, []);
+  }, [isVerified]);
 
   const navigateToCart = useCallback(() => {
     router.push('/cart');
@@ -88,10 +90,8 @@ export default function HomeScreen() {
   // Show discount banner only for new users who haven't used discount and haven't dismissed it
   const shouldShowDiscountBanner = isNewUser && !hasUsedDiscount && showDiscountBanner;
 
-  // Don't render main content if age is not verified
-  if (!isVerified) {
-    return null; // Age verification will be handled by index.tsx
-  }
+  // Always render the home screen content - age verification is handled in index.tsx
+  console.log('HomeScreen: Rendering home screen, isVerified =', isVerified);
 
   return (
     <View style={styles.container}>

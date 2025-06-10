@@ -28,9 +28,10 @@ export default function Checkout() {
         console.warn(`Product with id ${item.id} not found`);
         return {
           id: item.id,
-          name: 'Unknown Product',
-          price: 0,
+          name: item.name || 'Unknown Product',
+          price: item.price || 0,
           quantity: item.quantity,
+          variant: item.variant,
         };
       }
       
@@ -83,18 +84,19 @@ export default function Checkout() {
           <Text style={styles.sectionTitle}>Order Summary</Text>
           {items.map((item, index) => {
             const product = getProductById(item.id);
-            if (!product) return null;
+            const itemName = product?.name || item.name || 'Unknown Product';
+            const itemPrice = product?.price || item.price || 0;
             
             return (
               <View key={`${item.id}-${index}`} style={styles.orderItem}>
                 <View style={styles.itemInfo}>
-                  <Text style={styles.itemName}>{product.name}</Text>
+                  <Text style={styles.itemName}>{itemName}</Text>
                   <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
                   {item.variant && (
                     <Text style={styles.itemVariant}>Variant: {item.variant}</Text>
                   )}
                 </View>
-                <Text style={styles.itemPrice}>${(product.price * item.quantity).toFixed(2)}</Text>
+                <Text style={styles.itemPrice}>${(itemPrice * item.quantity).toFixed(2)}</Text>
               </View>
             );
           })}

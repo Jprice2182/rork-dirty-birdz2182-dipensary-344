@@ -13,3 +13,20 @@ export interface Product {
   count?: string;
   volume?: string;
 }
+
+export interface CartItem {
+  id: string;
+  quantity: number;
+  addedAt?: string;
+  name?: string;
+  price?: number;
+  variant?: string;
+}
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  variant?: string;
+}

@@ -51,33 +51,29 @@ export const useCartStore = create<CartState>()(
           return;
         }
         
+        let newItems;
         if (existingItem) {
-          const newItems = items.map(item => 
+          newItems = items.map(item => 
             item.id === id ? { ...item, quantity: item.quantity + 1 } : item
           );
-          const newTotal = get().getCartTotal();
-          set({
-            items: newItems,
-            lastUpdated: now,
-            total: newTotal
-          });
           console.log(`Updated quantity for product ${id}`);
         } else {
-          const newItems = [...items, { 
+          newItems = [...items, { 
             id, 
             quantity: 1, 
             addedAt: now,
             name: product.name,
             price: product.price
           }];
-          const newTotal = get().getCartTotal();
-          set({ 
-            items: newItems,
-            lastUpdated: now,
-            total: newTotal
-          });
           console.log(`Added new product ${id} to cart`);
         }
+        
+        const newTotal = calculateTotal(newItems);
+        set({
+          items: newItems,
+          lastUpdated: now,
+          total: newTotal
+        });
       },
       
       removeItem: (id: string) => {
@@ -88,7 +84,7 @@ export const useCartStore = create<CartState>()(
         
         const { items } = get();
         const newItems = items.filter(item => item.id !== id);
-        const newTotal = get().getCartTotal();
+        const newTotal = calculateTotal(newItems);
         set({ 
           items: newItems,
           lastUpdated: new Date().toISOString(),
@@ -111,14 +107,9 @@ export const useCartStore = create<CartState>()(
         const { items } = get();
         const now = new Date().toISOString();
         
+        let newItems;
         if (quantity <= 0) {
-          const newItems = items.filter(item => item.id !== id);
-          const newTotal = get().getCartTotal();
-          set({ 
-            items: newItems,
-            lastUpdated: now,
-            total: newTotal
-          });
+          newItems = items.filter(item => item.id !== id);
           console.log(`Removed product ${id} from cart (quantity 0)`);
         } else {
           // Verify product exists before updating
@@ -128,17 +119,18 @@ export const useCartStore = create<CartState>()(
             return;
           }
           
-          const newItems = items.map(item => 
+          newItems = items.map(item => 
             item.id === id ? { ...item, quantity } : item
           );
-          const newTotal = get().getCartTotal();
-          set({
-            items: newItems,
-            lastUpdated: now,
-            total: newTotal
-          });
           console.log(`Updated quantity for product ${id} to ${quantity}`);
         }
+        
+        const newTotal = calculateTotal(newItems);
+        set({
+          items: newItems,
+          lastUpdated: now,
+          total: newTotal
+        });
       },
       
       clearCart: () => {
@@ -152,22 +144,7 @@ export const useCartStore = create<CartState>()(
       
       getCartTotal: () => {
         const { items } = get();
-        const total = items.reduce((sum, item) => {
-          const product = getProductById(item.id);
-          if (!product) {
-            console.warn(`Product with id ${item.id} not found in cart total calculation`);
-            return sum;
-          }
-          
-          if (typeof product.price !== 'number' || isNaN(product.price)) {
-            console.warn(`Invalid price for product ${item.id}:`, product.price);
-            return sum;
-          }
-          
-          return sum + (product.price * item.quantity);
-        }, 0);
-        
-        return Math.round(total * 100) / 100; // Round to 2 decimal places
+        return calculateTotal(items);
       },
       
       getCartItemsCount: () => {
@@ -208,7 +185,7 @@ export const useCartStore = create<CartState>()(
             return true;
           });
           
-          const newTotal = get().getCartTotal();
+          const newTotal = calculateTotal(validItems);
           set({ 
             items: validItems,
             lastUpdated: now,
@@ -262,3 +239,23 @@ export const useCartStore = create<CartState>()(
     }
   )
 );
+
+// Helper function to calculate total
+function calculateTotal(items: CartItem[]): number {
+  const total = items.reduce((sum, item) => {
+    const product = getProductById(item.id);
+    if (!product) {
+      console.warn(`Product with id ${item.id} not found in cart total calculation`);
+      return sum;
+    }
+    
+    if (typeof product.price !== 'number' || isNaN(product.price)) {
+      console.warn(`Invalid price for product ${item.id}:`, product.price);
+      return sum;
+    }
+    
+    return sum + (product.price * item.quantity);
+  }, 0);
+  
+  return Math.round(total * 100) / 100; // Round to 2 decimal places
+}
