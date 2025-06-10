@@ -1,7 +1,6 @@
+import React, { useState } from 'react';
 import { View, Text, Modal, Pressable, StyleSheet, TextInput } from 'react-native';
-import { useState } from 'react';
 import Colors from '@/constants/colors';
-import appInfo from '@/constants/appInfo';
 
 interface TipDriverModalProps {
   isVisible: boolean;
@@ -10,17 +9,23 @@ interface TipDriverModalProps {
   orderTotal: number;
 }
 
-export function TipDriverModal({ isVisible, onClose, onSelectTip, orderTotal }: TipDriverModalProps) {
+export const TipDriverModal: React.FC<TipDriverModalProps> = ({
+  isVisible,
+  onClose,
+  onSelectTip,
+  orderTotal,
+}) => {
   const [customTip, setCustomTip] = useState('');
-  const [selectedPercentage, setSelectedPercentage] = useState<number | null>(null);
-  
-  const tipPercentages = appInfo.defaultTipPercentages;
 
-  const handlePercentageTip = (percentage: number) => {
-    const tipAmount = (orderTotal * percentage) / 100;
-    setSelectedPercentage(percentage);
-    setCustomTip('');
-    onSelectTip(tipAmount);
+  const tipOptions = [
+    { label: '15%', amount: orderTotal * 0.15 },
+    { label: '18%', amount: orderTotal * 0.18 },
+    { label: '20%', amount: orderTotal * 0.20 },
+    { label: '25%', amount: orderTotal * 0.25 },
+  ];
+
+  const handleTipSelect = (amount: number) => {
+    onSelectTip(amount);
     onClose();
   };
 
@@ -39,49 +44,42 @@ export function TipDriverModal({ isVisible, onClose, onSelectTip, orderTotal }: 
 
   return (
     <Modal
-      animationType="slide"
-      transparent={true}
       visible={isVisible}
+      transparent
+      animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text style={styles.title}>Add a Tip</Text>
-          <Text style={styles.subtitle}>Show your appreciation for great service!</Text>
-          <Text style={styles.orderTotal}>Order Total: ${orderTotal.toFixed(2)}</Text>
-          
-          {/* Percentage Tips */}
-          <View style={styles.tipGrid}>
-            {tipPercentages.map((percentage) => {
-              const tipAmount = (orderTotal * percentage) / 100;
-              return (
-                <Pressable
-                  key={percentage}
-                  style={[
-                    styles.tipButton,
-                    selectedPercentage === percentage && styles.selectedTipButton
-                  ]}
-                  onPress={() => handlePercentageTip(percentage)}
-                >
-                  <Text style={styles.tipPercentage}>{percentage}%</Text>
-                  <Text style={styles.tipAmount}>${tipAmount.toFixed(2)}</Text>
-                </Pressable>
-              );
-            })}
+      <View style={styles.overlay}>
+        <View style={styles.modal}>
+          <Text style={styles.title}>Add Tip for Driver</Text>
+          <Text style={styles.subtitle}>
+            Show your appreciation for great service
+          </Text>
+
+          <View style={styles.tipOptions}>
+            {tipOptions.map((option, index) => (
+              <Pressable
+                key={index}
+                style={styles.tipOption}
+                onPress={() => handleTipSelect(option.amount)}
+              >
+                <Text style={styles.tipLabel}>{option.label}</Text>
+                <Text style={styles.tipAmount}>${option.amount.toFixed(2)}</Text>
+              </Pressable>
+            ))}
           </View>
 
-          {/* Custom Tip Input */}
           <View style={styles.customTipSection}>
             <Text style={styles.customTipLabel}>Custom Amount</Text>
-            <View style={styles.customTipContainer}>
+            <View style={styles.customTipInput}>
               <Text style={styles.dollarSign}>$</Text>
               <TextInput
-                style={styles.customTipInput}
+                style={styles.textInput}
                 value={customTip}
                 onChangeText={setCustomTip}
                 placeholder="0.00"
                 placeholderTextColor={Colors.dark.subtext}
-                keyboardType="decimal-pad"
+                keyboardType="numeric"
               />
               <Pressable style={styles.customTipButton} onPress={handleCustomTip}>
                 <Text style={styles.customTipButtonText}>Add</Text>
@@ -89,159 +87,137 @@ export function TipDriverModal({ isVisible, onClose, onSelectTip, orderTotal }: 
             </View>
           </View>
 
-          {/* Action Buttons */}
-          <View style={styles.actionButtons}>
+          <View style={styles.actions}>
             <Pressable style={styles.noTipButton} onPress={handleNoTip}>
               <Text style={styles.noTipText}>No Tip</Text>
             </Pressable>
-            
-            <Pressable style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeText}>Cancel</Text>
+            <Pressable style={styles.cancelButton} onPress={onClose}>
+              <Text style={styles.cancelText}>Cancel</Text>
             </Pressable>
           </View>
         </View>
       </View>
     </Modal>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  centeredView: {
+  overlay: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalView: {
-    width: '90%',
-    backgroundColor: Colors.dark.card,
-    borderRadius: 20,
     padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  },
+  modal: {
+    backgroundColor: Colors.dark.card,
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: Colors.dark.text,
+    textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.dark.subtext,
-    marginBottom: 8,
     textAlign: 'center',
+    marginBottom: 24,
   },
-  orderTotal: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.dark.primary,
-    marginBottom: 20,
+  tipOptions: {
+    gap: 12,
+    marginBottom: 24,
   },
-  tipGrid: {
+  tipOption: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 20,
-  },
-  tipButton: {
-    width: '48%',
-    backgroundColor: Colors.dark.border,
-    padding: 15,
-    borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    backgroundColor: Colors.dark.background,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
-  selectedTipButton: {
-    borderColor: Colors.dark.primary,
-    backgroundColor: Colors.dark.primary + '20',
-  },
-  tipPercentage: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  tipLabel: {
+    fontSize: 16,
+    fontWeight: '600',
     color: Colors.dark.text,
-    marginBottom: 4,
   },
   tipAmount: {
     fontSize: 16,
+    fontWeight: '600',
     color: Colors.dark.primary,
   },
   customTipSection: {
-    width: '100%',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   customTipLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: Colors.dark.text,
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  customTipContainer: {
+  customTipInput: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.dark.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    backgroundColor: Colors.dark.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+    paddingHorizontal: 16,
   },
   dollarSign: {
-    fontSize: 18,
+    fontSize: 16,
     color: Colors.dark.text,
     marginRight: 8,
   },
-  customTipInput: {
+  textInput: {
     flex: 1,
-    fontSize: 18,
+    fontSize: 16,
     color: Colors.dark.text,
-    paddingVertical: 12,
+    paddingVertical: 16,
   },
   customTipButton: {
     backgroundColor: Colors.dark.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 6,
-    marginLeft: 8,
+    borderRadius: 8,
   },
   customTipButtonText: {
     color: Colors.dark.text,
     fontWeight: '600',
   },
-  actionButtons: {
+  actions: {
     flexDirection: 'row',
-    width: '100%',
-    gap: 10,
+    gap: 12,
   },
   noTipButton: {
     flex: 1,
-    padding: 15,
-    borderRadius: 10,
-    backgroundColor: Colors.dark.border,
+    backgroundColor: Colors.dark.background,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   noTipText: {
     color: Colors.dark.text,
-    fontSize: 16,
     fontWeight: '600',
   },
-  closeButton: {
+  cancelButton: {
     flex: 1,
-    padding: 15,
-    borderRadius: 10,
     backgroundColor: Colors.dark.primary,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
   },
-  closeText: {
+  cancelText: {
     color: Colors.dark.text,
-    fontSize: 16,
     fontWeight: '600',
   },
 });

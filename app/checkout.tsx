@@ -2,22 +2,46 @@ import { View, Text, Pressable, StyleSheet, ScrollView, Alert } from 'react-nati
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useCartStore } from '@/store/cartStore';
-import { useOrderStore } from '@/store/orderStore';
+import { useOrderStore, OrderItem } from '@/store/orderStore';
 import Colors from '@/constants/colors';
 import appInfo from '@/constants/appInfo';
 import { TipDriverModal } from '@/components/TipDriverModal';
+import { getProductById } from '@/mocks/products';
 
 export default function Checkout() {
   const router = useRouter();
-  const { items, total, clearCart } = useCartStore();
+  const { items, getCartTotal, clearCart } = useCartStore();
   const { createOrder } = useOrderStore();
   const [showTipModal, setShowTipModal] = useState(false);
   const [selectedTip, setSelectedTip] = useState(0);
 
-  const subtotal = total;
+  const subtotal = getCartTotal();
   const deliveryFee = subtotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
   const tax = subtotal * 0.08; // 8% tax
   const finalTotal = subtotal + deliveryFee + tax + selectedTip;
+
+  // Convert cart items to order items with product details
+  const getOrderItems = (): OrderItem[] => {
+    return items.map(item => {
+      const product = getProductById(item.id);
+      if (!product) {
+        console.warn(`Product with id ${item.id} not found`);
+        return {
+          id: item.id,
+          name: 'Unknown Product',
+          price: 0,
+          quantity: item.quantity,
+        };
+      }
+      
+      return {
+        id: item.id,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity,
+      };
+    }).filter(item => item.price > 0); // Filter out unknown products
+  };
 
   const handlePlaceOrder = () => {
     if (items.length === 0) {
@@ -25,8 +49,14 @@ export default function Checkout() {
       return;
     }
 
+    const orderItems = getOrderItems();
+    if (orderItems.length === 0) {
+      Alert.alert('Error', 'No valid items in cart');
+      return;
+    }
+
     const orderId = createOrder({
-      items,
+      items: orderItems,
       subtotal,
       deliveryFee,
       tax,
@@ -50,18 +80,20 @@ export default function Checkout() {
         {/* Order Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
-          {items.map((item) => (
-            <View key={`${item.id}-${item.variant || 'default'}`} style={styles.orderItem}>
-              <View style={styles.itemInfo}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                {item.variant && (
-                  <Text style={styles.itemVariant}>{item.variant}</Text>
-                )}
-                <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+          {items.map((item) => {
+            const product = getProductById(item.id);
+            if (!product) return null;
+            
+            return (
+              <View key={`${item.id}-${item.quantity}`} style={styles.orderItem}>
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemName}>{product.name}</Text>
+                  <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+                </View>
+                <Text style={styles.itemPrice}>${(product.price * item.quantity).toFixed(2)}</Text>
               </View>
-              <Text style={styles.itemPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         {/* Pricing Breakdown */}
@@ -182,11 +214,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: Colors.dark.text,
-  },
-  itemVariant: {
-    fontSize: 14,
-    color: Colors.dark.subtext,
-    marginTop: 2,
   },
   itemQuantity: {
     fontSize: 14,
