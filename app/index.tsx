@@ -66,7 +66,7 @@ export default function Index() {
     );
   }
 
-  // If user is not verified, show age verification
+  // If user is not verified, show age verification requirement
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>

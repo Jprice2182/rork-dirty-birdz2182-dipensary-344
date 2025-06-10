@@ -4,7 +4,7 @@ export default {
     card: '#1A1A1A',
     text: '#FFFFFF',
     subtext: '#B0B0B0',
-    primary: '#FF6B00', // Orange accent
+    primary: '#10B981', // Emerald green accent
     secondary: '#4ECDC4', // Teal accent
     success: '#2ECC71',
     warning: '#F39C12',

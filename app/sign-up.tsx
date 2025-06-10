@@ -18,7 +18,7 @@ export default function SignUpScreen() {
   const { signIn } = useAuthStore();
   const { updateUserInfo, isVerified } = useUserStore();
 
-  // Redirect if not verified
+  // Redirect if not verified - must verify age first
   useEffect(() => {
     if (!isVerified) {
       router.replace('/');
@@ -67,7 +67,7 @@ export default function SignUpScreen() {
     }
   };
 
-  // Don't render if not verified
+  // Don't render if not verified - age verification required first
   if (!isVerified) {
     return null;
   }

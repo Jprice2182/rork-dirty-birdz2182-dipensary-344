@@ -16,6 +16,7 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
   const [year, setYear] = useState('');
   const [error, setError] = useState('');
   const [underageError, setUnderageError] = useState(false);
+  const [showDateInputs, setShowDateInputs] = useState(false);
   
   const { setVerified } = useUserStore();
 
@@ -27,6 +28,7 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
       setYear('');
       setError('');
       setUnderageError(false);
+      setShowDateInputs(false);
     }
   }, [visible]);
 
@@ -174,61 +176,90 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
               You must be 21 years or older to access this app. Please verify your age to continue.
             </Text>
             
-            <Text style={styles.label}>Enter your date of birth:</Text>
-            
-            <View style={styles.dateInputContainer}>
-              <TextInput
-                style={styles.dateInput}
-                placeholder="DD"
-                placeholderTextColor={Colors.dark.subtext}
-                keyboardType="number-pad"
-                maxLength={2}
-                value={day}
-                onChangeText={handleDayChange}
-                onEndEditing={(e) => handleDayComplete(e.nativeEvent.text)}
-                returnKeyType="next"
-              />
-              <Text style={styles.dateSeparator}>/</Text>
-              <TextInput
-                ref={(ref) => { monthInputRef = ref; }}
-                style={styles.dateInput}
-                placeholder="MM"
-                placeholderTextColor={Colors.dark.subtext}
-                keyboardType="number-pad"
-                maxLength={2}
-                value={month}
-                onChangeText={handleMonthChange}
-                onEndEditing={(e) => handleMonthComplete(e.nativeEvent.text)}
-                returnKeyType="next"
-              />
-              <Text style={styles.dateSeparator}>/</Text>
-              <TextInput
-                ref={(ref) => { yearInputRef = ref; }}
-                style={styles.yearInput}
-                placeholder="YYYY"
-                placeholderTextColor={Colors.dark.subtext}
-                keyboardType="number-pad"
-                maxLength={4}
-                value={year}
-                onChangeText={handleYearChange}
-                returnKeyType="done"
-                onSubmitEditing={verifyAge}
-              />
-            </View>
-            
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            
-            <Pressable
-              style={[styles.verifyButton, (!day || !month || !year) && styles.disabledButton]}
-              onPress={verifyAge}
-              disabled={!day || !month || !year}
-            >
-              <Text style={styles.verifyButtonText}>Verify Age</Text>
-            </Pressable>
-            
-            <Text style={styles.disclaimer}>
-              By entering, you agree to our Terms of Service and Privacy Policy. This app is only for users 21 years and older.
-            </Text>
+            {!showDateInputs ? (
+              <>
+                <Pressable
+                  style={styles.getStartedButton}
+                  onPress={() => setShowDateInputs(true)}
+                >
+                  <Text style={styles.getStartedButtonText}>Get Started</Text>
+                </Pressable>
+                
+                <Text style={styles.disclaimer}>
+                  By continuing, you agree to our Terms of Service and Privacy Policy. This app is only for users 21 years and older.
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.label}>Enter your date of birth:</Text>
+                
+                <View style={styles.dateInputContainer}>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Month</Text>
+                    <TextInput
+                      ref={(ref) => { monthInputRef = ref; }}
+                      style={styles.dateInput}
+                      placeholder="MM"
+                      placeholderTextColor={Colors.dark.subtext}
+                      keyboardType="number-pad"
+                      maxLength={2}
+                      value={month}
+                      onChangeText={handleMonthChange}
+                      onEndEditing={(e) => handleMonthComplete(e.nativeEvent.text)}
+                      returnKeyType="next"
+                    />
+                  </View>
+                  
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Day</Text>
+                    <TextInput
+                      style={styles.dateInput}
+                      placeholder="DD"
+                      placeholderTextColor={Colors.dark.subtext}
+                      keyboardType="number-pad"
+                      maxLength={2}
+                      value={day}
+                      onChangeText={handleDayChange}
+                      onEndEditing={(e) => handleDayComplete(e.nativeEvent.text)}
+                      returnKeyType="next"
+                    />
+                  </View>
+                  
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Year</Text>
+                    <TextInput
+                      ref={(ref) => { yearInputRef = ref; }}
+                      style={styles.yearInput}
+                      placeholder="YYYY"
+                      placeholderTextColor={Colors.dark.subtext}
+                      keyboardType="number-pad"
+                      maxLength={4}
+                      value={year}
+                      onChangeText={handleYearChange}
+                      returnKeyType="done"
+                      onSubmitEditing={verifyAge}
+                    />
+                  </View>
+                </View>
+                
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                
+                <Pressable
+                  style={[styles.verifyButton, (!day || !month || !year) && styles.disabledButton]}
+                  onPress={verifyAge}
+                  disabled={!day || !month || !year}
+                >
+                  <Text style={styles.verifyButtonText}>Verify Age</Text>
+                </Pressable>
+                
+                <Pressable
+                  style={styles.backButton}
+                  onPress={() => setShowDateInputs(false)}
+                >
+                  <Text style={styles.backButtonText}>Back</Text>
+                </Pressable>
+              </>
+            )}
           </View>
         ) : (
           <View style={styles.errorModalView}>
@@ -257,6 +288,7 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
                 setYear('');
                 setUnderageError(false);
                 setError('');
+                setShowDateInputs(false);
                 
                 if (Platform.OS === 'android') {
                   Alert.alert(
@@ -370,17 +402,42 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  getStartedButton: {
+    backgroundColor: Colors.dark.primary,
+    borderRadius: 12,
+    padding: 16,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  getStartedButtonText: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   label: {
     color: Colors.dark.text,
     fontSize: 16,
     alignSelf: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 16,
     fontWeight: '600',
   },
   dateInputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
     marginBottom: 24,
+    gap: 12,
+  },
+  inputGroup: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  inputLabel: {
+    color: Colors.dark.subtext,
+    fontSize: 12,
+    marginBottom: 8,
+    fontWeight: '500',
   },
   dateInput: {
     backgroundColor: Colors.dark.background,
@@ -388,7 +445,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    width: 60,
+    width: '100%',
     textAlign: 'center',
     borderWidth: 1,
     borderColor: Colors.dark.border,
@@ -399,15 +456,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    width: 80,
+    width: '100%',
     textAlign: 'center',
     borderWidth: 1,
     borderColor: Colors.dark.border,
-  },
-  dateSeparator: {
-    color: Colors.dark.text,
-    fontSize: 20,
-    marginHorizontal: 8,
   },
   errorText: {
     color: Colors.dark.error,
@@ -421,7 +473,7 @@ const styles = StyleSheet.create({
     padding: 16,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   disabledButton: {
     backgroundColor: Colors.dark.subtext,
@@ -431,6 +483,15 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  backButton: {
+    padding: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
   },
   exitButton: {
     backgroundColor: Colors.dark.primary,

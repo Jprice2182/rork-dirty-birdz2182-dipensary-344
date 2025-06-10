@@ -27,7 +27,7 @@ export default function SignInScreen() {
   
   const { isVerified } = useUserStore();
 
-  // Redirect if not verified
+  // Redirect if not verified - must verify age first
   useEffect(() => {
     if (!isVerified) {
       router.replace('/');
@@ -109,7 +109,7 @@ export default function SignInScreen() {
   const isFormValid = email.trim().length > 0 && password.trim().length > 0;
   const showBiometricButton = Platform.OS !== 'web' && biometricInfo.available && useBiometrics;
 
-  // Don't render if not verified
+  // Don't render if not verified - age verification required first
   if (!isVerified) {
     return null;
   }
