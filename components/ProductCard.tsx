@@ -69,9 +69,9 @@ const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }
           {name || 'Unnamed Product'}
         </Text>
         <Text style={styles.thc}>{formatTHC(thc)}</Text>
-        {getDisplayUnit() && (
+        {getDisplayUnit() ? (
           <Text style={styles.detail}>{getDisplayUnit()}</Text>
-        )}
+        ) : null}
         <Text style={styles.price}>{formatPrice(price)}</Text>
       </View>
     </Pressable>

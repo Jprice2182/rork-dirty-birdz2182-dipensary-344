@@ -12,12 +12,16 @@ export default function Index() {
   const [hasNavigated, setHasNavigated] = useState(false);
 
   useEffect(() => {
-    if (!isVerified && !hasNavigated) {
-      setShowAgeVerification(true);
-    } else if (isVerified && !hasNavigated) {
-      setHasNavigated(true);
-      router.replace('/(tabs)');
-    }
+    const timer = setTimeout(() => {
+      if (!isVerified && !hasNavigated) {
+        setShowAgeVerification(true);
+      } else if (isVerified && !hasNavigated) {
+        setHasNavigated(true);
+        router.replace('/(tabs)');
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [isVerified, hasNavigated, router]);
 
   const handleVerification = useCallback(() => {
@@ -30,10 +34,6 @@ export default function Index() {
   const handleClose = useCallback(() => {
     setShowAgeVerification(false);
   }, []);
-
-  if (hasNavigated) {
-    return null;
-  }
 
   return (
     <View style={styles.container}>

@@ -32,13 +32,22 @@ export default function CartItem({ id, quantity }: CartItemProps) {
     removeItem(id);
   };
 
+  const getDisplayUnit = () => {
+    if (product.weight) return product.weight;
+    if (product.count) return product.count;
+    if (product.volume) return product.volume;
+    return '';
+  };
+
   return (
     <View style={styles.container}>
       <Image source={{ uri: product.image }} style={styles.image} />
       
       <View style={styles.details}>
         <Text style={styles.name}>{product.name}</Text>
-        <Text style={styles.weight}>{product.weight || product.count || product.volume}</Text>
+        {getDisplayUnit() ? (
+          <Text style={styles.weight}>{getDisplayUnit()}</Text>
+        ) : null}
         <Text style={styles.price}>${product.price}</Text>
       </View>
       

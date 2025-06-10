@@ -19,6 +19,11 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
+    if (!isVerified) {
+      router.replace('/');
+      return;
+    }
+
     const validation = validateProducts();
     if (!validation.valid) {
       console.warn('Product validation errors:', validation.errors);
@@ -28,7 +33,7 @@ export default function HomeScreen() {
 
     const counts = getProductCountsByCategory();
     console.log('Product counts by category on mount:', counts);
-  }, [isVerified]);
+  }, [isVerified, router]);
 
   const navigateToCart = useCallback(() => {
     router.push('/cart');
@@ -69,6 +74,10 @@ export default function HomeScreen() {
   }, []);
 
   const shouldShowDiscountBanner = isNewUser && !hasUsedDiscount && showDiscountBanner;
+
+  if (!isVerified) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
