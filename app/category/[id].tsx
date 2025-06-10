@@ -160,6 +160,8 @@ export default function CategoryScreen() {
     );
   };
 
+  const keyExtractor = useCallback((item: Product) => item.id, []);
+
   return (
     <View style={styles.container}>
       <Stack.Screen 
@@ -174,7 +176,7 @@ export default function CategoryScreen() {
       <FlatList
         data={products}
         renderItem={renderProduct}
-        keyExtractor={item => item.id}
+        keyExtractor={keyExtractor}
         numColumns={2}
         contentContainerStyle={[
           styles.productsContainer,
