@@ -2,6 +2,11 @@ export default {
   name: "Dirty Birdz2182",
   slogan: "Premium Cannabis Delivered",
   promoCode: "ATLANTA20",
+  customerService: {
+    email: "support@dirtybirdz2182.com",
+    phone: "+1 (404) 555-0123",
+    hours: "Mon-Fri: 9AM-10PM, Sat-Sun: 10AM-9PM"
+  },
   supportEmail: "support@dirtybirdz2182.com",
   supportPhone: "+1 (404) 555-0123",
   version: "1.0.0",
