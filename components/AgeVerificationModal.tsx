@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Modal, Pressable, TextInput, Alert, Image, Platform } from 'react-native';
-import { Calendar, AlertTriangle } from 'lucide-react-native';
+import { StyleSheet, Text, View, Modal, Pressable, TextInput, Alert, Image, Platform, ScrollView } from 'react-native';
+import { Calendar, AlertTriangle, Check, X } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useUserStore } from '@/store/userStore';
 import appInfo from '@/constants/appInfo';
@@ -11,26 +11,52 @@ interface AgeVerificationModalProps {
 }
 
 export default function AgeVerificationModal({ visible, onClose }: AgeVerificationModalProps) {
+  const [step, setStep] = useState<'checkbox' | 'terms' | 'dateInput'>('checkbox');
+  const [isOver21, setIsOver21] = useState<boolean | null>(null);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [day, setDay] = useState('');
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
   const [error, setError] = useState('');
   const [underageError, setUnderageError] = useState(false);
-  const [showDateInputs, setShowDateInputs] = useState(false);
   
   const { setVerified } = useUserStore();
 
   // Reset form when modal becomes visible
   useEffect(() => {
     if (visible) {
+      setStep('checkbox');
+      setIsOver21(null);
+      setAgreeToTerms(false);
       setDay('');
       setMonth('');
       setYear('');
       setError('');
       setUnderageError(false);
-      setShowDateInputs(false);
     }
   }, [visible]);
+
+  const handleAgeSelection = (over21: boolean) => {
+    setIsOver21(over21);
+    setError('');
+    
+    if (!over21) {
+      setUnderageError(true);
+      return;
+    }
+    
+    setStep('terms');
+  };
+
+  const handleTermsAgreement = () => {
+    if (!agreeToTerms) {
+      setError('You must agree to our Terms of Service and Privacy Policy to continue');
+      return;
+    }
+    
+    setError('');
+    setStep('dateInput');
+  };
 
   const verifyAge = () => {
     setError('');
@@ -111,7 +137,6 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
 
   // Handle text input changes with validation
   const handleDayChange = (text: string) => {
-    // Only allow numbers and limit to 2 digits
     const cleaned = text.replace(/[^0-9]/g, '');
     if (cleaned.length <= 2) {
       setDay(cleaned);
@@ -119,7 +144,6 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
   };
 
   const handleMonthChange = (text: string) => {
-    // Only allow numbers and limit to 2 digits
     const cleaned = text.replace(/[^0-9]/g, '');
     if (cleaned.length <= 2) {
       setMonth(cleaned);
@@ -127,7 +151,6 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
   };
 
   const handleYearChange = (text: string) => {
-    // Only allow numbers and limit to 4 digits
     const cleaned = text.replace(/[^0-9]/g, '');
     if (cleaned.length <= 4) {
       setYear(cleaned);
@@ -135,20 +158,20 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
   };
 
   // Auto-focus next field when current field is filled
-  const handleDayComplete = (text: string) => {
-    if (text.length === 2 && monthInputRef) {
-      monthInputRef.focus();
+  const handleMonthComplete = (text: string) => {
+    if (text.length === 2 && dayInputRef) {
+      dayInputRef.focus();
     }
   };
 
-  const handleMonthComplete = (text: string) => {
+  const handleDayComplete = (text: string) => {
     if (text.length === 2 && yearInputRef) {
       yearInputRef.focus();
     }
   };
 
   // References for input fields
-  let monthInputRef: TextInput | null = null;
+  let dayInputRef: TextInput | null = null;
   let yearInputRef: TextInput | null = null;
 
   // Don't render if not visible
@@ -163,7 +186,11 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
       visible={visible}
       statusBarTranslucent
     >
-      <View style={styles.centeredView}>
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.centeredView}
+        keyboardShouldPersistTaps="handled"
+      >
         {!underageError ? (
           <View style={styles.modalView}>
             <Calendar size={40} color={Colors.dark.primary} style={styles.icon} />
@@ -172,32 +199,121 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
             <Text style={styles.subtitle}>
               Welcome to {appInfo.name}
             </Text>
-            <Text style={styles.description}>
-              You must be 21 years or older to access this app. Please verify your age to continue.
-            </Text>
             
-            {!showDateInputs ? (
+            {step === 'checkbox' && (
               <>
+                <Text style={styles.description}>
+                  You must be 21 years or older to access this app. Please confirm your age to continue.
+                </Text>
+                
+                <Text style={styles.questionText}>Are you 21 years of age or older?</Text>
+                
+                <View style={styles.checkboxContainer}>
+                  <Pressable
+                    style={[
+                      styles.checkboxOption,
+                      isOver21 === true && styles.selectedOption
+                    ]}
+                    onPress={() => handleAgeSelection(true)}
+                  >
+                    <View style={[
+                      styles.checkbox,
+                      isOver21 === true && styles.checkedBox
+                    ]}>
+                      {isOver21 === true && <Check size={16} color={Colors.dark.text} />}
+                    </View>
+                    <Text style={styles.checkboxText}>Yes, I am 21 or older</Text>
+                  </Pressable>
+                  
+                  <Pressable
+                    style={[
+                      styles.checkboxOption,
+                      isOver21 === false && styles.selectedOption
+                    ]}
+                    onPress={() => handleAgeSelection(false)}
+                  >
+                    <View style={[
+                      styles.checkbox,
+                      isOver21 === false && styles.checkedBox
+                    ]}>
+                      {isOver21 === false && <X size={16} color={Colors.dark.text} />}
+                    </View>
+                    <Text style={styles.checkboxText}>No, I am under 21</Text>
+                  </Pressable>
+                </View>
+                
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+              </>
+            )}
+            
+            {step === 'terms' && (
+              <>
+                <Text style={styles.description}>
+                  Before proceeding, please review and agree to our terms.
+                </Text>
+                
+                <View style={styles.termsContainer}>
+                  <Text style={styles.termsTitle}>Terms & Privacy</Text>
+                  <Text style={styles.termsText}>
+                    By continuing, you agree to our Terms of Service and Privacy Policy. 
+                    All your information is encrypted and we will not share your personal 
+                    information with anyone else. Your privacy and security are our top priority.
+                  </Text>
+                  
+                  <Text style={styles.encryptionText}>
+                    🔒 Everything is encrypted - Your data is secure
+                  </Text>
+                </View>
+                
                 <Pressable
-                  style={styles.getStartedButton}
-                  onPress={() => setShowDateInputs(true)}
+                  style={[
+                    styles.checkboxOption,
+                    agreeToTerms && styles.selectedOption
+                  ]}
+                  onPress={() => setAgreeToTerms(!agreeToTerms)}
                 >
-                  <Text style={styles.getStartedButtonText}>Get Started</Text>
+                  <View style={[
+                    styles.checkbox,
+                    agreeToTerms && styles.checkedBox
+                  ]}>
+                    {agreeToTerms && <Check size={16} color={Colors.dark.text} />}
+                  </View>
+                  <Text style={styles.checkboxText}>
+                    I agree to the Terms of Service and Privacy Policy
+                  </Text>
                 </Pressable>
                 
-                <Text style={styles.disclaimer}>
-                  By continuing, you agree to our Terms of Service and Privacy Policy. This app is only for users 21 years and older.
-                </Text>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                
+                <Pressable
+                  style={[styles.continueButton, !agreeToTerms && styles.disabledButton]}
+                  onPress={handleTermsAgreement}
+                  disabled={!agreeToTerms}
+                >
+                  <Text style={styles.continueButtonText}>Continue</Text>
+                </Pressable>
+                
+                <Pressable
+                  style={styles.backButton}
+                  onPress={() => setStep('checkbox')}
+                >
+                  <Text style={styles.backButtonText}>Back</Text>
+                </Pressable>
               </>
-            ) : (
+            )}
+            
+            {step === 'dateInput' && (
               <>
+                <Text style={styles.description}>
+                  Please enter your date of birth to verify your age.
+                </Text>
+                
                 <Text style={styles.label}>Enter your date of birth:</Text>
                 
                 <View style={styles.dateInputContainer}>
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Month</Text>
                     <TextInput
-                      ref={(ref) => { monthInputRef = ref; }}
                       style={styles.dateInput}
                       placeholder="MM"
                       placeholderTextColor={Colors.dark.subtext}
@@ -213,6 +329,7 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Day</Text>
                     <TextInput
+                      ref={(ref) => { dayInputRef = ref; }}
                       style={styles.dateInput}
                       placeholder="DD"
                       placeholderTextColor={Colors.dark.subtext}
@@ -254,7 +371,7 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
                 
                 <Pressable
                   style={styles.backButton}
-                  onPress={() => setShowDateInputs(false)}
+                  onPress={() => setStep('terms')}
                 >
                   <Text style={styles.backButtonText}>Back</Text>
                 </Pressable>
@@ -283,12 +400,14 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
               style={styles.exitButton}
               onPress={() => {
                 // Reset the form to allow retry
+                setStep('checkbox');
+                setIsOver21(null);
+                setAgreeToTerms(false);
                 setDay('');
                 setMonth('');
                 setYear('');
                 setUnderageError(false);
                 setError('');
-                setShowDateInputs(false);
                 
                 if (Platform.OS === 'android') {
                   Alert.alert(
@@ -303,18 +422,22 @@ export default function AgeVerificationModal({ visible, onClose }: AgeVerificati
             </Pressable>
           </View>
         )}
-      </View>
+      </ScrollView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  centeredView: {
+  scrollContainer: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  },
+  centeredView: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     padding: 20,
+    minHeight: '100%',
   },
   modalView: {
     width: '100%',
@@ -365,7 +488,7 @@ const styles = StyleSheet.create({
     color: Colors.dark.primary,
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 16,
     textAlign: 'center',
   },
   description: {
@@ -374,6 +497,86 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  questionText: {
+    color: Colors.dark.text,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  checkboxContainer: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  checkboxOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.dark.border,
+    marginBottom: 12,
+  },
+  selectedOption: {
+    borderColor: Colors.dark.primary,
+    backgroundColor: Colors.dark.background,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.dark.border,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkedBox: {
+    backgroundColor: Colors.dark.primary,
+    borderColor: Colors.dark.primary,
+  },
+  checkboxText: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    flex: 1,
+  },
+  termsContainer: {
+    backgroundColor: Colors.dark.background,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    width: '100%',
+  },
+  termsTitle: {
+    color: Colors.dark.text,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  termsText: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  encryptionText: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  continueButton: {
+    backgroundColor: Colors.dark.primary,
+    borderRadius: 12,
+    padding: 16,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  continueButtonText: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   errorTitle: {
     color: Colors.dark.error,
@@ -401,19 +604,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: 'center',
     lineHeight: 20,
-  },
-  getStartedButton: {
-    backgroundColor: Colors.dark.primary,
-    borderRadius: 12,
-    padding: 16,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  getStartedButtonText: {
-    color: Colors.dark.text,
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   label: {
     color: Colors.dark.text,
@@ -504,11 +694,5 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  disclaimer: {
-    color: Colors.dark.subtext,
-    fontSize: 12,
-    textAlign: 'center',
-    lineHeight: 16,
   },
 });
