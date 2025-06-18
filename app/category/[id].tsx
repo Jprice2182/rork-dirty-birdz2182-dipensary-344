@@ -14,7 +14,7 @@ type SortOption = 'name' | 'price-low' | 'price-high' | 'rating';
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { isVerified, verifyAge } = useUserStore();
+  const { isVerified, setVerified } = useUserStore();
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [showAgeModal, setShowAgeModal] = useState(false);
@@ -29,7 +29,7 @@ export default function CategoryScreen() {
   }, [isVerified]);
 
   const handleAgeVerification = () => {
-    verifyAge();
+    setVerified(true);
     setShowAgeModal(false);
   };
 

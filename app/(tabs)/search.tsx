@@ -11,7 +11,7 @@ import { useUserStore } from '@/store/userStore';
 
 export default function SearchScreen() {
   const router = useRouter();
-  const { isVerified, verifyAge } = useUserStore();
+  const { isVerified, setVerified } = useUserStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [filteredProducts, setFilteredProducts] = useState(products);
@@ -44,7 +44,7 @@ export default function SearchScreen() {
   }, [searchQuery, selectedCategory]);
 
   const handleAgeVerification = () => {
-    verifyAge();
+    setVerified(true);
     setShowAgeModal(false);
   };
 
