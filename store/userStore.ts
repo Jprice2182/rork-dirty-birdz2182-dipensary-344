@@ -47,6 +47,7 @@ export interface UserState {
   lastUpdated: string | null;
   
   setVerified: (verified: boolean) => void;
+  verifyAge: () => void;
   updateUserInfo: (name: string, email: string, phone: string) => void;
   setBirthday: (date: string) => void;
   addAddress: (address: Address) => void;
@@ -103,6 +104,11 @@ export const useUserStore = create<UserState>()(
       setVerified: (verified: boolean) => {
         const now = new Date().toISOString();
         set({ isVerified: verified, lastUpdated: now });
+      },
+
+      verifyAge: () => {
+        const now = new Date().toISOString();
+        set({ isVerified: true, lastUpdated: now });
       },
       
       updateUserInfo: (name: string, email: string, phone: string) => {

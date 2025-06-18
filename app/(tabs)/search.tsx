@@ -31,7 +31,7 @@ export default function SearchScreen() {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.strain?.toLowerCase().includes(searchQuery.toLowerCase())
+        (product.strain && product.strain.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
@@ -160,7 +160,17 @@ export default function SearchScreen() {
         ) : (
           <View style={styles.productsGrid}>
             {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                image={product.image}
+                thc={product.thc}
+                weight={product.weight}
+                count={product.count}
+                volume={product.volume}
+              />
             ))}
           </View>
         )}

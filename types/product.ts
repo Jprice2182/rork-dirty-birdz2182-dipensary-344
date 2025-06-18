@@ -12,6 +12,8 @@ export interface Product {
   weight?: string;
   count?: string;
   volume?: string;
+  strain?: string;
+  rating?: number;
 }
 
 export interface CartItem {

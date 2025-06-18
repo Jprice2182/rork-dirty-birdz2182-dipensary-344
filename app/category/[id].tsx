@@ -157,7 +157,17 @@ export default function CategoryScreen() {
         ) : (
           <View style={styles.productsGrid}>
             {sortedProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                image={product.image}
+                thc={product.thc}
+                weight={product.weight}
+                count={product.count}
+                volume={product.volume}
+              />
             ))}
           </View>
         )}
