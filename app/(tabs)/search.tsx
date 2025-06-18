@@ -1,264 +1,170 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, Text, View, TextInput, FlatList, Pressable, RefreshControl } from 'react-native';
-import { Search as SearchIcon, X, Filter } from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Search, Filter, X } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-import { products, getProductCountsByCategory, validateProducts } from '@/mocks/products';
+import { products } from '@/mocks/products';
+import { categories } from '@/constants/categories';
 import ProductCard from '@/components/ProductCard';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
 import { useUserStore } from '@/store/userStore';
-import { Product } from '@/types/product';
 
 export default function SearchScreen() {
-  const { isVerified, setVerified } = useUserStore();
   const router = useRouter();
-  const [showAgeModal, setShowAgeModal] = useState(!isVerified);
-
+  const { isVerified, verifyAge } = useUserStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [showAgeModal, setShowAgeModal] = useState(false);
 
-  const handleAgeVerified = () => {
-    setVerified(true);
+  useEffect(() => {
+    if (!isVerified) {
+      setShowAgeModal(true);
+    }
+  }, [isVerified]);
+
+  useEffect(() => {
+    let filtered = products;
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.strain?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(product => product.category === selectedCategory);
+    }
+
+    setFilteredProducts(filtered);
+  }, [searchQuery, selectedCategory]);
+
+  const handleAgeVerification = () => {
+    verifyAge();
     setShowAgeModal(false);
   };
 
-  const handleAgeModalClose = () => {
+  const handleCloseAgeModal = () => {
     setShowAgeModal(false);
-    // Redirect to home or show a message that they can't use the app
     router.replace('/');
   };
 
-  // Show age verification if not verified
-  if (showAgeModal) {
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory(null);
+  };
+
+  if (!isVerified) {
     return (
-      <AgeVerificationModal 
-        isVisible={true} 
-        onClose={handleAgeModalClose}
-        onVerified={handleAgeVerified}
+      <AgeVerificationModal
+        isVisible={showAgeModal}
+        onClose={handleCloseAgeModal}
+        onVerified={handleAgeVerification}
       />
     );
   }
 
-  // Memoize the search function to prevent unnecessary re-renders
-  const searchProducts = useCallback((query: string): Product[] => {
-    if (!query.trim()) {
-      return products;
-    }
-
-    const searchTerm = query.toLowerCase().trim();
-    return products.filter(product => 
-      product.name.toLowerCase().includes(searchTerm) || 
-      product.description.toLowerCase().includes(searchTerm) ||
-      product.effects.some(effect => effect.toLowerCase().includes(searchTerm)) ||
-      product.category === searchTerm
-    );
-  }, []);
-
-  // Debounced search effect
-  useEffect(() => {
-    setLoading(true);
-    const timeoutId = setTimeout(() => {
-      console.log('Search effect triggered, query:', searchQuery);
-      console.log('Total products available:', products.length);
-      
-      const results = searchProducts(searchQuery);
-      setFilteredProducts(results);
-      
-      console.log(`Search results for "${searchQuery}":`, results.length);
-      setLoading(false);
-    }, 300); // 300ms debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, searchProducts]);
-
-  // Initialize with all products
-  useEffect(() => {
-    setFilteredProducts(products);
-    
-    // Validate products on mount
-    const validation = validateProducts();
-    if (!validation.valid) {
-      console.warn('Product validation errors:', validation.errors);
-    }
-  }, []);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    console.log('Refreshing search data...');
-    
-    try {
-      // Simulate refreshing product data
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Debug: Log product counts
-      const counts = getProductCountsByCategory();
-      console.log('Product counts after refresh:', counts);
-      
-      // Re-run the search with current query
-      const results = searchProducts(searchQuery);
-      setFilteredProducts(results);
-      console.log('Re-filtered products after refresh:', results.length);
-      
-    } catch (error) {
-      console.error('Error refreshing products:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [searchQuery, searchProducts]);
-
-  const clearSearch = useCallback(() => {
-    setSearchQuery('');
-  }, []);
-
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    
-    // Add to recent searches if it's not empty and not already in the list
-    if (query.trim() && !recentSearches.includes(query.trim())) {
-      setRecentSearches(prev => [query.trim(), ...prev.slice(0, 4)]); // Keep only 5 recent searches
-    }
-  }, [recentSearches]);
-
-  const handleRecentSearchPress = useCallback((search: string) => {
-    setSearchQuery(search);
-  }, []);
-
-  const renderProduct = useCallback(({ item }: { item: Product }) => (
-    <View style={styles.productCardWrapper}>
-      <ProductCard
-        id={item.id}
-        name={item.name}
-        price={item.price}
-        image={item.image}
-        thc={item.thc}
-        weight={item.weight}
-        count={item.count}
-        volume={item.volume}
-      />
-    </View>
-  ), []);
-
-  const renderEmptyList = useCallback(() => (
-    <View style={styles.emptyContainer}>
-      <SearchIcon size={60} color={Colors.dark.subtext} style={styles.emptyIcon} />
-      <Text style={styles.emptyText}>
-        {searchQuery.trim() ? 'No products found' : 'Search for cannabis products'}
-      </Text>
-      <Text style={styles.emptySubtext}>
-        {searchQuery.trim() 
-          ? 'Try a different search term or browse categories' 
-          : 'Find flower, edibles, cartridges, and more'
-        }
-      </Text>
-      {searchQuery.trim() && (
-        <Text style={styles.debugText}>
-          Searched in {products.length} total products
-        </Text>
-      )}
-    </View>
-  ), [searchQuery]);
-
-  const renderRecentSearches = useCallback(() => {
-    if (searchQuery.trim() || recentSearches.length === 0) return null;
-    
-    return (
-      <View style={styles.recentSearchesContainer}>
-        <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
-        {recentSearches.map((search, index) => (
-          <Pressable 
-            key={`${search}-${index}`}
-            style={styles.recentSearchItem}
-            onPress={() => handleRecentSearchPress(search)}
-          >
-            <SearchIcon size={16} color={Colors.dark.subtext} />
-            <Text style={styles.recentSearchText}>{search}</Text>
-          </Pressable>
-        ))}
-      </View>
-    );
-  }, [searchQuery, recentSearches, handleRecentSearchPress]);
-
-  const renderHeader = useCallback(() => (
-    <View>
-      {renderRecentSearches()}
-      {filteredProducts.length > 0 && searchQuery.trim() && (
-        <View style={styles.resultsHeader}>
-          <Text style={styles.resultsText}>
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'} for "{searchQuery}"
-          </Text>
-        </View>
-      )}
-      {loading && (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Searching...</Text>
-        </View>
-      )}
-    </View>
-  ), [renderRecentSearches, filteredProducts.length, searchQuery, loading]);
-
-  // Memoize the key extractor
-  const keyExtractor = useCallback((item: Product) => item.id, []);
-
-  // Memoize the column wrapper style
-  const columnWrapperStyle = useMemo(() => 
-    filteredProducts.length > 0 ? styles.productRow : undefined, 
-    [filteredProducts.length]
-  );
-
   return (
     <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <SearchIcon size={20} color={Colors.dark.subtext} style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search flower, edibles, cartridges..."
-          placeholderTextColor={Colors.dark.subtext}
-          value={searchQuery}
-          onChangeText={handleSearch}
-          returnKeyType="search"
-          autoCorrect={false}
-          autoCapitalize="none"
-          clearButtonMode="while-editing"
-        />
-        {searchQuery.length > 0 && (
-          <Pressable onPress={clearSearch} style={styles.clearButton}>
-            <X size={20} color={Colors.dark.subtext} />
-          </Pressable>
-        )}
+      {/* Search Header */}
+      <View style={styles.searchHeader}>
+        <View style={styles.searchContainer}>
+          <Search size={20} color={Colors.dark.subtext} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search products..."
+            placeholderTextColor={Colors.dark.subtext}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')} style={styles.clearButton}>
+              <X size={20} color={Colors.dark.subtext} />
+            </Pressable>
+          )}
+        </View>
       </View>
 
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        keyExtractor={keyExtractor}
-        numColumns={2}
-        columnWrapperStyle={columnWrapperStyle}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={renderEmptyList}
-        ListHeaderComponent={renderHeader}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={Colors.dark.primary}
-            colors={[Colors.dark.primary]}
-            progressBackgroundColor={Colors.dark.card}
-          />
-        }
+      {/* Category Filters */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoryFilters}
+        contentContainerStyle={styles.categoryFiltersContent}
+      >
+        <Pressable
+          style={[
+            styles.categoryFilter,
+            !selectedCategory && styles.categoryFilterActive
+          ]}
+          onPress={() => setSelectedCategory(null)}
+        >
+          <Text style={[
+            styles.categoryFilterText,
+            !selectedCategory && styles.categoryFilterTextActive
+          ]}>
+            All
+          </Text>
+        </Pressable>
+        
+        {categories.map(category => (
+          <Pressable
+            key={category.id}
+            style={[
+              styles.categoryFilter,
+              selectedCategory === category.id && styles.categoryFilterActive
+            ]}
+            onPress={() => setSelectedCategory(category.id)}
+          >
+            <Text style={styles.categoryFilterEmoji}>{category.icon}</Text>
+            <Text style={[
+              styles.categoryFilterText,
+              selectedCategory === category.id && styles.categoryFilterTextActive
+            ]}>
+              {category.name}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      {/* Clear Filters */}
+      {(searchQuery || selectedCategory) && (
+        <View style={styles.activeFilters}>
+          <Text style={styles.activeFiltersText}>
+            {filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''}
+          </Text>
+          <Pressable onPress={clearFilters} style={styles.clearFiltersButton}>
+            <Filter size={16} color={Colors.dark.primary} />
+            <Text style={styles.clearFiltersText}>Clear Filters</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Results */}
+      <ScrollView 
+        style={styles.results}
         showsVerticalScrollIndicator={false}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={10}
-        removeClippedSubviews={true}
-        getItemLayout={(data, index) => ({
-          length: 200, // Approximate item height
-          offset: 200 * Math.floor(index / 2),
-          index,
-        })}
-      />
+        contentContainerStyle={styles.resultsContent}
+      >
+        {filteredProducts.length === 0 ? (
+          <View style={styles.noResults}>
+            <Text style={styles.noResultsTitle}>No products found</Text>
+            <Text style={styles.noResultsText}>
+              Try adjusting your search or filters
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.productsGrid}>
+            {filteredProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
@@ -267,114 +173,115 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.dark.background,
+  },
+  searchHeader: {
     padding: 16,
+    paddingBottom: 8,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.dark.card,
     borderRadius: 12,
-    paddingHorizontal: 12,
-    marginBottom: 16,
-    shadowColor: Colors.dark.primary,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingHorizontal: 16,
+    height: 48,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 12,
   },
   searchInput: {
     flex: 1,
-    height: 48,
     color: Colors.dark.text,
     fontSize: 16,
   },
   clearButton: {
-    padding: 8,
+    padding: 4,
   },
-  recentSearchesContainer: {
-    marginBottom: 16,
+  categoryFilters: {
+    maxHeight: 60,
   },
-  recentSearchesTitle: {
-    color: Colors.dark.text,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
+  categoryFiltersContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  recentSearchItem: {
+  categoryFilter: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.dark.card,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 6,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
-  recentSearchText: {
-    color: Colors.dark.text,
-    fontSize: 14,
-    marginLeft: 8,
+  categoryFilterActive: {
+    backgroundColor: Colors.dark.primary,
+    borderColor: Colors.dark.primary,
   },
-  resultsHeader: {
-    marginBottom: 12,
+  categoryFilterEmoji: {
+    fontSize: 16,
+    marginRight: 6,
   },
-  resultsText: {
+  categoryFilterText: {
     color: Colors.dark.subtext,
     fontSize: 14,
+    fontWeight: '500',
+  },
+  categoryFilterTextActive: {
+    color: Colors.dark.text,
     fontWeight: '600',
   },
-  loadingContainer: {
-    padding: 16,
+  activeFilters: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  loadingText: {
+  activeFiltersText: {
     color: Colors.dark.subtext,
     fontSize: 14,
-    fontStyle: 'italic',
   },
-  listContent: {
-    paddingBottom: 16,
-    flexGrow: 1,
+  clearFiltersButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.dark.card,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  productRow: {
-    justifyContent: 'space-between',
+  clearFiltersText: {
+    color: Colors.dark.primary,
+    fontSize: 12,
+    fontWeight: '500',
+    marginLeft: 4,
   },
-  productCardWrapper: {
-    width: '48%',
-    marginBottom: 16,
+  results: {
+    flex: 1,
   },
-  emptyContainer: {
+  resultsContent: {
+    padding: 16,
+  },
+  noResults: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    minHeight: 300,
+    paddingVertical: 60,
   },
-  emptyIcon: {
-    marginBottom: 16,
-  },
-  emptyText: {
+  noResultsTitle: {
     color: Colors.dark.text,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'center',
   },
-  emptySubtext: {
+  noResultsText: {
     color: Colors.dark.subtext,
     fontSize: 14,
     textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 8,
   },
-  debugText: {
-    color: Colors.dark.subtext,
-    fontSize: 12,
-    textAlign: 'center',
-    fontStyle: 'italic',
+  productsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 });

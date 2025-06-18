@@ -1,35 +1,38 @@
-import { Flower, Cigarette, Cookie, Zap, Usb } from 'lucide-react-native';
-
-export interface Category {
-  id: string;
-  name: string;
-  icon: any;
-}
-
-export const categories: Category[] = [
+export const categories = [
   {
     id: '1',
     name: 'Flower',
-    icon: Flower,
+    icon: '🌸',
+    description: 'Premium cannabis flower strains'
   },
   {
     id: '2',
-    name: 'Pre-Rolls',
-    icon: Cigarette,
+    name: 'Edibles',
+    icon: '🍪',
+    description: 'Delicious cannabis-infused treats'
   },
   {
     id: '3',
-    name: 'Edibles',
-    icon: Cookie,
+    name: 'Concentrates',
+    icon: '💎',
+    description: 'High-potency cannabis extracts'
   },
   {
     id: '4',
     name: 'Cartridges',
-    icon: Zap,
+    icon: '🖊️',
+    description: 'Premium cartridge pens for vaping'
   },
   {
-    id: '20',
-    name: 'Cartridge Pens',
-    icon: Usb,
+    id: '5',
+    name: 'Topicals',
+    icon: '🧴',
+    description: 'Cannabis-infused creams and balms'
   },
+  {
+    id: '6',
+    name: 'Accessories',
+    icon: '🔧',
+    description: 'Smoking and vaping accessories'
+  }
 ];
