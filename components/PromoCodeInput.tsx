@@ -4,6 +4,7 @@ import { Tag, Check, X } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { usePromoStore } from '@/store/promoStore';
 import { useUserStore } from '@/store/userStore';
+import appInfo from '@/constants/appInfo';
 
 interface PromoCodeInputProps {
   onApply: (discount: number) => void;
@@ -98,6 +99,13 @@ export default function PromoCodeInput({ onApply }: PromoCodeInputProps) {
           {validationResult.message}
         </Text>
       )}
+
+      {/* Show available promo codes hint */}
+      {!validationResult && promoCode.length === 0 && (
+        <Text style={styles.hintText}>
+          Try "{appInfo.promoCode}" for 20% off your first order
+        </Text>
+      )}
       
       <Pressable 
         style={[
@@ -152,6 +160,12 @@ const styles = StyleSheet.create({
   },
   invalidMessage: {
     color: Colors.dark.error,
+  },
+  hintText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: Colors.dark.subtext,
+    fontStyle: 'italic',
   },
   applyButton: {
     backgroundColor: Colors.dark.primary,

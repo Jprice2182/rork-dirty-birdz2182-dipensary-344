@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getProductById } from '@/mocks/products';
+import appInfo from '@/constants/appInfo';
 
 export interface CartItem {
   id: string;
@@ -10,6 +11,13 @@ export interface CartItem {
   name?: string;
   price?: number;
   variant?: string;
+}
+
+export interface EighthsPromotion {
+  eligible: boolean;
+  totalEighths: number;
+  discountedEighths: number;
+  savings: number;
 }
 
 interface CartState {
@@ -22,6 +30,7 @@ interface CartState {
   clearCart: () => void;
   getCartTotal: () => number;
   getCartItemsCount: () => number;
+  getEighthsPromotion: () => EighthsPromotion;
   refreshCart: () => Promise<void>;
   resetCart: () => void;
   validateCart: () => void;
@@ -157,6 +166,11 @@ export const useCartStore = create<CartState>()(
           return count + item.quantity;
         }, 0);
       },
+
+      getEighthsPromotion: () => {
+        const { items } = get();
+        return calculateEighthsPromotion(items);
+      },
       
       refreshCart: async () => {
         try {
@@ -240,8 +254,55 @@ export const useCartStore = create<CartState>()(
   )
 );
 
-// Helper function to calculate total
+// Helper function to check if a product is an eighth (3.5g flower)
+function isEighth(productId: string): boolean {
+  const product = getProductById(productId);
+  return product?.category === '1' && product?.weight === '3.5g';
+}
+
+// Helper function to calculate eighths promotion
+function calculateEighthsPromotion(items: CartItem[]): EighthsPromotion {
+  const eighthItems = items.filter(item => isEighth(item.id));
+  const totalEighths = eighthItems.reduce((sum, item) => sum + item.quantity, 0);
+  
+  if (totalEighths < appInfo.eighthsPromotion.minimumQuantity) {
+    return {
+      eligible: false,
+      totalEighths,
+      discountedEighths: 0,
+      savings: 0
+    };
+  }
+  
+  // Calculate how many eighths get the $1 discount
+  // Every 3rd eighth (starting from the 3rd) gets discounted
+  const discountedEighths = Math.floor(totalEighths / 3);
+  
+  if (discountedEighths === 0) {
+    return {
+      eligible: false,
+      totalEighths,
+      discountedEighths: 0,
+      savings: 0
+    };
+  }
+  
+  // Calculate savings: regular price - $1 for each discounted eighth
+  const regularPrice = 30; // All eighths are $30
+  const savings = discountedEighths * (regularPrice - appInfo.eighthsPromotion.discountPrice);
+  
+  return {
+    eligible: true,
+    totalEighths,
+    discountedEighths,
+    savings
+  };
+}
+
+// Helper function to calculate total with eighths promotion
 function calculateTotal(items: CartItem[]): number {
+  const eighthsPromo = calculateEighthsPromotion(items);
+  
   const total = items.reduce((sum, item) => {
     const product = getProductById(item.id);
     if (!product) {
@@ -257,5 +318,8 @@ function calculateTotal(items: CartItem[]): number {
     return sum + (product.price * item.quantity);
   }, 0);
   
-  return Math.round(total * 100) / 100; // Round to 2 decimal places
+  // Apply eighths promotion discount
+  const finalTotal = total - eighthsPromo.savings;
+  
+  return Math.round(finalTotal * 100) / 100; // Round to 2 decimal places
 }

@@ -2,6 +2,15 @@ const appInfo = {
   name: "Dirty Birdz2182",
   slogan: "Premium Cannabis Delivered",
   promoCode: "ATLANTA20",
+  promoDiscount: 0.2,
+  eighthsPromotion: {
+    title: "SUPER SPECIAL",
+    subtitle: "Buy 2 Eighths, Get 3rd for $1",
+    description: "Mix and match any flower eighths (3.5g)",
+    discountPrice: 1.00,
+    minimumQuantity: 2,
+    code: "EIGHTHS1"
+  },
   customerService: {
     email: "support@dirtybirdz2182.com",
     phone: "+1 (404) 555-0123",

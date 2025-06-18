@@ -13,6 +13,7 @@ export const usePromoStore = create<PromoState>()(
     (set, get) => ({
       validPromoCodes: {
         [appInfo.promoCode]: appInfo.promoDiscount,
+        [appInfo.eighthsPromotion.code]: 0, // Eighths promotion is handled separately
       },
       
       validatePromoCode: (code: string) => {

@@ -5,12 +5,15 @@ import { ShoppingBag, ArrowLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useCartStore } from '@/store/cartStore';
 import CartItem from '@/components/CartItem';
+import DiscountBanner from '@/components/DiscountBanner';
+import appInfo from '@/constants/appInfo';
 
 export default function CartScreen() {
   const router = useRouter();
-  const { items, getCartTotal, clearCart } = useCartStore();
+  const { items, getCartTotal, getEighthsPromotion, clearCart } = useCartStore();
   const [refreshing, setRefreshing] = useState(false);
   const cartTotal = getCartTotal();
+  const eighthsPromo = getEighthsPromotion();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -59,6 +62,11 @@ export default function CartScreen() {
           <Text style={styles.emptyTitle}>Your cart is empty</Text>
           <Text style={styles.emptyText}>Add some premium cannabis products to your cart and enjoy fast delivery in Atlanta</Text>
           
+          {/* Show eighths promotion when cart is empty */}
+          <View style={styles.emptyPromoContainer}>
+            <DiscountBanner showEighthsPromo={true} />
+          </View>
+          
           <View style={styles.emptyButtonsContainer}>
             <Pressable style={styles.shopButton} onPress={handleGoHome}>
               <Text style={styles.shopButtonText}>Browse Products</Text>
@@ -95,6 +103,24 @@ export default function CartScreen() {
             {items.length} {items.length === 1 ? 'item' : 'items'}
           </Text>
         </View>
+
+        {/* Show eighths promotion if eligible or close to eligible */}
+        {(eighthsPromo.eligible || eighthsPromo.totalEighths >= 1) && (
+          <DiscountBanner showEighthsPromo={true} />
+        )}
+
+        {/* Eighths promotion status */}
+        {eighthsPromo.totalEighths > 0 && !eighthsPromo.eligible && (
+          <View style={styles.promoStatusContainer}>
+            <Text style={styles.promoStatusTitle}>🌿 Eighths Special Progress</Text>
+            <Text style={styles.promoStatusText}>
+              You have {eighthsPromo.totalEighths} eighth{eighthsPromo.totalEighths !== 1 ? 's' : ''} in your cart.
+            </Text>
+            <Text style={styles.promoStatusText}>
+              Add {3 - (eighthsPromo.totalEighths % 3)} more to get your next eighth for $1!
+            </Text>
+          </View>
+        )}
         
         <View style={styles.itemsList}>
           {items.map(item => (
@@ -113,6 +139,14 @@ export default function CartScreen() {
             <Text style={styles.totalLabel}>Subtotal</Text>
             <Text style={styles.totalAmount}>${cartTotal.toFixed(2)}</Text>
           </View>
+          
+          {eighthsPromo.eligible && (
+            <View style={styles.totalRow}>
+              <Text style={styles.promoLabel}>Eighths Special Savings</Text>
+              <Text style={styles.promoAmount}>-${eighthsPromo.savings.toFixed(2)}</Text>
+            </View>
+          )}
+          
           <Text style={styles.taxNote}>Taxes and delivery fees calculated at checkout</Text>
         </View>
         
@@ -152,6 +186,25 @@ const styles = StyleSheet.create({
     color: Colors.dark.subtext,
     fontSize: 14,
   },
+  promoStatusContainer: {
+    backgroundColor: Colors.dark.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#FF6B35',
+  },
+  promoStatusTitle: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  promoStatusText: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+    marginBottom: 4,
+  },
   itemsList: {
     marginBottom: 16,
   },
@@ -187,6 +240,16 @@ const styles = StyleSheet.create({
   totalAmount: {
     color: Colors.dark.primary,
     fontSize: 20,
+    fontWeight: 'bold',
+  },
+  promoLabel: {
+    color: Colors.dark.success,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  promoAmount: {
+    color: Colors.dark.success,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   taxNote: {
@@ -241,6 +304,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 22,
+  },
+  emptyPromoContainer: {
+    width: '100%',
+    marginBottom: 24,
   },
   emptyButtonsContainer: {
     width: '100%',

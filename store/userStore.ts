@@ -26,6 +26,7 @@ export interface UserState {
   isNewUser: boolean;
   hasUsedDiscount: boolean;
   hasUsedPromoCode: boolean;
+  hasUsedEighthsPromo: boolean;
   appRating: number | null;
   driverRatings: Record<string, number>;
   reviews: Array<{
@@ -54,6 +55,7 @@ export interface UserState {
   selectAddress: (index: number) => void;
   markDiscountAsUsed: () => void;
   markPromoCodeAsUsed: () => void;
+  markEighthsPromoAsUsed: () => void;
   markAsExistingUser: () => void;
   setAppRating: (rating: number) => void;
   setDriverRating: (driverId: string, rating: number) => void;
@@ -77,6 +79,7 @@ const initialState = {
   isNewUser: true,
   hasUsedDiscount: false,
   hasUsedPromoCode: false,
+  hasUsedEighthsPromo: false,
   appRating: null,
   driverRatings: {},
   reviews: [],
@@ -180,6 +183,11 @@ export const useUserStore = create<UserState>()(
       markPromoCodeAsUsed: () => {
         const now = new Date().toISOString();
         set({ hasUsedPromoCode: true, lastUpdated: now });
+      },
+
+      markEighthsPromoAsUsed: () => {
+        const now = new Date().toISOString();
+        set({ hasUsedEighthsPromo: true, lastUpdated: now });
       },
         
       markAsExistingUser: () => {
@@ -305,6 +313,7 @@ export const useUserStore = create<UserState>()(
         isNewUser: state.isNewUser,
         hasUsedDiscount: state.hasUsedDiscount,
         hasUsedPromoCode: state.hasUsedPromoCode,
+        hasUsedEighthsPromo: state.hasUsedEighthsPromo,
         appRating: state.appRating,
         driverRatings: state.driverRatings,
         reviews: state.reviews,

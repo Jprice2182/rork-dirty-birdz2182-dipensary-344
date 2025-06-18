@@ -6,19 +6,23 @@ import { useOrderStore, OrderItem } from '@/store/orderStore';
 import Colors from '@/constants/colors';
 import appInfo from '@/constants/appInfo';
 import TipDriverModal from '@/components/TipDriverModal';
+import PromoCodeInput from '@/components/PromoCodeInput';
 import { getProductById } from '@/mocks/products';
 
 export default function Checkout() {
   const router = useRouter();
-  const { items, getCartTotal, clearCart } = useCartStore();
+  const { items, getCartTotal, getEighthsPromotion, clearCart } = useCartStore();
   const { createOrder } = useOrderStore();
   const [showTipModal, setShowTipModal] = useState(false);
   const [selectedTip, setSelectedTip] = useState(0);
+  const [promoDiscount, setPromoDiscount] = useState(0);
 
   const subtotal = getCartTotal();
+  const eighthsPromo = getEighthsPromotion();
   const deliveryFee = subtotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
   const tax = subtotal * 0.08; // 8% tax
-  const finalTotal = subtotal + deliveryFee + tax + selectedTip;
+  const promoDiscountAmount = subtotal * promoDiscount;
+  const finalTotal = subtotal + deliveryFee + tax + selectedTip - promoDiscountAmount;
 
   // Convert cart items to order items with product details
   const getOrderItems = (): OrderItem[] => {
@@ -74,6 +78,10 @@ export default function Checkout() {
     setSelectedTip(amount);
   };
 
+  const handleApplyPromo = (discount: number) => {
+    setPromoDiscount(discount);
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
@@ -102,6 +110,28 @@ export default function Checkout() {
           })}
         </View>
 
+        {/* Eighths Promotion */}
+        {eighthsPromo.eligible && (
+          <View style={styles.promotionSection}>
+            <Text style={styles.promotionTitle}>🎉 {appInfo.eighthsPromotion.title}</Text>
+            <Text style={styles.promotionSubtitle}>{appInfo.eighthsPromotion.subtitle}</Text>
+            <View style={styles.promotionDetails}>
+              <Text style={styles.promotionText}>
+                {eighthsPromo.discountedEighths} eighth{eighthsPromo.discountedEighths !== 1 ? 's' : ''} for $1 each
+              </Text>
+              <Text style={styles.promotionSavings}>
+                You save: ${eighthsPromo.savings.toFixed(2)}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Promo Code */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Promo Code</Text>
+          <PromoCodeInput onApply={handleApplyPromo} />
+        </View>
+
         {/* Pricing Breakdown */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Total</Text>
@@ -110,6 +140,20 @@ export default function Checkout() {
             <Text style={styles.priceLabel}>Subtotal</Text>
             <Text style={styles.priceValue}>${subtotal.toFixed(2)}</Text>
           </View>
+
+          {eighthsPromo.eligible && (
+            <View style={styles.priceRow}>
+              <Text style={styles.promoLabel}>Eighths Special Discount</Text>
+              <Text style={styles.promoValue}>-${eighthsPromo.savings.toFixed(2)}</Text>
+            </View>
+          )}
+
+          {promoDiscount > 0 && (
+            <View style={styles.priceRow}>
+              <Text style={styles.promoLabel}>Promo Code Discount</Text>
+              <Text style={styles.promoValue}>-${promoDiscountAmount.toFixed(2)}</Text>
+            </View>
+          )}
           
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Delivery Fee</Text>
@@ -205,6 +249,39 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     marginBottom: 12,
   },
+  promotionSection: {
+    backgroundColor: Colors.dark.primary,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  promotionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.dark.text,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  promotionSubtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.dark.text,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  promotionDetails: {
+    alignItems: 'center',
+  },
+  promotionText: {
+    fontSize: 14,
+    color: Colors.dark.text,
+    marginBottom: 4,
+  },
+  promotionSavings: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.dark.text,
+  },
   orderItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -250,6 +327,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: Colors.dark.text,
+  },
+  promoLabel: {
+    fontSize: 16,
+    color: Colors.dark.success,
+  },
+  promoValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.dark.success,
   },
   tipSection: {
     borderTopWidth: 1,

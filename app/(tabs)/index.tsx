@@ -14,9 +14,13 @@ import appInfo from '@/constants/appInfo';
 export default function HomeScreen() {
   const router = useRouter();
   const cartItemsCount = useCartStore(state => state.getCartItemsCount());
+  const { getEighthsPromotion } = useCartStore();
   const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified } = useUserStore();
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
+  const [showEighthsBanner, setShowEighthsBanner] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const eighthsPromo = getEighthsPromotion();
 
   useEffect(() => {
     if (!isVerified) {
@@ -46,6 +50,10 @@ export default function HomeScreen() {
     }
   }, [isNewUser, markAsExistingUser]);
 
+  const handleCloseEighthsBanner = useCallback(() => {
+    setShowEighthsBanner(false);
+  }, []);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -74,6 +82,7 @@ export default function HomeScreen() {
   }, []);
 
   const shouldShowDiscountBanner = isNewUser && !hasUsedDiscount && showDiscountBanner;
+  const shouldShowEighthsBanner = showEighthsBanner && !eighthsPromo.eligible;
 
   if (!isVerified) {
     return null;
@@ -122,6 +131,13 @@ export default function HomeScreen() {
 
         {shouldShowDiscountBanner && (
           <DiscountBanner onClose={handleCloseBanner} />
+        )}
+
+        {shouldShowEighthsBanner && (
+          <DiscountBanner 
+            showEighthsPromo={true} 
+            onClose={handleCloseEighthsBanner} 
+          />
         )}
 
         <View style={styles.biographySection}>
