@@ -30,6 +30,11 @@ export default function DiscountBanner({ onClose, showEighthsPromo = false }: Di
   };
 
   if (showEighthsPromo) {
+    const promotion = appInfo.eighthsPromotion;
+    if (!promotion) {
+      return null; // Don't render if promotion data is missing
+    }
+
     return (
       <View style={[styles.container, styles.eighthsContainer]}>
         <View style={styles.sparkleContainer}>
@@ -64,9 +69,9 @@ export default function DiscountBanner({ onClose, showEighthsPromo = false }: Di
             <Zap size={20} color={Colors.dark.text} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.title}>⚡ {appInfo.eighthsPromotion.title}</Text>
-            <Text style={styles.subtitle}>{appInfo.eighthsPromotion.subtitle}</Text>
-            <Text style={styles.promoCode}>{appInfo.eighthsPromotion.description}</Text>
+            <Text style={styles.title}>⚡ {promotion.title}</Text>
+            <Text style={styles.subtitle}>{promotion.subtitle}</Text>
+            <Text style={styles.promoCode}>{promotion.description}</Text>
             {eighthsPromo.eligible && (
               <Text style={styles.activePromo}>
                 🎉 Active in your cart! Saving ${eighthsPromo.savings.toFixed(2)}

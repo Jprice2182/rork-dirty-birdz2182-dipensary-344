@@ -42,6 +42,6 @@ const appInfo = {
   legalDisclaimer: "This product has not been analyzed or approved by the FDA. For use only by adults 21 years of age and older. Keep out of reach of children and pets.",
   privacyPolicyUrl: "https://dirtybirdz2182.com/privacy",
   termsOfServiceUrl: "https://dirtybirdz2182.com/terms"
-};
+} as const;
 
 export default appInfo;

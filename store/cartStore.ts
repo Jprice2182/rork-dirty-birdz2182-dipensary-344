@@ -265,7 +265,7 @@ function calculateEighthsPromotion(items: CartItem[]): EighthsPromotion {
   const eighthItems = items.filter(item => isEighth(item.id));
   const totalEighths = eighthItems.reduce((sum, item) => sum + item.quantity, 0);
   
-  if (totalEighths < appInfo.eighthsPromotion.minimumQuantity) {
+  if (totalEighths < (appInfo.eighthsPromotion?.minimumQuantity || 2)) {
     return {
       eligible: false,
       totalEighths,
@@ -289,7 +289,7 @@ function calculateEighthsPromotion(items: CartItem[]): EighthsPromotion {
   
   // Calculate savings: regular price - $1 for each discounted eighth
   const regularPrice = 30; // All eighths are $30
-  const savings = discountedEighths * (regularPrice - appInfo.eighthsPromotion.discountPrice);
+  const savings = discountedEighths * (regularPrice - (appInfo.eighthsPromotion?.discountPrice || 1));
   
   return {
     eligible: true,

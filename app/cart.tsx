@@ -82,6 +82,8 @@ export default function CartScreen() {
     );
   }
 
+  const promotion = appInfo.eighthsPromotion;
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -110,7 +112,7 @@ export default function CartScreen() {
         )}
 
         {/* Eighths promotion status */}
-        {eighthsPromo.totalEighths > 0 && !eighthsPromo.eligible && (
+        {eighthsPromo.totalEighths > 0 && !eighthsPromo.eligible && promotion && (
           <View style={styles.promoStatusContainer}>
             <Text style={styles.promoStatusTitle}>🌿 Eighths Special Progress</Text>
             <Text style={styles.promoStatusText}>

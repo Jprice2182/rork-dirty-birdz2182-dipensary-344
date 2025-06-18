@@ -82,6 +82,8 @@ export default function Checkout() {
     setPromoDiscount(discount);
   };
 
+  const promotion = appInfo.eighthsPromotion;
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
@@ -111,10 +113,10 @@ export default function Checkout() {
         </View>
 
         {/* Eighths Promotion */}
-        {eighthsPromo.eligible && (
+        {eighthsPromo.eligible && promotion && (
           <View style={styles.promotionSection}>
-            <Text style={styles.promotionTitle}>🎉 {appInfo.eighthsPromotion.title}</Text>
-            <Text style={styles.promotionSubtitle}>{appInfo.eighthsPromotion.subtitle}</Text>
+            <Text style={styles.promotionTitle}>🎉 {promotion.title}</Text>
+            <Text style={styles.promotionSubtitle}>{promotion.subtitle}</Text>
             <View style={styles.promotionDetails}>
               <Text style={styles.promotionText}>
                 {eighthsPromo.discountedEighths} eighth{eighthsPromo.discountedEighths !== 1 ? 's' : ''} for $1 each
