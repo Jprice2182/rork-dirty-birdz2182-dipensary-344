@@ -6,6 +6,7 @@ import Colors from '@/constants/colors';
 import { categories } from '@/constants/categories';
 import CategoryCard from '@/components/CategoryCard';
 import DiscountBanner from '@/components/DiscountBanner';
+import SafeText from '@/components/SafeText';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
 import { getProductCountsByCategory, validateProducts } from '@/mocks/products';
@@ -105,11 +106,11 @@ export default function HomeScreen() {
       >
         <View style={styles.header}>
           <View style={styles.headerText}>
-            <Text style={styles.greeting}>
+            <SafeText style={styles.greeting}>
               {name ? `Welcome back, ${name}` : 'Welcome to Atlanta'}
-            </Text>
-            <Text style={styles.title}>{appInfo.name}</Text>
-            <Text style={styles.subtitle}>{appInfo.slogan}</Text>
+            </SafeText>
+            <SafeText style={styles.title}>{appInfo.name}</SafeText>
+            <SafeText style={styles.subtitle}>{appInfo.slogan}</SafeText>
           </View>
           
           <Pressable 
@@ -121,9 +122,9 @@ export default function HomeScreen() {
             <ShoppingCart size={24} color={Colors.dark.text} />
             {cartItemsCount > 0 && (
               <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>
+                <SafeText style={styles.cartBadgeText}>
                   {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                </Text>
+                </SafeText>
               </View>
             )}
           </Pressable>
@@ -141,46 +142,46 @@ export default function HomeScreen() {
         )}
 
         <View style={styles.biographySection}>
-          <Text style={styles.biographyTitle}>Atlanta: The Heart of the South</Text>
-          <Text style={styles.biographySubtitle}>Where Culture Meets Cannabis Freedom</Text>
+          <SafeText style={styles.biographyTitle}>Atlanta: The Heart of the South</SafeText>
+          <SafeText style={styles.biographySubtitle}>Where Culture Meets Cannabis Freedom</SafeText>
           
           <View style={styles.biographyContent}>
-            <Text style={styles.biographyText}>
+            <SafeText style={styles.biographyText}>
               Atlanta is a city that captivates the soul. From the moment you experience its warm Southern hospitality to the vibrant energy that pulses through its tree-lined streets, Atlanta offers an unmatched blend of historic charm and modern sophistication that makes it one of America's most beautiful cities.
-            </Text>
+            </SafeText>
             
-            <Text style={styles.biographyText}>
+            <SafeText style={styles.biographyText}>
               The city's stunning skyline rises majestically above a canopy of towering oaks and dogwoods, earning Atlanta its nickname "The City in a Forest." Whether you are strolling through the artistic corridors of the High Museum, exploring the bustling markets of Ponce City Market, or enjoying the scenic beauty of Piedmont Park, Atlanta's natural beauty and architectural marvels create an atmosphere unlike anywhere else.
-            </Text>
+            </SafeText>
             
-            <Text style={styles.biographyText}>
+            <SafeText style={styles.biographyText}>
               Atlanta's culture is as rich and diverse as its landscape. This is the birthplace of civil rights, the home of world-class cuisine, and a hub for music that has shaped generations. From the soulful sounds of hip-hop born in its neighborhoods to the elegant symphony performances at the Fox Theatre, Atlanta's cultural tapestry weaves together tradition and innovation in the most beautiful way.
-            </Text>
+            </SafeText>
             
-            <Text style={styles.biographyText}>
+            <SafeText style={styles.biographyText}>
               The vibe here is infectious - a perfect blend of laid-back Southern charm and metropolitan energy. People gather in cozy coffee shops in Virginia-Highland, celebrate at rooftop bars overlooking the city, and connect in the eclectic neighborhoods that each tell their own unique story. Atlanta embraces everyone with open arms and genuine warmth.
-            </Text>
+            </SafeText>
             
             <View style={styles.cannabisSection}>
-              <Text style={styles.cannabisTitle}>Cannabis Freedom in Georgia</Text>
-              <Text style={styles.biographyText}>
+              <SafeText style={styles.cannabisTitle}>Cannabis Freedom in Georgia</SafeText>
+              <SafeText style={styles.biographyText}>
                 Georgia has embraced a progressive approach to cannabis, with medical marijuana now legal and accessible to qualified patients. Atlanta leads the way in creating a welcoming, regulated environment where patients can access quality cannabis products safely and legally. This milestone represents not just policy change, but Atlanta's continued commitment to health, wellness, and personal freedom.
-              </Text>
+              </SafeText>
               
-              <Text style={styles.biographyText}>
+              <SafeText style={styles.biographyText}>
                 In this beautiful city where tradition meets progress, cannabis legalization has opened doors to new opportunities for wellness, community, and economic growth. Atlanta's cannabis culture reflects the city itself - diverse, welcoming, and forward-thinking, creating a space where everyone can find what they need in a safe, legal, and beautiful environment.
-              </Text>
+              </SafeText>
               
-              <Text style={styles.biographyText}>
+              <SafeText style={styles.biographyText}>
                 From premium flower grown with Georgia's rich soil to innovative edibles and concentrates, our dispensary brings you the finest cannabis products available. We are proud to serve Atlanta's cannabis community with the same warmth and excellence that defines this incredible city.
-              </Text>
+              </SafeText>
             </View>
           </View>
         </View>
 
         <View style={styles.categoriesSection}>
-          <Text style={styles.sectionTitle}>Shop Categories</Text>
-          <Text style={styles.sectionSubtitle}>Discover premium cannabis products</Text>
+          <SafeText style={styles.sectionTitle}>Shop Categories</SafeText>
+          <SafeText style={styles.sectionSubtitle}>Discover premium cannabis products</SafeText>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
