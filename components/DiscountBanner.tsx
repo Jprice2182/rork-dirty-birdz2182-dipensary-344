@@ -69,12 +69,14 @@ export default function DiscountBanner({ onClose, showEighthsPromo = false }: Di
             <Zap size={20} color={Colors.dark.text} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.title}>⚡ {promotion.title}</Text>
+            <Text style={styles.title}>
+              <Text>⚡ {promotion.title}</Text>
+            </Text>
             <Text style={styles.subtitle}>{promotion.subtitle}</Text>
             <Text style={styles.promoCode}>{promotion.description}</Text>
             {eighthsPromo.eligible && (
               <Text style={styles.activePromo}>
-                🎉 Active in your cart! Saving ${eighthsPromo.savings.toFixed(2)}
+                <Text>🎉 Active in your cart! Saving ${eighthsPromo.savings.toFixed(2)}</Text>
               </Text>
             )}
           </View>
@@ -117,7 +119,9 @@ export default function DiscountBanner({ onClose, showEighthsPromo = false }: Di
           <Tag size={20} color={Colors.dark.text} />
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.title}>🎉 WELCOME TO ATLANTA!</Text>
+          <Text style={styles.title}>
+            <Text>🎉 WELCOME TO ATLANTA!</Text>
+          </Text>
           <Text style={styles.subtitle}>20% OFF YOUR FIRST ORDER</Text>
           <Text style={styles.promoCode}>Use code "{appInfo.promoCode}" at checkout</Text>
         </View>

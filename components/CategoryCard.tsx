@@ -6,7 +6,7 @@ import Colors from '@/constants/colors';
 interface CategoryCardProps {
   id: string;
   name: string;
-  icon: string; // Changed from any to string since we're using emoji strings
+  icon: string;
 }
 
 export default function CategoryCard({ id, name, icon }: CategoryCardProps) {
