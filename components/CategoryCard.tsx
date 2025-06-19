@@ -6,24 +6,14 @@ import Colors from '@/constants/colors';
 interface CategoryCardProps {
   id: string;
   name: string;
-  icon: any;
+  icon: string; // Changed from any to string since we're using emoji strings
 }
 
-export default function CategoryCard({ id, name, icon: IconComponent }: CategoryCardProps) {
+export default function CategoryCard({ id, name, icon }: CategoryCardProps) {
   const router = useRouter();
 
   const handlePress = () => {
     router.push(`/category/${id}`);
-  };
-
-  const renderIcon = () => {
-    const iconProps = {
-      size: 24,
-      color: Colors.dark.text,
-      strokeWidth: 1.5
-    };
-
-    return <IconComponent {...iconProps} />;
   };
 
   return (
@@ -35,7 +25,7 @@ export default function CategoryCard({ id, name, icon: IconComponent }: Category
       onPress={handlePress}
     >
       <View style={styles.iconContainer}>
-        {renderIcon()}
+        <Text style={styles.iconText}>{icon}</Text>
       </View>
       <Text style={styles.name}>{name}</Text>
     </Pressable>
@@ -59,6 +49,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+  },
+  iconText: {
+    fontSize: 24,
   },
   name: {
     color: Colors.dark.text,
