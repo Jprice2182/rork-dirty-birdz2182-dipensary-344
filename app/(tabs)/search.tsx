@@ -7,7 +7,9 @@ import { products } from '@/mocks/products';
 import { categories } from '@/constants/categories';
 import ProductCard from '@/components/ProductCard';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
+import SafeText from '@/components/SafeText';
 import { useUserStore } from '@/store/userStore';
+import { safeTextContent } from '@/utils/safeRender';
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -103,12 +105,12 @@ export default function SearchScreen() {
           ]}
           onPress={() => setSelectedCategory(null)}
         >
-          <Text style={[
+          <SafeText style={[
             styles.categoryFilterText,
             !selectedCategory && styles.categoryFilterTextActive
           ]}>
             All
-          </Text>
+          </SafeText>
         </Pressable>
         
         {categories.map(category => (
@@ -120,13 +122,15 @@ export default function SearchScreen() {
             ]}
             onPress={() => setSelectedCategory(category.id)}
           >
-            <Text style={styles.categoryFilterEmoji}>{category.icon}</Text>
-            <Text style={[
+            <SafeText style={styles.categoryFilterEmoji}>
+              {safeTextContent(category.icon)}
+            </SafeText>
+            <SafeText style={[
               styles.categoryFilterText,
               selectedCategory === category.id && styles.categoryFilterTextActive
             ]}>
-              {category.name}
-            </Text>
+              {safeTextContent(category.name)}
+            </SafeText>
           </Pressable>
         ))}
       </ScrollView>
@@ -134,12 +138,12 @@ export default function SearchScreen() {
       {/* Clear Filters */}
       {(searchQuery || selectedCategory) && (
         <View style={styles.activeFilters}>
-          <Text style={styles.activeFiltersText}>
+          <SafeText style={styles.activeFiltersText}>
             {filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''}
-          </Text>
+          </SafeText>
           <Pressable onPress={clearFilters} style={styles.clearFiltersButton}>
             <Filter size={16} color={Colors.dark.primary} />
-            <Text style={styles.clearFiltersText}>Clear Filters</Text>
+            <SafeText style={styles.clearFiltersText}>Clear Filters</SafeText>
           </Pressable>
         </View>
       )}
@@ -152,10 +156,10 @@ export default function SearchScreen() {
       >
         {filteredProducts.length === 0 ? (
           <View style={styles.noResults}>
-            <Text style={styles.noResultsTitle}>No products found</Text>
-            <Text style={styles.noResultsText}>
+            <SafeText style={styles.noResultsTitle}>No products found</SafeText>
+            <SafeText style={styles.noResultsText}>
               Try adjusting your search or filters
-            </Text>
+            </SafeText>
           </View>
         ) : (
           <View style={styles.productsGrid}>
@@ -195,6 +199,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 48,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   searchIcon: {
     marginRight: 12,
@@ -260,6 +266,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   clearFiltersText: {
     color: Colors.dark.primary,

@@ -7,7 +7,9 @@ import { products } from '@/mocks/products';
 import { categories } from '@/constants/categories';
 import ProductCard from '@/components/ProductCard';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
+import SafeText from '@/components/SafeText';
 import { useUserStore } from '@/store/userStore';
+import { safeTextContent } from '@/utils/safeRender';
 
 type SortOption = 'name' | 'price-low' | 'price-high' | 'rating';
 
@@ -66,7 +68,7 @@ export default function CategoryScreen() {
   if (!category) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Category not found</Text>
+        <SafeText style={styles.errorText}>Category not found</SafeText>
       </View>
     );
   }
@@ -85,7 +87,7 @@ export default function CategoryScreen() {
     <View style={styles.container}>
       <Stack.Screen 
         options={{ 
-          title: category.name,
+          title: safeTextContent(category.name),
           headerStyle: { backgroundColor: Colors.dark.card },
           headerTintColor: Colors.dark.text,
           headerTitleStyle: { fontWeight: 'bold' },
@@ -95,13 +97,16 @@ export default function CategoryScreen() {
       {/* Category Header */}
       <View style={styles.header}>
         <View style={styles.categoryInfo}>
-          <Text style={styles.categoryIcon}>{category.icon}</Text>
+          <SafeText style={styles.categoryIcon}>
+            {safeTextContent(category.icon)}
+          </SafeText>
           <View style={styles.categoryText}>
-            <Text style={styles.categoryName}>{category.name}</Text>
-            <Text style={styles.categoryDescription}>{category.description}</Text>
-            <Text style={styles.productCount}>
+            <SafeText style={styles.categoryName}>
+              {safeTextContent(category.name)}
+            </SafeText>
+            <SafeText style={styles.productCount}>
               {categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''}
-            </Text>
+            </SafeText>
           </View>
         </View>
 
@@ -111,7 +116,7 @@ export default function CategoryScreen() {
           onPress={() => setShowSortOptions(!showSortOptions)}
         >
           <Filter size={20} color={Colors.dark.text} />
-          <Text style={styles.sortButtonText}>Sort</Text>
+          <SafeText style={styles.sortButtonText}>Sort</SafeText>
         </Pressable>
       </View>
 
@@ -130,12 +135,12 @@ export default function CategoryScreen() {
                 setShowSortOptions(false);
               }}
             >
-              <Text style={[
+              <SafeText style={[
                 styles.sortOptionText,
                 sortBy === option && styles.sortOptionTextActive
               ]}>
                 {getSortLabel(option)}
-              </Text>
+              </SafeText>
             </Pressable>
           ))}
         </View>
@@ -149,10 +154,10 @@ export default function CategoryScreen() {
       >
         {sortedProducts.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateTitle}>No products available</Text>
-            <Text style={styles.emptyStateText}>
-              Check back soon for new {category.name.toLowerCase()} products!
-            </Text>
+            <SafeText style={styles.emptyStateTitle}>No products available</SafeText>
+            <SafeText style={styles.emptyStateText}>
+              Check back soon for new {safeTextContent(category.name).toLowerCase()} products!
+            </SafeText>
           </View>
         ) : (
           <View style={styles.productsGrid}>
@@ -208,11 +213,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 2,
   },
-  categoryDescription: {
-    color: Colors.dark.subtext,
-    fontSize: 14,
-    marginBottom: 2,
-  },
   productCount: {
     color: Colors.dark.primary,
     fontSize: 12,
@@ -225,6 +225,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   sortButtonText: {
     color: Colors.dark.text,

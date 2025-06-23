@@ -24,9 +24,4 @@ export const categories = [
     name: 'Pre-Rolls',
     icon: '🚬',
   },
-  {
-    id: '6',
-    name: 'Topicals',
-    icon: '🧴',
-  },
 ];

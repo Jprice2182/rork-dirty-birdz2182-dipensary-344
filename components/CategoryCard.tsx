@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
+import SafeText from '@/components/SafeText';
+import { safeTextContent } from '@/utils/safeRender';
 
 interface CategoryCardProps {
   id: string;
@@ -16,6 +18,10 @@ export default function CategoryCard({ id, name, icon }: CategoryCardProps) {
     router.push(`/category/${id}`);
   };
 
+  // Ensure all content is safely rendered as text
+  const safeIcon = safeTextContent(icon);
+  const safeName = safeTextContent(name);
+
   return (
     <Pressable 
       style={({ pressed }) => [
@@ -25,9 +31,9 @@ export default function CategoryCard({ id, name, icon }: CategoryCardProps) {
       onPress={handlePress}
     >
       <View style={styles.iconContainer}>
-        <Text style={styles.iconText}>{icon}</Text>
+        <SafeText style={styles.iconText}>{safeIcon}</SafeText>
       </View>
-      <Text style={styles.name}>{name}</Text>
+      <SafeText style={styles.name}>{safeName}</SafeText>
     </Pressable>
   );
 }
@@ -49,13 +55,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
   },
   iconText: {
     fontSize: 24,
+    textAlign: 'center',
   },
   name: {
     color: Colors.dark.text,
     fontSize: 14,
     textAlign: 'center',
+    fontWeight: '500',
   },
 });

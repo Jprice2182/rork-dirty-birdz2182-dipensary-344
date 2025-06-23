@@ -2,6 +2,8 @@ import React, { memo } from 'react';
 import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
+import SafeText from '@/components/SafeText';
+import { safeTextContent } from '@/utils/safeRender';
 
 interface ProductCardProps {
   id: string;
@@ -28,9 +30,9 @@ const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }
   };
 
   const getDisplayUnit = () => {
-    if (weight) return weight;
-    if (count) return count;
-    if (volume) return volume;
+    if (weight) return safeTextContent(weight);
+    if (count) return safeTextContent(count);
+    if (volume) return safeTextContent(volume);
     return '';
   };
 
@@ -65,14 +67,14 @@ const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }
         resizeMode="cover"
       />
       <View style={styles.content}>
-        <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
-          {name || 'Unnamed Product'}
-        </Text>
-        <Text style={styles.thc}>{formatTHC(thc)}</Text>
+        <SafeText style={styles.name} numberOfLines={2} ellipsizeMode="tail">
+          {safeTextContent(name) || 'Unnamed Product'}
+        </SafeText>
+        <SafeText style={styles.thc}>{formatTHC(thc)}</SafeText>
         {getDisplayUnit() ? (
-          <Text style={styles.detail}>{getDisplayUnit()}</Text>
+          <SafeText style={styles.detail}>{getDisplayUnit()}</SafeText>
         ) : null}
-        <Text style={styles.price}>{formatPrice(price)}</Text>
+        <SafeText style={styles.price}>{formatPrice(price)}</SafeText>
       </View>
     </Pressable>
   );
