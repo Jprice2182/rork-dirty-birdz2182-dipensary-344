@@ -250,7 +250,7 @@ export default function ProfileScreen() {
                 <Calendar size={20} color={Colors.dark.primary} style={styles.birthdayIcon} />
                 <View>
                   <Text style={styles.birthdayTitle}>Birthday Promotion</Text>
-                  <Text style={styles.birthdayDescription}>Get a free 0.5g pre-roll on your birthday!</Text>
+                  <Text style={styles.birthdayDescription}>Get a free 1g pre-roll on your birthday!</Text>
                 </View>
               </View>
               <ChevronRight size={16} color={Colors.dark.subtext} />
