@@ -40,7 +40,7 @@ export default function ProfileScreen() {
 
   // Show age verification if not verified - this should be the first thing checked
   if (!isVerified) {
-    return <AgeVerificationModal visible={true} />;
+    return <AgeVerificationModal isVisible={true} />;
   }
 
   const [isEditing, setIsEditing] = useState(false);
