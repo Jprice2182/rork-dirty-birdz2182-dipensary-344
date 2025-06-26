@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, Pressable, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { MapPin, Phone, Clock, Package, Truck, CheckCircle, AlertCircle, Tag, Star, Map, XCircle } from 'lucide-react-native';
+import { MapPin, Phone, Clock, Package, Truck, CheckCircle, AlertCircle, Tag, Star, Map, XCircle, CreditCard, DollarSign } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useOrderStore } from '@/store/orderStore';
 import { getProductById } from '@/mocks/products';
@@ -67,6 +67,21 @@ export default function OrderDetailScreen() {
       default:
         return 'Pending';
     }
+  };
+
+  const getPaymentMethodIcon = () => {
+    return order.paymentMethod === 'card' ? 
+      <CreditCard size={20} color={Colors.dark.primary} /> : 
+      <DollarSign size={20} color={Colors.dark.primary} />;
+  };
+
+  const getPaymentMethodText = () => {
+    if (order.paymentMethod === 'card') {
+      return order.paymentInfo?.cardLast4 ? 
+        `${order.paymentInfo.cardType} ending in ${order.paymentInfo.cardLast4}` : 
+        'Credit/Debit Card';
+    }
+    return 'Cash on Delivery';
   };
 
   const handleRateDriver = () => {
@@ -157,6 +172,20 @@ export default function OrderDetailScreen() {
           </Text>
         </View>
       )}
+
+      {/* Payment Method */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Payment Method</Text>
+        <View style={styles.paymentMethodContainer}>
+          {getPaymentMethodIcon()}
+          <View style={styles.paymentMethodInfo}>
+            <Text style={styles.paymentMethodText}>{getPaymentMethodText()}</Text>
+            <Text style={styles.paymentMethodSubtext}>
+              {order.paymentMethod === 'card' ? 'Paid securely' : 'Pay on delivery'}
+            </Text>
+          </View>
+        </View>
+      </View>
       
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Delivery Information</Text>
@@ -447,6 +476,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
+  },
+  paymentMethodContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.dark.background,
+    borderRadius: 8,
+    padding: 12,
+  },
+  paymentMethodInfo: {
+    marginLeft: 12,
+  },
+  paymentMethodText: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  paymentMethodSubtext: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
   },
   deliveryInfoContainer: {
     gap: 16,

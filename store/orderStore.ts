@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import appInfo from '@/constants/appInfo';
+import { PaymentMethod, PaymentInfo } from '@/types/product';
 
 export interface OrderItem {
   id: string;
@@ -33,6 +34,8 @@ export interface Order {
   tipAmount?: number;
   discountApplied?: number;
   promoCodeApplied?: string;
+  paymentMethod: PaymentMethod;
+  paymentInfo?: PaymentInfo;
 }
 
 interface OrderState {
@@ -44,6 +47,8 @@ interface OrderState {
     tax: number;
     tip: number;
     total: number;
+    paymentMethod: PaymentMethod;
+    paymentInfo?: PaymentInfo;
   }) => string;
   getOrderById: (id: string) => Order | undefined;
   updateOrderStatus: (id: string, status: Order['status']) => void;
@@ -83,13 +88,15 @@ export const useOrderStore = create<OrderState>()(
           estimatedArrival: 'on-time',
           isRated: false,
           tipAmount: orderData.tip,
+          paymentMethod: orderData.paymentMethod,
+          paymentInfo: orderData.paymentInfo,
         };
         
         set((state) => ({
           orders: [newOrder, ...state.orders]
         }));
         
-        console.log(`Created order ${orderId} with delivery fee: ${finalDeliveryFee === 0 ? 'FREE' : `$${finalDeliveryFee.toFixed(2)}`}`);
+        console.log(`Created order ${orderId} with payment method: ${orderData.paymentMethod}, delivery fee: ${finalDeliveryFee === 0 ? 'FREE' : `$${finalDeliveryFee.toFixed(2)}`}`);
         return orderId;
       },
       

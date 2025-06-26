@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CheckCircle, Home, Package, Tag, Clock, Truck } from 'lucide-react-native';
+import { CheckCircle, Home, Package, Tag, Clock, Truck, CreditCard, DollarSign } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useOrderStore } from '@/store/orderStore';
 import appInfo from '@/constants/appInfo';
@@ -32,6 +32,21 @@ export default function OrderConfirmationScreen() {
 
   const isFreeDelivery = order.deliveryFee === 0;
 
+  const getPaymentMethodIcon = () => {
+    return order.paymentMethod === 'card' ? 
+      <CreditCard size={16} color={Colors.dark.primary} /> : 
+      <DollarSign size={16} color={Colors.dark.primary} />;
+  };
+
+  const getPaymentMethodText = () => {
+    if (order.paymentMethod === 'card') {
+      return order.paymentInfo?.cardLast4 ? 
+        `${order.paymentInfo.cardType} ending in ${order.paymentInfo.cardLast4}` : 
+        'Credit/Debit Card';
+    }
+    return 'Cash on Delivery';
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -55,6 +70,15 @@ export default function OrderConfirmationScreen() {
           <View style={styles.orderInfoRow}>
             <Text style={styles.orderInfoLabel}>Date</Text>
             <Text style={styles.orderInfoValue}>{order.date}</Text>
+          </View>
+
+          {/* Payment Method */}
+          <View style={styles.paymentMethodRow}>
+            <View style={styles.paymentMethodLabelContainer}>
+              {getPaymentMethodIcon()}
+              <Text style={styles.paymentMethodLabel}>Payment Method</Text>
+            </View>
+            <Text style={styles.paymentMethodValue}>{getPaymentMethodText()}</Text>
           </View>
 
           {/* Free Delivery Highlight */}
@@ -174,6 +198,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  paymentMethodRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    backgroundColor: Colors.dark.background,
+    borderRadius: 8,
+    padding: 8,
+  },
+  paymentMethodLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  paymentMethodLabel: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  paymentMethodValue: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: '500',
   },
   freeDeliveryRow: {
     flexDirection: 'row',

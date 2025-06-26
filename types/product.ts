@@ -44,3 +44,11 @@ export interface OrderItem {
   variantId?: string;
   variantName?: string;
 }
+
+export type PaymentMethod = 'cash' | 'card';
+
+export interface PaymentInfo {
+  method: PaymentMethod;
+  cardLast4?: string;
+  cardType?: string;
+}

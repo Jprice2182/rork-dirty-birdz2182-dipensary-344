@@ -7,8 +7,10 @@ import Colors from '@/constants/colors';
 import appInfo from '@/constants/appInfo';
 import TipDriverModal from '@/components/TipDriverModal';
 import PromoCodeInput from '@/components/PromoCodeInput';
+import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 import { getProductById } from '@/mocks/products';
 import { Truck, CheckCircle } from 'lucide-react-native';
+import { PaymentMethod, PaymentInfo } from '@/types/product';
 
 export default function Checkout() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function Checkout() {
   const [showTipModal, setShowTipModal] = useState(false);
   const [selectedTip, setSelectedTip] = useState(0);
   const [promoDiscount, setPromoDiscount] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
 
   const subtotal = getCartTotal();
   const eighthsPromo = getEighthsPromotion();
@@ -62,6 +65,16 @@ export default function Checkout() {
       return;
     }
 
+    // Create payment info based on selected method
+    const paymentInfo: PaymentInfo = {
+      method: paymentMethod,
+      // For demo purposes, we'll add mock card info if card is selected
+      ...(paymentMethod === 'card' && {
+        cardLast4: '4242',
+        cardType: 'Visa'
+      })
+    };
+
     const orderId = createOrder({
       items: orderItems,
       subtotal,
@@ -69,6 +82,8 @@ export default function Checkout() {
       tax,
       tip: selectedTip,
       total: finalTotal,
+      paymentMethod,
+      paymentInfo,
     });
 
     clearCart();
@@ -164,6 +179,14 @@ export default function Checkout() {
           <PromoCodeInput onApply={handleApplyPromo} />
         </View>
 
+        {/* Payment Method */}
+        <View style={styles.section}>
+          <PaymentMethodSelector
+            selectedMethod={paymentMethod}
+            onSelectMethod={setPaymentMethod}
+          />
+        </View>
+
         {/* Pricing Breakdown */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Total</Text>
@@ -241,6 +264,9 @@ export default function Checkout() {
               Add ${(appInfo.freeDeliveryMinimum - subtotal).toFixed(2)} more for free delivery
             </Text>
           )}
+          <Text style={styles.paymentMethodInfo}>
+            Payment method: {paymentMethod === 'card' ? 'Credit/Debit Card' : 'Cash on Delivery'}
+          </Text>
         </View>
 
         {/* Place Order Button */}
@@ -470,6 +496,12 @@ const styles = StyleSheet.create({
     color: Colors.dark.success,
     fontWeight: '600',
     marginBottom: 4,
+  },
+  paymentMethodInfo: {
+    fontSize: 14,
+    color: Colors.dark.primary,
+    fontWeight: '600',
+    marginTop: 8,
   },
   placeOrderButton: {
     backgroundColor: Colors.dark.primary,
