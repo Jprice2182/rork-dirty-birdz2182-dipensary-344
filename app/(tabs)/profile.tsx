@@ -38,9 +38,36 @@ export default function ProfileScreen() {
     useBiometrics
   } = useAuthStore();
 
+  const handleAgeVerified = () => {
+    setVerified(true);
+  };
+
+  const handleAgeVerificationClose = () => {
+    // If user closes without verifying, they can't use the app
+    Alert.alert(
+      "Age Verification Required",
+      "You must verify your age to use this app.",
+      [
+        {
+          text: "Exit App",
+          onPress: () => {
+            // In a real app, you might want to close the app or navigate to a different screen
+            router.replace('/');
+          }
+        }
+      ]
+    );
+  };
+
   // Show age verification if not verified - this should be the first thing checked
   if (!isVerified) {
-    return <AgeVerificationModal isVisible={true} />;
+    return (
+      <AgeVerificationModal 
+        isVisible={true} 
+        onClose={handleAgeVerificationClose}
+        onVerified={handleAgeVerified}
+      />
+    );
   }
 
   const [isEditing, setIsEditing] = useState(false);
