@@ -38,9 +38,10 @@ export default function OrdersScreen() {
     switch (status) {
       case 'pending':
         return <Clock size={20} color={Colors.dark.warning} />;
-      case 'processing':
+      case 'confirmed':
+      case 'preparing':
         return <Package size={20} color={Colors.dark.primary} />;
-      case 'out-for-delivery':
+      case 'out_for_delivery':
         return <Truck size={20} color={Colors.dark.secondary} />;
       case 'delivered':
         return <CheckCircle size={20} color={Colors.dark.success} />;
@@ -55,9 +56,11 @@ export default function OrdersScreen() {
     switch (status) {
       case 'pending':
         return 'Pending';
-      case 'processing':
-        return 'Processing';
-      case 'out-for-delivery':
+      case 'confirmed':
+        return 'Confirmed';
+      case 'preparing':
+        return 'Preparing';
+      case 'out_for_delivery':
         return 'Out for delivery';
       case 'delivered':
         return 'Delivered';
@@ -72,9 +75,10 @@ export default function OrdersScreen() {
     switch (status) {
       case 'pending':
         return Colors.dark.warning;
-      case 'processing':
+      case 'confirmed':
+      case 'preparing':
         return Colors.dark.primary;
-      case 'out-for-delivery':
+      case 'out_for_delivery':
         return Colors.dark.secondary;
       case 'delivered':
         return Colors.dark.success;

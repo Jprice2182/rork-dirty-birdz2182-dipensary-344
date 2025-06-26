@@ -18,7 +18,7 @@ export default function CancelOrderModal({ visible, onClose, orderId }: CancelOr
   const router = useRouter();
   
   const order = getOrderById(orderId);
-  const canCancel = order && (order.status === 'pending' || order.status === 'processing');
+  const canCancel = order && (order.status === 'pending' || order.status === 'confirmed' || order.status === 'preparing');
 
   const handleCancelOrder = () => {
     if (!canCancel) {

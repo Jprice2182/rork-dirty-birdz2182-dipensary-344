@@ -4,7 +4,7 @@ import { Check, Clock, Package, Truck, AlertCircle } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 interface OrderStatusTrackerProps {
-  status: 'pending' | 'processing' | 'out-for-delivery' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'preparing' | 'out_for_delivery' | 'delivered' | 'cancelled';
   estimatedDelivery?: string;
   estimatedProcessingTime?: string;
 }
@@ -17,9 +17,10 @@ export default function OrderStatusTracker({
   const getStatusIndex = () => {
     switch (status) {
       case 'pending': return 0;
-      case 'processing': return 1;
-      case 'out-for-delivery': return 2;
-      case 'delivered': return 3;
+      case 'confirmed': return 1;
+      case 'preparing': return 2;
+      case 'out_for_delivery': return 3;
+      case 'delivered': return 4;
       case 'cancelled': return -1;
       default: return 0;
     }
@@ -59,7 +60,7 @@ export default function OrderStatusTracker({
 
         <View style={[styles.connector, statusIndex > 0 && styles.activeConnector]} />
 
-        {/* Processing */}
+        {/* Confirmed */}
         <View style={[styles.statusItem, statusIndex >= 1 && styles.activeStatusItem]}>
           <View style={[styles.statusIcon, statusIndex >= 1 && styles.activeStatusIcon]}>
             {statusIndex > 1 ? (
@@ -69,40 +70,56 @@ export default function OrderStatusTracker({
             )}
           </View>
           <Text style={[styles.statusText, statusIndex >= 1 && styles.activeStatusText]}>
-            Processing
+            Confirmed
           </Text>
         </View>
 
         <View style={[styles.connector, statusIndex > 1 && styles.activeConnector]} />
 
-        {/* Out for Delivery */}
+        {/* Preparing */}
         <View style={[styles.statusItem, statusIndex >= 2 && styles.activeStatusItem]}>
           <View style={[styles.statusIcon, statusIndex >= 2 && styles.activeStatusIcon]}>
             {statusIndex > 2 ? (
               <Check size={16} color={Colors.dark.text} />
             ) : (
-              <Truck size={16} color={statusIndex >= 2 ? Colors.dark.text : Colors.dark.subtext} />
+              <Package size={16} color={statusIndex >= 2 ? Colors.dark.text : Colors.dark.subtext} />
             )}
           </View>
           <Text style={[styles.statusText, statusIndex >= 2 && styles.activeStatusText]}>
-            Out for Delivery
+            Preparing
           </Text>
-          {statusIndex === 2 && estimatedDelivery && (
-            <Text style={styles.estimatedTime}>Est. arrival: {estimatedDelivery}</Text>
-          )}
         </View>
 
         <View style={[styles.connector, statusIndex > 2 && styles.activeConnector]} />
 
-        {/* Delivered */}
+        {/* Out for Delivery */}
         <View style={[styles.statusItem, statusIndex >= 3 && styles.activeStatusItem]}>
           <View style={[styles.statusIcon, statusIndex >= 3 && styles.activeStatusIcon]}>
-            <Check size={16} color={statusIndex >= 3 ? Colors.dark.text : Colors.dark.subtext} />
+            {statusIndex > 3 ? (
+              <Check size={16} color={Colors.dark.text} />
+            ) : (
+              <Truck size={16} color={statusIndex >= 3 ? Colors.dark.text : Colors.dark.subtext} />
+            )}
           </View>
           <Text style={[styles.statusText, statusIndex >= 3 && styles.activeStatusText]}>
+            Out for Delivery
+          </Text>
+          {statusIndex === 3 && estimatedDelivery && (
+            <Text style={styles.estimatedTime}>Est. arrival: {estimatedDelivery}</Text>
+          )}
+        </View>
+
+        <View style={[styles.connector, statusIndex > 3 && styles.activeConnector]} />
+
+        {/* Delivered */}
+        <View style={[styles.statusItem, statusIndex >= 4 && styles.activeStatusItem]}>
+          <View style={[styles.statusIcon, statusIndex >= 4 && styles.activeStatusIcon]}>
+            <Check size={16} color={statusIndex >= 4 ? Colors.dark.text : Colors.dark.subtext} />
+          </View>
+          <Text style={[styles.statusText, statusIndex >= 4 && styles.activeStatusText]}>
             Delivered
           </Text>
-          {statusIndex === 3 && (
+          {statusIndex === 4 && (
             <Text style={styles.estimatedTime}>Your order has been delivered!</Text>
           )}
         </View>

@@ -39,9 +39,10 @@ export default function OrderDetailScreen() {
     switch (order.status) {
       case 'pending':
         return <Clock size={24} color={Colors.dark.warning} />;
-      case 'processing':
+      case 'confirmed':
+      case 'preparing':
         return <Package size={24} color={Colors.dark.primary} />;
-      case 'out-for-delivery':
+      case 'out_for_delivery':
         return <Truck size={24} color={Colors.dark.secondary} />;
       case 'delivered':
         return <CheckCircle size={24} color={Colors.dark.success} />;
@@ -56,9 +57,11 @@ export default function OrderDetailScreen() {
     switch (order.status) {
       case 'pending':
         return 'Pending';
-      case 'processing':
-        return 'Processing';
-      case 'out-for-delivery':
+      case 'confirmed':
+        return 'Confirmed';
+      case 'preparing':
+        return 'Preparing';
+      case 'out_for_delivery':
         return 'Out for delivery';
       case 'delivered':
         return 'Delivered';
@@ -97,7 +100,7 @@ export default function OrderDetailScreen() {
   };
 
   const handleTrackDriver = () => {
-    if (order.status !== 'out-for-delivery') {
+    if (order.status !== 'out_for_delivery') {
       Alert.alert(
         "Tracking Unavailable",
         "Driver tracking is only available when your order is out for delivery."
@@ -117,7 +120,7 @@ export default function OrderDetailScreen() {
       return;
     }
     
-    if (order.status === 'out-for-delivery') {
+    if (order.status === 'out_for_delivery') {
       Alert.alert(
         "Cannot Cancel",
         "This order cannot be cancelled because it is already out for delivery. Please contact customer service for assistance."
@@ -129,7 +132,7 @@ export default function OrderDetailScreen() {
   };
 
   const handleTipDriver = () => {
-    if (order.status !== 'delivered' && order.status !== 'out-for-delivery') {
+    if (order.status !== 'delivered' && order.status !== 'out_for_delivery') {
       Alert.alert(
         "Cannot Tip Yet",
         "You can tip your driver when your order is out for delivery or has been delivered."
@@ -143,9 +146,9 @@ export default function OrderDetailScreen() {
   const driverId = order.driverId || 'unknown';
   const driverRating = driverRatings[driverId];
   const canRateDriver = order.status === 'delivered' && !order.isRated;
-  const canTrackDriver = order.status === 'out-for-delivery';
-  const canCancel = order.status === 'pending' || order.status === 'processing';
-  const canTip = order.status === 'out-for-delivery' || order.status === 'delivered';
+  const canTrackDriver = order.status === 'out_for_delivery';
+  const canCancel = order.status === 'pending' || order.status === 'confirmed' || order.status === 'preparing';
+  const canTip = order.status === 'out_for_delivery' || order.status === 'delivered';
   const tipAmount = order.tipAmount || 0;
   const isFreeDelivery = order.deliveryFee === 0;
 
@@ -401,10 +404,13 @@ export default function OrderDetailScreen() {
       />
       
       <TipDriverModal
-        visible={showTipModal}
+        isVisible={showTipModal}
         onClose={() => setShowTipModal(false)}
-        orderId={id}
-        driverName={order.driverName}
+        onSelectTip={(amount) => {
+          // Handle tip selection
+          console.log('Tip selected:', amount);
+        }}
+        orderTotal={order.total}
       />
     </ScrollView>
   );
