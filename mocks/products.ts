@@ -1,21 +1,50 @@
-import { Product } from '@/types/product';
+import { Product, ProductVariant } from '@/types/product';
+
+// Flower variants for different quantities with updated pricing
+const flowerVariants: ProductVariant[] = [
+  {
+    id: 'eighth',
+    name: 'Eighth (1/8 oz)',
+    weight: '3.5g',
+    price: 20,
+  },
+  {
+    id: 'quarter',
+    name: 'Quarter (1/4 oz)',
+    weight: '7g',
+    price: 35,
+  },
+  {
+    id: 'half',
+    name: 'Half (1/2 oz)',
+    weight: '14g',
+    price: 55,
+  },
+  {
+    id: 'oz',
+    name: 'Oz (1 oz)',
+    weight: '28g',
+    price: 85,
+  },
+];
 
 export const products: Product[] = [
-  // FLOWER PRODUCTS (Category '1') - 5 products
+  // FLOWER PRODUCTS (Category '1') - 5 products with variants
   {
     id: '1',
     name: 'Northern Lights',
     category: '1',
     thc: 22,
     cbd: 0.1,
-    price: 30,
-    weight: '3.5g',
+    price: 20, // Base price for eighth
+    weight: '3.5g', // Default display weight
     strain: 'Indica',
     rating: 4.8,
     image: 'https://images.unsplash.com/photo-1603909223429-69bb7101f420?q=80&w=1000',
     description: "Northern Lights is a classic indica strain known for its resinous buds and resilience during growth. This strain features crystalline resin and sweet, spicy aromas with hints of pine.",
     effects: ['Relaxed', 'Sleepy', 'Happy'],
     featured: true,
+    variants: flowerVariants,
   },
   {
     id: '2',
@@ -23,7 +52,7 @@ export const products: Product[] = [
     category: '1',
     thc: 18,
     cbd: 0.2,
-    price: 30,
+    price: 20,
     weight: '3.5g',
     strain: 'Sativa Hybrid',
     rating: 4.6,
@@ -31,6 +60,7 @@ export const products: Product[] = [
     description: "Blue Dream is a sativa-dominant hybrid originating in California. A cross between Blueberry and Haze, it balances full-body relaxation with gentle cerebral invigoration.",
     effects: ['Creative', 'Euphoric', 'Relaxed'],
     featured: true,
+    variants: flowerVariants,
   },
   {
     id: '3',
@@ -38,7 +68,7 @@ export const products: Product[] = [
     category: '1',
     thc: 25,
     cbd: 0.1,
-    price: 30,
+    price: 20,
     weight: '3.5g',
     strain: 'Indica Hybrid',
     rating: 4.7,
@@ -46,6 +76,7 @@ export const products: Product[] = [
     description: "Wedding Cake is a potent indica-hybrid strain known for its rich and tangy flavor profile with earthy pepper undertones. The strain provides relaxing and euphoric effects.",
     effects: ['Relaxed', 'Happy', 'Euphoric'],
     featured: false,
+    variants: flowerVariants,
   },
   {
     id: '4',
@@ -53,7 +84,7 @@ export const products: Product[] = [
     category: '1',
     thc: 20,
     cbd: 0.2,
-    price: 30,
+    price: 20,
     weight: '3.5g',
     strain: 'Sativa',
     rating: 4.5,
@@ -61,6 +92,7 @@ export const products: Product[] = [
     description: "Sour Diesel is a sativa strain named after its pungent, diesel-like aroma. This fast-acting strain delivers energizing, dreamy cerebral effects that have pushed Sour Diesel to its legendary status.",
     effects: ['Energetic', 'Happy', 'Uplifting'],
     featured: true,
+    variants: flowerVariants,
   },
   {
     id: '5',
@@ -68,7 +100,7 @@ export const products: Product[] = [
     category: '1',
     thc: 23,
     cbd: 0.1,
-    price: 30,
+    price: 20,
     weight: '3.5g',
     strain: 'Hybrid',
     rating: 4.9,
@@ -76,6 +108,7 @@ export const products: Product[] = [
     description: "Gelato is a hybrid strain that originated in California's Bay Area. This strain is known for its sweet aroma and powerful effects that provide a well-balanced high.",
     effects: ['Relaxed', 'Happy', 'Creative'],
     featured: false,
+    variants: flowerVariants,
   },
 
   // EDIBLE PRODUCTS (Category '2') - 5 products
@@ -399,6 +432,37 @@ export const getProductById = (id: string): Product | undefined => {
   }
   
   return products.find(product => product.id === id);
+};
+
+export const getProductVariant = (productId: string, variantId: string) => {
+  const product = getProductById(productId);
+  if (!product || !product.variants) return null;
+  
+  return product.variants.find(variant => variant.id === variantId);
+};
+
+export const getProductPrice = (productId: string, variantId?: string): number => {
+  const product = getProductById(productId);
+  if (!product) return 0;
+  
+  if (variantId && product.variants) {
+    const variant = product.variants.find(v => v.id === variantId);
+    return variant ? variant.price : product.price;
+  }
+  
+  return product.price;
+};
+
+export const getProductDisplayName = (productId: string, variantId?: string): string => {
+  const product = getProductById(productId);
+  if (!product) return 'Unknown Product';
+  
+  if (variantId && product.variants) {
+    const variant = product.variants.find(v => v.id === variantId);
+    return variant ? `${product.name} - ${variant.name}` : product.name;
+  }
+  
+  return product.name;
 };
 
 // Debug function to check product counts by category

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, Pressable, TextInput, Alert, Platform, Image, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Pressable, TextInput, Alert, Platform, Image, RefreshControl, BackHandler } from 'react-native';
 import { User, MapPin, LogOut, ChevronRight, Edit2, Star, MessageSquare, Mail, Fingerprint, Scan, Trash2, Calendar, Bell, Gift, Camera, Lock } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useUserStore } from '@/store/userStore';
@@ -38,38 +38,6 @@ export default function ProfileScreen() {
     useBiometrics
   } = useAuthStore();
 
-  const handleAgeVerified = () => {
-    setVerified(true);
-  };
-
-  const handleAgeVerificationClose = () => {
-    // If user closes without verifying, they can't use the app
-    Alert.alert(
-      "Age Verification Required",
-      "You must verify your age to use this app.",
-      [
-        {
-          text: "Exit App",
-          onPress: () => {
-            // In a real app, you might want to close the app or navigate to a different screen
-            router.replace('/');
-          }
-        }
-      ]
-    );
-  };
-
-  // Show age verification if not verified - this should be the first thing checked
-  if (!isVerified) {
-    return (
-      <AgeVerificationModal 
-        isVisible={true} 
-        onClose={handleAgeVerificationClose}
-        onVerified={handleAgeVerified}
-      />
-    );
-  }
-
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(name);
   const [editEmail, setEditEmail] = useState(email);
@@ -89,17 +57,86 @@ export default function ProfileScreen() {
   }>({ available: false, biometryType: null });
   const [refreshing, setRefreshing] = useState(false);
 
+  const handleAgeVerified = () => {
+    setVerified(true);
+  };
+
+  const handleAgeVerificationClose = () => {
+    // If user closes without verifying, they can't use the app
+    Alert.alert(
+      "Age Verification Required",
+      "You must verify your age to use this app.",
+      [
+        {
+          text: "Exit App",
+          onPress: () => {
+            if (Platform.OS === 'android') {
+              BackHandler.exitApp();
+            } else {
+              router.replace('/');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  // Android back button handling
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const backAction = () => {
+        if (!isVerified) {
+          Alert.alert(
+            "Age Verification Required",
+            "You must verify your age to use this app.",
+            [
+              {
+                text: "Exit App",
+                onPress: () => BackHandler.exitApp()
+              }
+            ]
+          );
+          return true;
+        }
+        return false;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }
+  }, [isVerified]);
+
   // Check biometric availability
-  React.useEffect(() => {
+  useEffect(() => {
     const checkBiometrics = async () => {
       if (Platform.OS !== 'web') {
-        const result = await checkBiometricAvailability();
-        setBiometricInfo(result);
+        try {
+          const result = await checkBiometricAvailability();
+          setBiometricInfo(result);
+        } catch (error) {
+          console.error('Error checking biometric availability:', error);
+          setBiometricInfo({ available: false, biometryType: null });
+        }
       }
     };
     
     checkBiometrics();
   }, [checkBiometricAvailability]);
+
+  // Show age verification if not verified - this should be the first thing checked
+  if (!isVerified) {
+    return (
+      <AgeVerificationModal 
+        isVisible={true} 
+        onClose={handleAgeVerificationClose}
+        onVerified={handleAgeVerified}
+      />
+    );
+  }
 
   const handleSave = () => {
     updateUserInfo(editName, editEmail, editPhone);
@@ -181,6 +218,7 @@ export default function ProfileScreen() {
         <Pressable 
           style={styles.avatarContainer}
           onPress={() => setShowAvatarSelector(true)}
+          android_ripple={{ color: Colors.dark.primary, borderless: true }}
         >
           {getSelectedAvatar() ? (
             <Image source={{ uri: getSelectedAvatar() }} style={styles.avatarImage} />
@@ -198,7 +236,11 @@ export default function ProfileScreen() {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Personal Information</Text>
           {!isEditing && (
-            <Pressable onPress={() => setIsEditing(true)} style={styles.editButton}>
+            <Pressable 
+              onPress={() => setIsEditing(true)} 
+              style={styles.editButton}
+              android_ripple={{ color: Colors.dark.primary, borderless: true }}
+            >
               <Edit2 size={16} color={Colors.dark.primary} />
               <Text style={styles.editButtonText}>Edit</Text>
             </Pressable>
@@ -244,10 +286,18 @@ export default function ProfileScreen() {
             </View>
             
             <View style={styles.buttonRow}>
-              <Pressable onPress={handleCancel} style={[styles.button, styles.cancelButton]}>
+              <Pressable 
+                onPress={handleCancel} 
+                style={[styles.button, styles.cancelButton]}
+                android_ripple={{ color: Colors.dark.text }}
+              >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </Pressable>
-              <Pressable onPress={handleSave} style={[styles.button, styles.saveButton]}>
+              <Pressable 
+                onPress={handleSave} 
+                style={[styles.button, styles.saveButton]}
+                android_ripple={{ color: Colors.dark.text }}
+              >
                 <Text style={styles.saveButtonText}>Save</Text>
               </Pressable>
             </View>
@@ -272,6 +322,7 @@ export default function ProfileScreen() {
             <Pressable 
               style={styles.birthdayButton}
               onPress={() => setShowBirthdayPromotion(true)}
+              android_ripple={{ color: Colors.dark.primary }}
             >
               <View style={styles.birthdayButtonContent}>
                 <Calendar size={20} color={Colors.dark.primary} style={styles.birthdayIcon} />
@@ -292,6 +343,7 @@ export default function ProfileScreen() {
           <Pressable 
             style={styles.editButton}
             onPress={handleAddAddress}
+            android_ripple={{ color: Colors.dark.primary, borderless: true }}
           >
             <Text style={styles.editButtonText}>Add New</Text>
           </Pressable>
@@ -303,6 +355,7 @@ export default function ProfileScreen() {
               key={index} 
               style={styles.addressCard}
               onPress={() => handleEditAddress(index)}
+              android_ripple={{ color: Colors.dark.primary }}
             >
               <MapPin size={16} color={Colors.dark.primary} style={styles.addressIcon} />
               <View style={styles.addressContent}>
@@ -319,6 +372,7 @@ export default function ProfileScreen() {
             <Pressable 
               style={styles.addAddressButton}
               onPress={handleAddAddress}
+              android_ripple={{ color: Colors.dark.primary }}
             >
               <Text style={styles.addAddressButtonText}>Add Address</Text>
             </Pressable>
@@ -332,6 +386,7 @@ export default function ProfileScreen() {
         <Pressable 
           style={styles.notificationOption}
           onPress={() => setShowNotificationPreferences(true)}
+          android_ripple={{ color: Colors.dark.primary }}
         >
           <Bell size={20} color={Colors.dark.primary} style={styles.notificationIcon} />
           <View style={styles.notificationContent}>
@@ -351,6 +406,7 @@ export default function ProfileScreen() {
           <Pressable 
             style={styles.securityOption}
             onPress={() => setShowBiometricModal(true)}
+            android_ripple={{ color: Colors.dark.primary }}
           >
             {getBiometricIcon()}
             <View style={styles.securityOptionContent}>
@@ -368,6 +424,7 @@ export default function ProfileScreen() {
         <Pressable 
           style={styles.securityOption}
           onPress={() => router.push('/forgot-password')}
+          android_ripple={{ color: Colors.dark.primary }}
         >
           <Lock size={20} color={Colors.dark.primary} style={styles.securityOptionIcon} />
           <View style={styles.securityOptionContent}>
@@ -386,6 +443,7 @@ export default function ProfileScreen() {
         <Pressable 
           style={styles.feedbackOption}
           onPress={() => setShowRateAppModal(true)}
+          android_ripple={{ color: Colors.dark.primary }}
         >
           <Star size={20} color={Colors.dark.primary} style={styles.feedbackIcon} />
           <View style={styles.feedbackContent}>
@@ -400,6 +458,7 @@ export default function ProfileScreen() {
         <Pressable 
           style={styles.feedbackOption}
           onPress={() => setShowCustomerServiceModal(true)}
+          android_ripple={{ color: Colors.dark.primary }}
         >
           <Mail size={20} color={Colors.dark.primary} style={styles.feedbackIcon} />
           <View style={styles.feedbackContent}>
@@ -412,7 +471,10 @@ export default function ProfileScreen() {
         </Pressable>
         
         {reviews.length > 0 && (
-          <Pressable style={styles.feedbackOption}>
+          <Pressable 
+            style={styles.feedbackOption}
+            android_ripple={{ color: Colors.dark.primary }}
+          >
             <MessageSquare size={20} color={Colors.dark.primary} style={styles.feedbackIcon} />
             <View style={styles.feedbackContent}>
               <Text style={styles.feedbackTitle}>Your Reviews</Text>
@@ -428,12 +490,17 @@ export default function ProfileScreen() {
       <Pressable 
         style={styles.deleteAccountButton} 
         onPress={() => setShowDeleteAccountModal(true)}
+        android_ripple={{ color: Colors.dark.error }}
       >
         <Trash2 size={20} color={Colors.dark.error} />
         <Text style={styles.deleteAccountText}>Delete Account</Text>
       </Pressable>
 
-      <Pressable style={styles.logoutButton} onPress={handleLogout}>
+      <Pressable 
+        style={styles.logoutButton} 
+        onPress={handleLogout}
+        android_ripple={{ color: Colors.dark.error }}
+      >
         <LogOut size={20} color={Colors.dark.error} />
         <Text style={styles.logoutText}>Logout</Text>
       </Pressable>
@@ -492,6 +559,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 16,
+    paddingBottom: Platform.OS === 'android' ? 24 : 16,
   },
   header: {
     flexDirection: 'row',
@@ -507,6 +575,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 16,
     position: 'relative',
+    overflow: 'hidden',
   },
   avatarImage: {
     width: 60,
@@ -534,6 +603,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    ...(Platform.OS === 'android' && {
+      elevation: 2,
+    }),
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -550,6 +622,9 @@ const styles = StyleSheet.create({
   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 4,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   editButtonText: {
     color: Colors.dark.primary,
@@ -580,6 +655,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginTop: 12,
+    overflow: 'hidden',
   },
   birthdayButtonContent: {
     flexDirection: 'row',
@@ -614,6 +690,9 @@ const styles = StyleSheet.create({
     padding: 12,
     color: Colors.dark.text,
     fontSize: 14,
+    ...(Platform.OS === 'android' && {
+      paddingVertical: 12,
+    }),
   },
   buttonRow: {
     flexDirection: 'row',
@@ -625,6 +704,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    overflow: 'hidden',
   },
   cancelButton: {
     backgroundColor: Colors.dark.background,
@@ -651,6 +731,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+    overflow: 'hidden',
   },
   addressIcon: {
     marginRight: 12,
@@ -676,6 +757,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
+    overflow: 'hidden',
   },
   addAddressButtonText: {
     color: Colors.dark.primary,
@@ -689,6 +771,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+    overflow: 'hidden',
   },
   notificationIcon: {
     marginRight: 12,
@@ -713,6 +796,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+    overflow: 'hidden',
   },
   securityOptionIcon: {
     marginRight: 12,
@@ -737,6 +821,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+    overflow: 'hidden',
   },
   feedbackIcon: {
     marginRight: 12,
@@ -762,6 +847,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    overflow: 'hidden',
+    ...(Platform.OS === 'android' && {
+      elevation: 2,
+    }),
   },
   deleteAccountText: {
     color: Colors.dark.error,
@@ -777,6 +866,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    overflow: 'hidden',
+    ...(Platform.OS === 'android' && {
+      elevation: 2,
+    }),
   },
   logoutText: {
     color: Colors.dark.error,

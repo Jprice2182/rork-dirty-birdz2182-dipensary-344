@@ -3,36 +3,69 @@ import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
 import { Minus, Plus, Trash2 } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useCartStore } from '@/store/cartStore';
-import { getProductById } from '@/mocks/products';
+import { getProductById, getProductDisplayName, getProductPrice } from '@/mocks/products';
+import * as Haptics from 'expo-haptics';
+import { Platform } from 'react-native';
 
 interface CartItemProps {
   id: string;
   quantity: number;
+  variantId?: string;
+  variantName?: string;
 }
 
-export default function CartItem({ id, quantity }: CartItemProps) {
+export default function CartItem({ id, quantity, variantId, variantName }: CartItemProps) {
   const { updateQuantity, removeItem } = useCartStore();
   const product = getProductById(id);
 
   if (!product) return null;
 
+  const displayName = getProductDisplayName(id, variantId);
+  const price = getProductPrice(id, variantId);
+
   const handleIncrement = () => {
-    updateQuantity(id, quantity + 1);
+    if (Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (error) {
+        console.log('Haptics not available:', error);
+      }
+    }
+    updateQuantity(id, quantity + 1, variantId);
   };
 
   const handleDecrement = () => {
+    if (Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (error) {
+        console.log('Haptics not available:', error);
+      }
+    }
     if (quantity > 1) {
-      updateQuantity(id, quantity - 1);
+      updateQuantity(id, quantity - 1, variantId);
     } else {
-      removeItem(id);
+      removeItem(id, variantId);
     }
   };
 
   const handleRemove = () => {
-    removeItem(id);
+    if (Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('Haptics not available:', error);
+      }
+    }
+    removeItem(id, variantId);
   };
 
   const getDisplayUnit = () => {
+    if (variantId && product.variants) {
+      const variant = product.variants.find(v => v.id === variantId);
+      return variant?.weight;
+    }
+    
     if (product.weight) return product.weight;
     if (product.count) return product.count;
     if (product.volume) return product.volume;
@@ -45,10 +78,13 @@ export default function CartItem({ id, quantity }: CartItemProps) {
       
       <View style={styles.details}>
         <Text style={styles.name}>{product.name}</Text>
+        {variantName && (
+          <Text style={styles.variant}>{variantName}</Text>
+        )}
         {getDisplayUnit() ? (
           <Text style={styles.weight}>{getDisplayUnit()}</Text>
         ) : null}
-        <Text style={styles.price}>${product.price}</Text>
+        <Text style={styles.price}>${price}</Text>
       </View>
       
       <View style={styles.quantityContainer}>
@@ -94,7 +130,13 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 2,
+  },
+  variant: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 2,
   },
   weight: {
     color: Colors.dark.subtext,

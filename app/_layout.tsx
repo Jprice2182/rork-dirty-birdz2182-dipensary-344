@@ -48,6 +48,24 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  // Android-specific back button handling
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const backAction = () => {
+        // Let the default behavior handle navigation
+        // Only override for specific screens if needed
+        return false;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }
+  }, []);
+
   if (!loaded) {
     return null;
   }
@@ -73,6 +91,10 @@ function RootLayoutNav() {
               backgroundColor: Colors.dark.background,
             },
             headerBackTitle: "Back",
+            ...(Platform.OS === 'android' && {
+              headerBackTitleVisible: false,
+              animation: 'slide_from_right',
+            }),
           }}
         >
           <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -81,24 +103,36 @@ function RootLayoutNav() {
             name="product/[id]" 
             options={{ 
               title: "Product Details",
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
             name="category/[id]" 
             options={{ 
               title: "Category",
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
             name="cart" 
             options={{ 
               title: "Your Cart",
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
             name="checkout" 
             options={{ 
               title: "Checkout",
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
@@ -107,12 +141,18 @@ function RootLayoutNav() {
               title: "Order Confirmation",
               gestureEnabled: false,
               headerLeft: () => null,
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
             name="order/[id]" 
             options={{ 
               title: "Order Details",
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
@@ -128,6 +168,9 @@ function RootLayoutNav() {
             options={{ 
               title: "Create Account",
               headerShown: false,
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
@@ -135,18 +178,27 @@ function RootLayoutNav() {
             options={{ 
               title: "Reset Password",
               headerShown: false,
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
             name="terms" 
             options={{ 
               title: "Terms of Service",
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
           <Stack.Screen 
             name="privacy" 
             options={{ 
               title: "Privacy Policy",
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
             }} 
           />
         </Stack>

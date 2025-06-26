@@ -54,14 +54,48 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
   };
 
   const getBiometricIcon = () => {
-    if (biometricInfo.biometryType === 'FaceID') {
-      return <Scan size={60} color={Colors.dark.primary} />;
+    if (Platform.OS === 'android') {
+      if (biometricInfo.biometryType === 'Face Recognition') {
+        return <Scan size={60} color={Colors.dark.primary} />;
+      }
+      return <Fingerprint size={60} color={Colors.dark.primary} />;
+    } else {
+      if (biometricInfo.biometryType === 'FaceID') {
+        return <Scan size={60} color={Colors.dark.primary} />;
+      }
+      return <Fingerprint size={60} color={Colors.dark.primary} />;
     }
-    return <Fingerprint size={60} color={Colors.dark.primary} />;
   };
 
   const getBiometricDisplayName = () => {
+    if (Platform.OS === 'android') {
+      return biometricInfo.biometryType || 'Biometric';
+    }
     return biometricInfo.biometryType || 'Biometric';
+  };
+
+  const getBiometricDescription = () => {
+    if (Platform.OS === 'android') {
+      switch (biometricInfo.biometryType) {
+        case 'Face Recognition':
+          return 'Use your face to unlock the app quickly and securely';
+        case 'Fingerprint':
+          return 'Use your fingerprint to unlock the app quickly and securely';
+        case 'Iris':
+          return 'Use your iris to unlock the app quickly and securely';
+        default:
+          return 'Use biometric authentication to unlock the app quickly and securely';
+      }
+    } else {
+      switch (biometricInfo.biometryType) {
+        case 'FaceID':
+          return 'Use Face ID to unlock the app quickly and securely';
+        case 'TouchID':
+          return 'Use Touch ID to unlock the app quickly and securely';
+        default:
+          return 'Use biometric authentication to unlock the app quickly and securely';
+      }
+    }
   };
 
   if (Platform.OS === 'web') {
@@ -77,7 +111,11 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Pressable style={styles.closeButton} onPress={onClose}>
+          <Pressable 
+            style={styles.closeButton} 
+            onPress={onClose}
+            android_ripple={{ color: Colors.dark.text, borderless: true }}
+          >
             <X size={24} color={Colors.dark.text} />
           </Pressable>
           
@@ -96,7 +134,7 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
           ) : biometricInfo.available ? (
             <>
               <Text style={styles.description}>
-                Use {getBiometricDisplayName()} for faster, more secure sign-in to your account.
+                {getBiometricDescription()}
               </Text>
               
               <View style={styles.optionsContainer}>
@@ -106,6 +144,7 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
                     useBiometrics && styles.selectedOption
                   ]}
                   onPress={() => handleToggleBiometrics(true)}
+                  android_ripple={{ color: Colors.dark.primary }}
                 >
                   <View style={styles.optionContent}>
                     <Text style={styles.optionText}>Enable {getBiometricDisplayName()}</Text>
@@ -127,6 +166,7 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
                     !useBiometrics && styles.selectedOption
                   ]}
                   onPress={() => handleToggleBiometrics(false)}
+                  android_ripple={{ color: Colors.dark.primary }}
                 >
                   <View style={styles.optionContent}>
                     <Text style={styles.optionText}>Use Password Only</Text>
@@ -151,7 +191,11 @@ export default function BiometricSetupModal({ visible, onClose }: BiometricSetup
             </Text>
           )}
           
-          <Pressable style={styles.doneButton} onPress={onClose}>
+          <Pressable 
+            style={styles.doneButton} 
+            onPress={onClose}
+            android_ripple={{ color: Colors.dark.text }}
+          >
             <Text style={styles.doneButtonText}>Done</Text>
           </Pressable>
         </View>
@@ -187,6 +231,9 @@ const styles = StyleSheet.create({
     top: 16,
     right: 16,
     zIndex: 1,
+    padding: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   iconContainer: {
     marginTop: 16,
@@ -204,6 +251,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 24,
+    lineHeight: 22,
   },
   optionsContainer: {
     width: '100%',
@@ -217,6 +265,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    overflow: 'hidden',
   },
   selectedOption: {
     borderColor: Colors.dark.primary,
@@ -250,6 +299,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     alignItems: 'center',
     width: '100%',
+    overflow: 'hidden',
   },
   doneButtonText: {
     color: Colors.dark.text,

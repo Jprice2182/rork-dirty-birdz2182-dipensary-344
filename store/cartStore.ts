@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getProductById } from '@/mocks/products';
+import { getProductById, getProductPrice, getProductDisplayName, getProductVariant } from '@/mocks/products';
 import appInfo from '@/constants/appInfo';
 
 export interface CartItem {
@@ -11,6 +11,8 @@ export interface CartItem {
   name?: string;
   price?: number;
   variant?: string;
+  variantId?: string;
+  variantName?: string;
 }
 
 export interface EighthsPromotion {
@@ -24,9 +26,9 @@ interface CartState {
   items: CartItem[];
   lastUpdated: string | null;
   total: number;
-  addItem: (id: string) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  addItem: (id: string, variantId?: string) => void;
+  removeItem: (id: string, variantId?: string) => void;
+  updateQuantity: (id: string, quantity: number, variantId?: string) => void;
   clearCart: () => void;
   getCartTotal: () => number;
   getCartItemsCount: () => number;
@@ -43,14 +45,17 @@ export const useCartStore = create<CartState>()(
       lastUpdated: null,
       total: 0,
       
-      addItem: (id: string) => {
+      addItem: (id: string, variantId?: string) => {
         if (!id || typeof id !== 'string' || !id.trim()) {
           console.warn('Invalid product ID provided to addItem:', id);
           return;
         }
         
         const { items } = get();
-        const existingItem = items.find(item => item.id === id);
+        const itemKey = variantId ? `${id}-${variantId}` : id;
+        const existingItem = items.find(item => 
+          item.id === id && (item.variantId || '') === (variantId || '')
+        );
         const now = new Date().toISOString();
         
         // Verify product exists before adding
@@ -59,22 +64,39 @@ export const useCartStore = create<CartState>()(
           console.warn(`Product with id ${id} not found`);
           return;
         }
+
+        // Verify variant exists if specified
+        if (variantId && product.variants) {
+          const variant = getProductVariant(id, variantId);
+          if (!variant) {
+            console.warn(`Variant ${variantId} not found for product ${id}`);
+            return;
+          }
+        }
+        
+        const price = getProductPrice(id, variantId);
+        const displayName = getProductDisplayName(id, variantId);
+        const variant = variantId ? getProductVariant(id, variantId) : null;
         
         let newItems;
         if (existingItem) {
           newItems = items.map(item => 
-            item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+            (item.id === id && (item.variantId || '') === (variantId || '')) 
+              ? { ...item, quantity: item.quantity + 1 } 
+              : item
           );
-          console.log(`Updated quantity for product ${id}`);
+          console.log(`Updated quantity for product ${id}${variantId ? ` variant ${variantId}` : ''}`);
         } else {
           newItems = [...items, { 
             id, 
             quantity: 1, 
             addedAt: now,
-            name: product.name,
-            price: product.price
+            name: displayName,
+            price: price,
+            variantId: variantId,
+            variantName: variant?.name
           }];
-          console.log(`Added new product ${id} to cart`);
+          console.log(`Added new product ${id}${variantId ? ` variant ${variantId}` : ''} to cart`);
         }
         
         const newTotal = calculateTotal(newItems);
@@ -85,24 +107,26 @@ export const useCartStore = create<CartState>()(
         });
       },
       
-      removeItem: (id: string) => {
+      removeItem: (id: string, variantId?: string) => {
         if (!id || typeof id !== 'string' || !id.trim()) {
           console.warn('Invalid product ID provided to removeItem:', id);
           return;
         }
         
         const { items } = get();
-        const newItems = items.filter(item => item.id !== id);
+        const newItems = items.filter(item => 
+          !(item.id === id && (item.variantId || '') === (variantId || ''))
+        );
         const newTotal = calculateTotal(newItems);
         set({ 
           items: newItems,
           lastUpdated: new Date().toISOString(),
           total: newTotal
         });
-        console.log(`Removed product ${id} from cart`);
+        console.log(`Removed product ${id}${variantId ? ` variant ${variantId}` : ''} from cart`);
       },
       
-      updateQuantity: (id: string, quantity: number) => {
+      updateQuantity: (id: string, quantity: number, variantId?: string) => {
         if (!id || typeof id !== 'string' || !id.trim()) {
           console.warn('Invalid product ID provided to updateQuantity:', id);
           return;
@@ -118,8 +142,10 @@ export const useCartStore = create<CartState>()(
         
         let newItems;
         if (quantity <= 0) {
-          newItems = items.filter(item => item.id !== id);
-          console.log(`Removed product ${id} from cart (quantity 0)`);
+          newItems = items.filter(item => 
+            !(item.id === id && (item.variantId || '') === (variantId || ''))
+          );
+          console.log(`Removed product ${id}${variantId ? ` variant ${variantId}` : ''} from cart (quantity 0)`);
         } else {
           // Verify product exists before updating
           const product = getProductById(id);
@@ -127,11 +153,32 @@ export const useCartStore = create<CartState>()(
             console.warn(`Product with id ${id} not found during quantity update`);
             return;
           }
+
+          // Verify variant exists if specified
+          if (variantId && product.variants) {
+            const variant = getProductVariant(id, variantId);
+            if (!variant) {
+              console.warn(`Variant ${variantId} not found for product ${id} during quantity update`);
+              return;
+            }
+          }
+          
+          const price = getProductPrice(id, variantId);
+          const displayName = getProductDisplayName(id, variantId);
+          const variant = variantId ? getProductVariant(id, variantId) : null;
           
           newItems = items.map(item => 
-            item.id === id ? { ...item, quantity } : item
+            (item.id === id && (item.variantId || '') === (variantId || ''))
+              ? { 
+                  ...item, 
+                  quantity,
+                  price: price,
+                  name: displayName,
+                  variantName: variant?.name
+                } 
+              : item
           );
-          console.log(`Updated quantity for product ${id} to ${quantity}`);
+          console.log(`Updated quantity for product ${id}${variantId ? ` variant ${variantId}` : ''} to ${quantity}`);
         }
         
         const newTotal = calculateTotal(newItems);
@@ -190,6 +237,15 @@ export const useCartStore = create<CartState>()(
               console.warn(`Removing invalid product ${item.id} from cart`);
               return false;
             }
+
+            // Validate variant if specified
+            if (item.variantId && product.variants) {
+              const variant = getProductVariant(item.id, item.variantId);
+              if (!variant) {
+                console.warn(`Removing invalid variant ${item.variantId} for product ${item.id} from cart`);
+                return false;
+              }
+            }
             
             if (typeof item.quantity !== 'number' || item.quantity <= 0) {
               console.warn(`Removing item with invalid quantity ${item.id}:`, item.quantity);
@@ -218,7 +274,15 @@ export const useCartStore = create<CartState>()(
           if (!item.id || typeof item.id !== 'string') return true;
           if (typeof item.quantity !== 'number' || item.quantity <= 0) return true;
           const product = getProductById(item.id);
-          return !product;
+          if (!product) return true;
+          
+          // Check variant validity
+          if (item.variantId && product.variants) {
+            const variant = getProductVariant(item.id, item.variantId);
+            return !variant;
+          }
+          
+          return false;
         });
         
         if (invalidItems.length > 0) {
@@ -255,14 +319,27 @@ export const useCartStore = create<CartState>()(
 );
 
 // Helper function to check if a product is an eighth (3.5g flower)
-function isEighth(productId: string): boolean {
+function isEighth(productId: string, variantId?: string): boolean {
   const product = getProductById(productId);
-  return product?.category === '1' && product?.weight === '3.5g';
+  if (!product || product.category !== '1') return false;
+  
+  // If no variant specified, check if it's the default eighth
+  if (!variantId) {
+    return product.weight === '3.5g';
+  }
+  
+  // Check if the variant is an eighth
+  if (product.variants) {
+    const variant = product.variants.find(v => v.id === variantId);
+    return variant?.id === 'eighth';
+  }
+  
+  return false;
 }
 
 // Helper function to calculate eighths promotion
 function calculateEighthsPromotion(items: CartItem[]): EighthsPromotion {
-  const eighthItems = items.filter(item => isEighth(item.id));
+  const eighthItems = items.filter(item => isEighth(item.id, item.variantId));
   const totalEighths = eighthItems.reduce((sum, item) => sum + item.quantity, 0);
   
   if (totalEighths < (appInfo.eighthsPromotion?.minimumQuantity || 2)) {
@@ -288,7 +365,7 @@ function calculateEighthsPromotion(items: CartItem[]): EighthsPromotion {
   }
   
   // Calculate savings: regular price - $1 for each discounted eighth
-  const regularPrice = 30; // All eighths are $30
+  const regularPrice = 20; // Updated to new eighth price
   const savings = discountedEighths * (regularPrice - (appInfo.eighthsPromotion?.discountPrice || 1));
   
   return {
@@ -304,18 +381,14 @@ function calculateTotal(items: CartItem[]): number {
   const eighthsPromo = calculateEighthsPromotion(items);
   
   const total = items.reduce((sum, item) => {
-    const product = getProductById(item.id);
-    if (!product) {
-      console.warn(`Product with id ${item.id} not found in cart total calculation`);
+    const price = getProductPrice(item.id, item.variantId);
+    
+    if (typeof price !== 'number' || isNaN(price)) {
+      console.warn(`Invalid price for product ${item.id}${item.variantId ? ` variant ${item.variantId}` : ''}:`, price);
       return sum;
     }
     
-    if (typeof product.price !== 'number' || isNaN(product.price)) {
-      console.warn(`Invalid price for product ${item.id}:`, product.price);
-      return sum;
-    }
-    
-    return sum + (product.price * item.quantity);
+    return sum + (price * item.quantity);
   }, 0);
   
   // Apply eighths promotion discount

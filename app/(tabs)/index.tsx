@@ -4,7 +4,9 @@ import { useRouter } from 'expo-router';
 import { ShoppingCart } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { categories } from '@/constants/categories';
+import { getFeaturedProducts } from '@/mocks/products';
 import CategoryCard from '@/components/CategoryCard';
+import ProductCard from '@/components/ProductCard';
 import DiscountBanner from '@/components/DiscountBanner';
 import SafeText from '@/components/SafeText';
 import { useCartStore } from '@/store/cartStore';
@@ -22,6 +24,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const eighthsPromo = getEighthsPromotion();
+  const featuredProducts = getFeaturedProducts();
 
   useEffect(() => {
     if (!isVerified) {
@@ -197,6 +200,27 @@ export default function HomeScreen() {
             ))}
           </ScrollView>
         </View>
+
+        {/* Featured Products Section */}
+        <View style={styles.featuredSection}>
+          <SafeText style={styles.sectionTitle}>Featured Products</SafeText>
+          <SafeText style={styles.sectionSubtitle}>Hand-picked premium selections</SafeText>
+          <View style={styles.featuredGrid}>
+            {featuredProducts.map(product => (
+              <ProductCard 
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                image={product.image}
+                thc={product.thc}
+                weight={product.weight}
+                count={product.count}
+                volume={product.volume}
+              />
+            ))}
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -325,7 +349,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   categoriesSection: {
-    marginBottom: 16,
+    marginBottom: 32,
   },
   sectionTitle: {
     color: Colors.dark.text,
@@ -340,5 +364,14 @@ const styles = StyleSheet.create({
   },
   categoriesContainer: {
     paddingBottom: 8,
+  },
+  featuredSection: {
+    marginBottom: 16,
+  },
+  featuredGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
   },
 });

@@ -78,25 +78,57 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
       return;
     }
 
-    // Request permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'We need camera roll permission to upload your photos.');
-      return;
-    }
+    try {
+      // Request permission with better Android handling
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Denied', 
+          'We need camera roll permission to upload your photos. Please enable it in your device settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Open Settings', 
+              onPress: () => {
+                if (Platform.OS === 'android') {
+                  // On Android, we can't directly open app settings, but we can guide the user
+                  Alert.alert(
+                    'Enable Permission',
+                    'Go to Settings > Apps > [App Name] > Permissions > Storage and enable access.'
+                  );
+                }
+              }
+            }
+          ]
+        );
+        return;
+      }
 
-    // Launch image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
+      // Launch image picker with Android-optimized settings
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: Platform.OS === 'android' ? 0.8 : 0.7,
+        ...(Platform.OS === 'android' && {
+          // Android-specific options
+          allowsMultipleSelection: false,
+          selectionLimit: 1,
+        }),
+      });
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      // Add the selected image as an avatar
-      addAvatar(result.assets[0].uri);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        // Add the selected image as an avatar
+        addAvatar(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert(
+        'Error',
+        'Failed to pick image. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -111,7 +143,11 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
         <View style={styles.modalView}>
           <View style={styles.header}>
             <Text style={styles.title}>Profile Avatar</Text>
-            <Pressable style={styles.closeButton} onPress={onClose}>
+            <Pressable 
+              style={styles.closeButton} 
+              onPress={onClose}
+              android_ripple={{ color: Colors.dark.text, borderless: true }}
+            >
               <X size={24} color={Colors.dark.text} />
             </Pressable>
           </View>
@@ -133,6 +169,7 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
                         avatar.isSelected && styles.selectedAvatarWrapper
                       ]}
                       onPress={() => handleSelectAvatar(avatar.id)}
+                      android_ripple={{ color: Colors.dark.primary, borderless: true }}
                     >
                       <Image source={{ uri: avatar.url }} style={styles.avatarImage} />
                       {avatar.isSelected && (
@@ -144,6 +181,7 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
                     <Pressable
                       style={styles.removeButton}
                       onPress={() => handleRemoveAvatar(avatar.id)}
+                      android_ripple={{ color: Colors.dark.error, borderless: true }}
                     >
                       <Trash2 size={16} color={Colors.dark.error} />
                     </Pressable>
@@ -154,6 +192,7 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
                   <Pressable
                     style={styles.addAvatarButton}
                     onPress={() => setShowAddAvatarModal(true)}
+                    android_ripple={{ color: Colors.dark.primary }}
                   >
                     <Plus size={24} color={Colors.dark.primary} />
                     <Text style={styles.addAvatarText}>Add Avatar</Text>
@@ -166,6 +205,7 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
               <Pressable
                 style={styles.pickFromGalleryButton}
                 onPress={pickImage}
+                android_ripple={{ color: Colors.dark.primary }}
               >
                 <ImageIcon size={20} color={Colors.dark.text} style={styles.galleryIcon} />
                 <Text style={styles.pickFromGalleryText}>Choose from your photos</Text>
@@ -179,6 +219,7 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
                   key={index}
                   style={styles.defaultAvatarWrapper}
                   onPress={() => handleAddDefaultAvatar(url)}
+                  android_ripple={{ color: Colors.dark.primary, borderless: true }}
                 >
                   <Image source={{ uri: url }} style={styles.defaultAvatarImage} />
                   <View style={styles.addIconContainer}>
@@ -203,6 +244,7 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
                   <Pressable
                     style={styles.closeButton}
                     onPress={() => setShowAddAvatarModal(false)}
+                    android_ripple={{ color: Colors.dark.text, borderless: true }}
                   >
                     <X size={24} color={Colors.dark.text} />
                   </Pressable>
@@ -230,12 +272,14 @@ export default function UserAvatarSelector({ visible, onClose }: UserAvatarSelec
                     <Pressable
                       style={styles.cancelButton}
                       onPress={() => setShowAddAvatarModal(false)}
+                      android_ripple={{ color: Colors.dark.text }}
                     >
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
                     <Pressable
                       style={styles.addButton}
                       onPress={handleAddAvatar}
+                      android_ripple={{ color: Colors.dark.text }}
                     >
                       <Text style={styles.addButtonText}>Add Avatar</Text>
                     </Pressable>
@@ -287,6 +331,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   content: {
     padding: 16,
@@ -349,6 +395,8 @@ const styles = StyleSheet.create({
   removeButton: {
     marginTop: 8,
     padding: 4,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   addAvatarButton: {
     width: '33%',
@@ -358,6 +406,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.dark.background,
     borderRadius: 12,
     margin: 8,
+    overflow: 'hidden',
   },
   addAvatarText: {
     color: Colors.dark.primary,
@@ -372,6 +421,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
+    overflow: 'hidden',
   },
   galleryIcon: {
     marginRight: 8,
@@ -458,11 +508,15 @@ const styles = StyleSheet.create({
     flex: 1,
     color: Colors.dark.text,
     fontSize: 16,
+    ...(Platform.OS === 'android' && {
+      paddingVertical: 0,
+    }),
   },
   noteText: {
     color: Colors.dark.subtext,
     fontSize: 14,
     marginBottom: 24,
+    lineHeight: 20,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -475,6 +529,7 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
     marginRight: 8,
+    overflow: 'hidden',
   },
   cancelButtonText: {
     color: Colors.dark.text,
@@ -487,6 +542,7 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
     marginLeft: 8,
+    overflow: 'hidden',
   },
   addButtonText: {
     color: Colors.dark.text,

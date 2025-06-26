@@ -65,7 +65,12 @@ export const useAuthStore = create<AuthState>()(
           
           const result = await LocalAuthentication.authenticateAsync({
             promptMessage: "Authenticate to continue",
-            fallbackLabel: "Use password"
+            fallbackLabel: "Use password",
+            disableDeviceFallback: false,
+            ...(Platform.OS === 'android' && {
+              cancelLabel: "Cancel",
+              subtitle: "Use your biometric to sign in",
+            }),
           });
           
           if (result.success) {
@@ -99,10 +104,22 @@ export const useAuthStore = create<AuthState>()(
           
           let biometryType = null;
           
-          if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
-            biometryType = 'FaceID';
-          } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-            biometryType = 'TouchID/Fingerprint';
+          if (Platform.OS === 'android') {
+            // Android-specific biometric type detection
+            if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+              biometryType = 'Face Recognition';
+            } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+              biometryType = 'Fingerprint';
+            } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.IRIS)) {
+              biometryType = 'Iris';
+            }
+          } else {
+            // iOS-specific biometric type detection
+            if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+              biometryType = 'FaceID';
+            } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+              biometryType = 'TouchID';
+            }
           }
           
           return {

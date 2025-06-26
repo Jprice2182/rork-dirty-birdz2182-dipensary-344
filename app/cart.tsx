@@ -125,8 +125,14 @@ export default function CartScreen() {
         )}
         
         <View style={styles.itemsList}>
-          {items.map(item => (
-            <CartItem key={item.id} id={item.id} quantity={item.quantity} />
+          {items.map((item, index) => (
+            <CartItem 
+              key={`${item.id}-${item.variantId || 'default'}-${index}`}
+              id={item.id} 
+              quantity={item.quantity}
+              variantId={item.variantId}
+              variantName={item.variantName}
+            />
           ))}
         </View>
         

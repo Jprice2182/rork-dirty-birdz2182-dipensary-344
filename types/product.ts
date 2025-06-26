@@ -1,3 +1,10 @@
+export interface ProductVariant {
+  id: string;
+  name: string;
+  weight: string;
+  price: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -14,6 +21,7 @@ export interface Product {
   volume?: string;
   strain?: string;
   rating?: number;
+  variants?: ProductVariant[]; // For products with multiple quantity options (like flower)
 }
 
 export interface CartItem {
@@ -23,6 +31,8 @@ export interface CartItem {
   name?: string;
   price?: number;
   variant?: string;
+  variantId?: string;
+  variantName?: string;
 }
 
 export interface OrderItem {
@@ -31,4 +41,6 @@ export interface OrderItem {
   price: number;
   quantity: number;
   variant?: string;
+  variantId?: string;
+  variantName?: string;
 }

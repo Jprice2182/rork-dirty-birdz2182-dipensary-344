@@ -36,4 +36,13 @@ export const Colors = {
   },
 };
 
+// Android-specific color adjustments
+if (typeof window !== 'undefined' && window.navigator?.userAgent?.includes('Android')) {
+  // Slightly adjust colors for better Android visibility
+  Colors.dark.card = '#1e293b';
+  Colors.dark.border = '#334155';
+  Colors.light.card = '#f1f5f9';
+  Colors.light.border = '#cbd5e1';
+}
+
 export default Colors;

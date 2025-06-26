@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable, Image, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable, Image, ActivityIndicator, Platform, BackHandler } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { Mail, Lock, Fingerprint, Scan } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -32,6 +32,26 @@ export default function SignInScreen() {
     if (!isVerified) {
       router.replace('/');
       return;
+    }
+  }, [isVerified, router]);
+
+  // Android back button handling
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const backAction = () => {
+        if (!isVerified) {
+          router.replace('/');
+          return true;
+        }
+        return false;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
     }
   }, [isVerified, router]);
 
@@ -96,10 +116,17 @@ export default function SignInScreen() {
   };
 
   const getBiometricIcon = () => {
-    if (biometricInfo.biometryType === 'FaceID') {
-      return <Scan size={24} color={Colors.dark.text} />;
+    if (Platform.OS === 'android') {
+      if (biometricInfo.biometryType === 'Face Recognition') {
+        return <Scan size={24} color={Colors.dark.text} />;
+      }
+      return <Fingerprint size={24} color={Colors.dark.text} />;
+    } else {
+      if (biometricInfo.biometryType === 'FaceID') {
+        return <Scan size={24} color={Colors.dark.text} />;
+      }
+      return <Fingerprint size={24} color={Colors.dark.text} />;
     }
-    return <Fingerprint size={24} color={Colors.dark.text} />;
   };
 
   const getBiometricDisplayName = () => {
@@ -166,6 +193,7 @@ export default function SignInScreen() {
           ]}
           onPress={handleSignIn}
           disabled={!isFormValid || isLoading}
+          android_ripple={{ color: Colors.dark.text }}
         >
           {isLoading ? (
             <ActivityIndicator size="small" color={Colors.dark.text} />
@@ -179,6 +207,7 @@ export default function SignInScreen() {
             style={[styles.biometricButton, isLoading && styles.disabledButton]}
             onPress={handleBiometricAuth}
             disabled={isLoading}
+            android_ripple={{ color: Colors.dark.primary }}
           >
             {getBiometricIcon()}
             <Text style={styles.biometricButtonText}>
@@ -189,7 +218,11 @@ export default function SignInScreen() {
         
         <View style={styles.linksContainer}>
           <Link href="/sign-up" asChild>
-            <Pressable disabled={isLoading}>
+            <Pressable 
+              disabled={isLoading}
+              android_ripple={{ color: Colors.dark.primary, borderless: true }}
+              style={styles.linkButton}
+            >
               <Text style={[styles.linkText, isLoading && styles.disabledText]}>
                 Create Account
               </Text>
@@ -197,7 +230,11 @@ export default function SignInScreen() {
           </Link>
           
           <Link href="/forgot-password" asChild>
-            <Pressable disabled={isLoading}>
+            <Pressable 
+              disabled={isLoading}
+              android_ripple={{ color: Colors.dark.primary, borderless: true }}
+              style={styles.linkButton}
+            >
               <Text style={[styles.linkText, isLoading && styles.disabledText]}>
                 Forgot Password?
               </Text>
@@ -224,7 +261,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 40,
+    marginTop: Platform.OS === 'android' ? 60 : 40,
   },
   logo: {
     width: 100,
@@ -260,6 +297,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: Colors.dark.border,
+    ...(Platform.OS === 'android' && {
+      elevation: 1,
+    }),
   },
   inputIcon: {
     marginRight: 12,
@@ -269,6 +309,9 @@ const styles = StyleSheet.create({
     height: 56,
     color: Colors.dark.text,
     fontSize: 16,
+    ...(Platform.OS === 'android' && {
+      paddingVertical: 16,
+    }),
   },
   errorText: {
     color: Colors.dark.error,
@@ -283,6 +326,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    overflow: 'hidden',
+    ...(Platform.OS === 'android' && {
+      elevation: 2,
+    }),
   },
   disabledButton: {
     opacity: 0.6,
@@ -302,6 +349,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderWidth: 1,
     borderColor: Colors.dark.border,
+    overflow: 'hidden',
+    ...(Platform.OS === 'android' && {
+      elevation: 1,
+    }),
   },
   biometricButtonText: {
     color: Colors.dark.text,
@@ -313,6 +364,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 24,
   },
+  linkButton: {
+    padding: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
   linkText: {
     color: Colors.dark.primary,
     fontSize: 14,
@@ -321,11 +377,12 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   footer: {
-    marginBottom: 24,
+    marginBottom: Platform.OS === 'android' ? 32 : 24,
   },
   footerText: {
     color: Colors.dark.subtext,
     fontSize: 12,
     textAlign: 'center',
+    lineHeight: 16,
   },
 });
