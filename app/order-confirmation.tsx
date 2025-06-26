@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CheckCircle, Home, Package, Tag, Clock } from 'lucide-react-native';
+import { CheckCircle, Home, Package, Tag, Clock, Truck } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useOrderStore } from '@/store/orderStore';
 import appInfo from '@/constants/appInfo';
@@ -30,6 +30,8 @@ export default function OrderConfirmationScreen() {
     router.replace('/');
   };
 
+  const isFreeDelivery = order.deliveryFee === 0;
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -47,13 +49,24 @@ export default function OrderConfirmationScreen() {
           
           <View style={styles.orderInfoRow}>
             <Text style={styles.orderInfoLabel}>Order Number</Text>
-            <Text style={styles.orderInfoValue}>#{orderId}</Text>
+            <Text style={styles.orderInfoValue}>#{orderId.slice(0, 8)}</Text>
           </View>
           
           <View style={styles.orderInfoRow}>
             <Text style={styles.orderInfoLabel}>Date</Text>
             <Text style={styles.orderInfoValue}>{order.date}</Text>
           </View>
+
+          {/* Free Delivery Highlight */}
+          {isFreeDelivery && (
+            <View style={styles.freeDeliveryRow}>
+              <View style={styles.freeDeliveryLabelContainer}>
+                <Truck size={16} color={Colors.dark.success} style={styles.freeDeliveryIcon} />
+                <Text style={styles.freeDeliveryLabel}>Free Delivery</Text>
+              </View>
+              <Text style={styles.freeDeliveryValue}>$0.00</Text>
+            </View>
+          )}
           
           {order.discountApplied && order.discountApplied > 0 && (
             <View style={styles.discountInfoRow}>
@@ -89,8 +102,15 @@ export default function OrderConfirmationScreen() {
               </View>
               <View style={styles.timeInfoRow}>
                 <Text style={styles.timeInfoLabel}>Estimated Delivery:</Text>
-                <Text style={styles.timeInfoValue}>{order.estimatedDelivery || "Within 24 hours"}</Text>
+                <Text style={styles.timeInfoValue}>{appInfo.estimatedDeliveryTime}</Text>
               </View>
+              {isFreeDelivery && (
+                <View style={styles.timeInfoRow}>
+                  <Text style={styles.freeDeliveryNote}>
+                    🎉 You saved ${appInfo.deliveryFee.toFixed(2)} with free delivery!
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -155,6 +175,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
+  freeDeliveryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+    borderRadius: 8,
+    padding: 8,
+  },
+  freeDeliveryLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  freeDeliveryIcon: {
+    marginRight: 6,
+  },
+  freeDeliveryLabel: {
+    color: Colors.dark.success,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  freeDeliveryValue: {
+    color: Colors.dark.success,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
   discountInfoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -213,6 +258,12 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     fontSize: 14,
     fontWeight: '500',
+  },
+  freeDeliveryNote: {
+    color: Colors.dark.success,
+    fontSize: 12,
+    fontWeight: '600',
+    fontStyle: 'italic',
   },
   footer: {
     padding: 16,

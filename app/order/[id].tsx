@@ -11,6 +11,7 @@ import RatingStars from '@/components/RatingStars';
 import DriverTrackingMap from '@/components/DriverTrackingMap';
 import CancelOrderModal from '@/components/CancelOrderModal';
 import TipDriverModal from '@/components/TipDriverModal';
+import appInfo from '@/constants/appInfo';
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -131,6 +132,7 @@ export default function OrderDetailScreen() {
   const canCancel = order.status === 'pending' || order.status === 'processing';
   const canTip = order.status === 'out-for-delivery' || order.status === 'delivered';
   const tipAmount = order.tipAmount || 0;
+  const isFreeDelivery = order.deliveryFee === 0;
 
   return (
     <ScrollView style={styles.container}>
@@ -145,6 +147,16 @@ export default function OrderDetailScreen() {
           <Text style={styles.statusText}>{getStatusText()}</Text>
         </View>
       </View>
+
+      {/* Free Delivery Highlight */}
+      {isFreeDelivery && (
+        <View style={styles.freeDeliveryBanner}>
+          <Truck size={20} color={Colors.dark.success} />
+          <Text style={styles.freeDeliveryText}>
+            🎉 You saved ${appInfo.deliveryFee.toFixed(2)} with free delivery!
+          </Text>
+        </View>
+      )}
       
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Delivery Information</Text>
@@ -193,7 +205,7 @@ export default function OrderDetailScreen() {
               <Text style={styles.timeInfoValue}>{order.estimatedProcessingTime || 'To be determined'}</Text>
               
               <Text style={[styles.timeInfoLabel, styles.marginTop]}>Estimated Delivery</Text>
-              <Text style={styles.timeInfoValue}>{order.estimatedDelivery || 'To be determined'}</Text>
+              <Text style={styles.timeInfoValue}>{appInfo.estimatedDeliveryTime}</Text>
             </View>
           </View>
           
@@ -273,7 +285,7 @@ export default function OrderDetailScreen() {
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
             <Text style={styles.summaryValue}>
-              ${(order.total * 0.85).toFixed(2)}
+              ${order.subtotal.toFixed(2)}
             </Text>
           </View>
           
@@ -299,15 +311,18 @@ export default function OrderDetailScreen() {
           
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Delivery Fee</Text>
-            <Text style={styles.summaryValue}>
-              ${(order.total * 0.07).toFixed(2)}
+            <Text style={[
+              styles.summaryValue,
+              isFreeDelivery && styles.freeDeliveryValue
+            ]}>
+              {isFreeDelivery ? 'FREE' : `$${order.deliveryFee.toFixed(2)}`}
             </Text>
           </View>
           
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Tax</Text>
             <Text style={styles.summaryValue}>
-              ${(order.total * 0.08).toFixed(2)}
+              ${order.tax.toFixed(2)}
             </Text>
           </View>
           
@@ -402,6 +417,24 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     fontSize: 14,
     fontWeight: '500',
+    marginLeft: 8,
+  },
+  freeDeliveryBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.success,
+  },
+  freeDeliveryText: {
+    color: Colors.dark.success,
+    fontSize: 16,
+    fontWeight: '600',
     marginLeft: 8,
   },
   section: {
@@ -625,6 +658,10 @@ const styles = StyleSheet.create({
   summaryValue: {
     color: Colors.dark.text,
     fontSize: 14,
+  },
+  freeDeliveryValue: {
+    color: Colors.dark.success,
+    fontWeight: 'bold',
   },
   totalRow: {
     borderTopWidth: 1,

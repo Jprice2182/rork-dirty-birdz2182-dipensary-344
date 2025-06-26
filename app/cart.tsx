@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingBag, ArrowLeft } from 'lucide-react-native';
+import { ShoppingBag, ArrowLeft, Truck } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useCartStore } from '@/store/cartStore';
 import CartItem from '@/components/CartItem';
@@ -14,6 +14,10 @@ export default function CartScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const cartTotal = getCartTotal();
   const eighthsPromo = getEighthsPromotion();
+
+  // Calculate delivery fee based on cart total
+  const deliveryFee = cartTotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
+  const amountForFreeDelivery = appInfo.freeDeliveryMinimum - cartTotal;
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -62,6 +66,14 @@ export default function CartScreen() {
           <Text style={styles.emptyTitle}>Your cart is empty</Text>
           <Text style={styles.emptyText}>Add some premium cannabis products to your cart and enjoy fast delivery in Atlanta</Text>
           
+          {/* Free delivery info when cart is empty */}
+          <View style={styles.freeDeliveryBanner}>
+            <Truck size={20} color={Colors.dark.primary} />
+            <Text style={styles.freeDeliveryText}>
+              Free delivery on orders over ${appInfo.freeDeliveryMinimum}!
+            </Text>
+          </View>
+          
           {/* Show eighths promotion when cart is empty */}
           <View style={styles.emptyPromoContainer}>
             <DiscountBanner showEighthsPromo={true} />
@@ -104,6 +116,30 @@ export default function CartScreen() {
           <Text style={styles.itemCount}>
             {items.length} {items.length === 1 ? 'item' : 'items'}
           </Text>
+        </View>
+
+        {/* Free Delivery Status */}
+        <View style={[
+          styles.deliveryStatusContainer,
+          deliveryFee === 0 ? styles.freeDeliveryActive : styles.freeDeliveryInactive
+        ]}>
+          <Truck size={20} color={deliveryFee === 0 ? Colors.dark.success : Colors.dark.primary} />
+          <View style={styles.deliveryStatusText}>
+            {deliveryFee === 0 ? (
+              <Text style={styles.freeDeliveryActiveText}>
+                🎉 You qualify for FREE delivery!
+              </Text>
+            ) : (
+              <>
+                <Text style={styles.deliveryFeeText}>
+                  Delivery fee: ${deliveryFee.toFixed(2)}
+                </Text>
+                <Text style={styles.freeDeliveryInactiveText}>
+                  Add ${amountForFreeDelivery.toFixed(2)} more for free delivery
+                </Text>
+              </>
+            )}
+          </View>
         </View>
 
         {/* Show eighths promotion if eligible or close to eligible */}
@@ -154,8 +190,18 @@ export default function CartScreen() {
               <Text style={styles.promoAmount}>-${eighthsPromo.savings.toFixed(2)}</Text>
             </View>
           )}
+
+          <View style={styles.totalRow}>
+            <Text style={styles.deliveryLabel}>Delivery Fee</Text>
+            <Text style={[
+              styles.deliveryAmount,
+              deliveryFee === 0 && styles.freeDeliveryAmount
+            ]}>
+              {deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
+            </Text>
+          </View>
           
-          <Text style={styles.taxNote}>Taxes and delivery fees calculated at checkout</Text>
+          <Text style={styles.taxNote}>Taxes calculated at checkout</Text>
         </View>
         
         <View style={styles.footerButtons}>
@@ -193,6 +239,59 @@ const styles = StyleSheet.create({
   itemCount: {
     color: Colors.dark.subtext,
     fontSize: 14,
+  },
+  deliveryStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.dark.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  freeDeliveryActive: {
+    borderColor: Colors.dark.success,
+    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+  },
+  freeDeliveryInactive: {
+    borderColor: Colors.dark.primary,
+  },
+  deliveryStatusText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  freeDeliveryActiveText: {
+    color: Colors.dark.success,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  deliveryFeeText: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  freeDeliveryInactiveText: {
+    color: Colors.dark.primary,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  freeDeliveryBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.dark.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.dark.primary,
+  },
+  freeDeliveryText: {
+    color: Colors.dark.primary,
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   promoStatusContainer: {
     backgroundColor: Colors.dark.card,
@@ -260,9 +359,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  deliveryLabel: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  deliveryAmount: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  freeDeliveryAmount: {
+    color: Colors.dark.success,
+    fontWeight: 'bold',
+  },
   taxNote: {
     color: Colors.dark.subtext,
     fontSize: 12,
+    marginTop: 8,
   },
   footerButtons: {
     gap: 8,

@@ -8,6 +8,7 @@ import appInfo from '@/constants/appInfo';
 import TipDriverModal from '@/components/TipDriverModal';
 import PromoCodeInput from '@/components/PromoCodeInput';
 import { getProductById } from '@/mocks/products';
+import { Truck, CheckCircle } from 'lucide-react-native';
 
 export default function Checkout() {
   const router = useRouter();
@@ -89,6 +90,35 @@ export default function Checkout() {
       <View style={styles.content}>
         <Text style={styles.title}>Checkout</Text>
 
+        {/* Free Delivery Status */}
+        <View style={[
+          styles.deliveryStatusSection,
+          deliveryFee === 0 ? styles.freeDeliveryActive : styles.freeDeliveryInactive
+        ]}>
+          {deliveryFee === 0 ? (
+            <CheckCircle size={24} color={Colors.dark.success} />
+          ) : (
+            <Truck size={24} color={Colors.dark.primary} />
+          )}
+          <View style={styles.deliveryStatusText}>
+            {deliveryFee === 0 ? (
+              <>
+                <Text style={styles.freeDeliveryTitle}>🎉 Free Delivery!</Text>
+                <Text style={styles.freeDeliverySubtitle}>
+                  Your order qualifies for free delivery
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.deliveryFeeTitle}>Delivery Fee: ${deliveryFee.toFixed(2)}</Text>
+                <Text style={styles.deliveryFeeSubtitle}>
+                  Add ${(appInfo.freeDeliveryMinimum - subtotal).toFixed(2)} more for free delivery
+                </Text>
+              </>
+            )}
+          </View>
+        </View>
+
         {/* Order Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
@@ -159,7 +189,10 @@ export default function Checkout() {
           
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Delivery Fee</Text>
-            <Text style={styles.priceValue}>
+            <Text style={[
+              styles.priceValue,
+              deliveryFee === 0 && styles.freeDeliveryValue
+            ]}>
               {deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
             </Text>
           </View>
@@ -199,12 +232,15 @@ export default function Checkout() {
           <Text style={styles.deliveryInfo}>
             Estimated delivery: {appInfo.estimatedDeliveryTime}
           </Text>
-          <Text style={styles.deliveryInfo}>
-            {subtotal >= appInfo.freeDeliveryMinimum 
-              ? 'Free delivery on orders over $50!' 
-              : `Add $${(appInfo.freeDeliveryMinimum - subtotal).toFixed(2)} more for free delivery`
-            }
-          </Text>
+          {deliveryFee === 0 ? (
+            <Text style={styles.freeDeliveryInfo}>
+              🎉 You qualify for free delivery on orders over ${appInfo.freeDeliveryMinimum}!
+            </Text>
+          ) : (
+            <Text style={styles.deliveryInfo}>
+              Add ${(appInfo.freeDeliveryMinimum - subtotal).toFixed(2)} more for free delivery
+            </Text>
+          )}
         </View>
 
         {/* Place Order Button */}
@@ -238,6 +274,48 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.dark.text,
     marginBottom: 20,
+  },
+  deliveryStatusSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.dark.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  freeDeliveryActive: {
+    borderColor: Colors.dark.success,
+    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+  },
+  freeDeliveryInactive: {
+    borderColor: Colors.dark.primary,
+  },
+  deliveryStatusText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  freeDeliveryTitle: {
+    color: Colors.dark.success,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  freeDeliverySubtitle: {
+    color: Colors.dark.success,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  deliveryFeeTitle: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  deliveryFeeSubtitle: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: '500',
   },
   section: {
     backgroundColor: Colors.dark.card,
@@ -330,6 +408,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: Colors.dark.text,
   },
+  freeDeliveryValue: {
+    color: Colors.dark.success,
+    fontWeight: 'bold',
+  },
   promoLabel: {
     fontSize: 16,
     color: Colors.dark.success,
@@ -381,6 +463,12 @@ const styles = StyleSheet.create({
   deliveryInfo: {
     fontSize: 14,
     color: Colors.dark.subtext,
+    marginBottom: 4,
+  },
+  freeDeliveryInfo: {
+    fontSize: 14,
+    color: Colors.dark.success,
+    fontWeight: '600',
     marginBottom: 4,
   },
   placeOrderButton: {

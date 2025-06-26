@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import appInfo from '@/constants/appInfo';
 
 export interface OrderItem {
   id: string;
@@ -21,6 +22,17 @@ export interface Order {
   status: 'pending' | 'confirmed' | 'preparing' | 'out_for_delivery' | 'delivered' | 'cancelled';
   createdAt: string;
   estimatedDelivery?: string;
+  date: string;
+  deliveryAddress: string;
+  driverName?: string;
+  driverPhone?: string;
+  driverId?: string;
+  estimatedProcessingTime?: string;
+  estimatedArrival?: 'early' | 'on-time' | 'late';
+  isRated?: boolean;
+  tipAmount?: number;
+  discountApplied?: number;
+  promoCodeApplied?: string;
 }
 
 interface OrderState {
@@ -46,25 +58,38 @@ export const useOrderStore = create<OrderState>()(
       createOrder: (orderData) => {
         const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const now = new Date().toISOString();
+        const currentDate = new Date().toLocaleDateString();
+        
+        // Validate delivery fee calculation
+        const calculatedDeliveryFee = orderData.subtotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
+        const finalDeliveryFee = Math.abs(orderData.deliveryFee - calculatedDeliveryFee) < 0.01 
+          ? orderData.deliveryFee 
+          : calculatedDeliveryFee;
         
         const newOrder: Order = {
           id: orderId,
           items: orderData.items,
           subtotal: orderData.subtotal,
-          deliveryFee: orderData.deliveryFee,
+          deliveryFee: finalDeliveryFee,
           tax: orderData.tax,
           tip: orderData.tip,
           total: orderData.total,
           status: 'pending',
           createdAt: now,
+          date: currentDate,
+          deliveryAddress: "123 Main St, Atlanta, GA 30309", // Default address
           estimatedDelivery: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes from now
+          estimatedProcessingTime: "30-60 minutes",
+          estimatedArrival: 'on-time',
+          isRated: false,
+          tipAmount: orderData.tip,
         };
         
         set((state) => ({
           orders: [newOrder, ...state.orders]
         }));
         
-        console.log(`Created order ${orderId}`);
+        console.log(`Created order ${orderId} with delivery fee: ${finalDeliveryFee === 0 ? 'FREE' : `$${finalDeliveryFee.toFixed(2)}`}`);
         return orderId;
       },
       
