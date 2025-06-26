@@ -51,7 +51,7 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
             />
             
             <Text style={styles.description}>
-              Celebrate your birthday with a free 0.5g pre-roll on us! Visit any Dirty Birdz2182 Dispensary location on your birthday to claim your gift.
+              Celebrate your birthday with a free 1g pre-roll on us! Visit any Dirty Birdz2182 Dispensary location on your birthday to claim your gift.
             </Text>
             
             <View style={styles.birthdayContainer}>
@@ -68,7 +68,7 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
                   <Check size={24} color={Colors.dark.success} style={styles.checkIcon} />
                   <Text style={styles.claimedText}>Promotion Claimed!</Text>
                   <Text style={styles.claimedDescription}>
-                    Your free 0.5g pre-roll has been added to your account. Show this to the budtender on your next visit.
+                    Your free 1g pre-roll has been added to your account. Show this to the budtender on your next visit.
                   </Text>
                 </View>
               ) : (
