@@ -150,7 +150,7 @@ export const useOrderStore = create<OrderState>()(
         if (!order) return false;
         
         // Check if order status is eligible for refund
-        const eligibleStatuses = appInfo.refundPolicy.eligibleStatuses as OrderStatus[];
+        const eligibleStatuses = [...appInfo.refundPolicy.eligibleStatuses] as OrderStatus[];
         if (!eligibleStatuses.includes(order.status)) {
           return false;
         }
