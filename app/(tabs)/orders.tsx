@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Package, Clock, CheckCircle, Truck, AlertCircle } from 'lucide-react-native';
+import { Package, Clock, CheckCircle, Truck, AlertCircle, DollarSign, RefreshCw } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useOrderStore } from '@/store/orderStore';
+import { OrderStatus } from '@/types/product';
 
 export default function OrdersScreen() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function OrdersScreen() {
     }
   }, []);
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
       case 'pending':
         return <Clock size={20} color={Colors.dark.warning} />;
@@ -47,12 +48,17 @@ export default function OrdersScreen() {
         return <CheckCircle size={20} color={Colors.dark.success} />;
       case 'cancelled':
         return <AlertCircle size={20} color={Colors.dark.error} />;
+      case 'refund_requested':
+      case 'refund_processing':
+        return <RefreshCw size={20} color={Colors.dark.warning} />;
+      case 'refunded':
+        return <DollarSign size={20} color={Colors.dark.success} />;
       default:
         return <Clock size={20} color={Colors.dark.warning} />;
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: OrderStatus) => {
     switch (status) {
       case 'pending':
         return 'Pending';
@@ -66,12 +72,18 @@ export default function OrdersScreen() {
         return 'Delivered';
       case 'cancelled':
         return 'Cancelled';
+      case 'refund_requested':
+        return 'Refund Requested';
+      case 'refund_processing':
+        return 'Processing Refund';
+      case 'refunded':
+        return 'Refunded';
       default:
         return 'Pending';
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: OrderStatus) => {
     switch (status) {
       case 'pending':
         return Colors.dark.warning;
@@ -84,6 +96,11 @@ export default function OrdersScreen() {
         return Colors.dark.success;
       case 'cancelled':
         return Colors.dark.error;
+      case 'refund_requested':
+      case 'refund_processing':
+        return Colors.dark.warning;
+      case 'refunded':
+        return Colors.dark.success;
       default:
         return Colors.dark.warning;
     }
@@ -116,6 +133,11 @@ export default function OrdersScreen() {
           <Text style={styles.orderItems}>
             {item.items.length} {item.items.length === 1 ? 'item' : 'items'}
           </Text>
+          {item.refundInfo && (
+            <Text style={styles.refundAmount}>
+              Refund: ${item.refundInfo.amount.toFixed(2)}
+            </Text>
+          )}
         </View>
         
         <View style={[styles.statusContainer, { backgroundColor: `${getStatusColor(item.status)}20` }]}>
@@ -126,11 +148,25 @@ export default function OrdersScreen() {
         </View>
       </View>
       
-      {item.estimatedDelivery && (
+      {item.estimatedDelivery && !['refund_requested', 'refund_processing', 'refunded'].includes(item.status) && (
         <View style={styles.deliveryInfo}>
           <Clock size={14} color={Colors.dark.subtext} />
           <Text style={styles.deliveryText}>
             Estimated delivery: {item.estimatedDelivery}
+          </Text>
+        </View>
+      )}
+
+      {item.refundInfo && (
+        <View style={styles.refundInfo}>
+          <DollarSign size={14} color={Colors.dark.primary} />
+          <Text style={styles.refundText}>
+            {item.status === 'refunded' 
+              ? `Refunded ${item.refundInfo.amount.toFixed(2)} to ${item.refundInfo.refundMethod === 'original_payment' ? 'original payment' : 'store credit'}`
+              : item.status === 'refund_processing'
+              ? `Processing refund of $${item.refundInfo.amount.toFixed(2)}`
+              : `Refund requested: $${item.refundInfo.amount.toFixed(2)}`
+            }
           </Text>
         </View>
       )}
@@ -237,6 +273,12 @@ const styles = StyleSheet.create({
     color: Colors.dark.subtext,
     fontSize: 14,
   },
+  refundAmount: {
+    color: Colors.dark.success,
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 2,
+  },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -261,6 +303,20 @@ const styles = StyleSheet.create({
     color: Colors.dark.subtext,
     fontSize: 12,
     marginLeft: 6,
+  },
+  refundInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: Colors.dark.border,
+  },
+  refundText: {
+    color: Colors.dark.primary,
+    fontSize: 12,
+    marginLeft: 6,
+    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,

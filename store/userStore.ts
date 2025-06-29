@@ -15,6 +15,16 @@ export interface UserAvatar {
   isSelected: boolean;
 }
 
+export interface RefundHistory {
+  id: string;
+  orderId: string;
+  amount: number;
+  requestedAt: string;
+  completedAt?: string;
+  status: 'requested' | 'processing' | 'completed';
+  reason?: string;
+}
+
 export interface UserState {
   isVerified: boolean;
   name: string;
@@ -36,6 +46,7 @@ export interface UserState {
     date: string;
   }>;
   avatars: UserAvatar[];
+  refundHistory: RefundHistory[];
   notificationPreferences: {
     newFlower: boolean;
     newVapes: boolean;
@@ -43,6 +54,7 @@ export interface UserState {
     newPreRolls: boolean;
     promotions: boolean;
     orderUpdates: boolean;
+    refundUpdates: boolean;
   };
   lastUpdated: string | null;
   
@@ -64,6 +76,8 @@ export interface UserState {
   addAvatar: (url: string) => void;
   selectAvatar: (id: string) => void;
   removeAvatar: (id: string) => void;
+  addRefundToHistory: (refund: RefundHistory) => void;
+  updateRefundStatus: (refundId: string, status: RefundHistory['status'], completedAt?: string) => void;
   updateNotificationPreference: (key: keyof UserState['notificationPreferences'], value: boolean) => void;
   refreshUserData: () => Promise<void>;
   resetUserData: () => void;
@@ -85,6 +99,7 @@ const initialState = {
   driverRatings: {},
   reviews: [],
   avatars: [],
+  refundHistory: [],
   notificationPreferences: {
     newFlower: true,
     newVapes: true,
@@ -92,6 +107,7 @@ const initialState = {
     newPreRolls: true,
     promotions: true,
     orderUpdates: true,
+    refundUpdates: true,
   },
   lastUpdated: null,
 };
@@ -284,6 +300,26 @@ export const useUserStore = create<UserState>()(
           });
         }
       },
+
+      addRefundToHistory: (refund: RefundHistory) => {
+        const now = new Date().toISOString();
+        set((state) => ({
+          refundHistory: [refund, ...state.refundHistory],
+          lastUpdated: now
+        }));
+      },
+
+      updateRefundStatus: (refundId: string, status: RefundHistory['status'], completedAt?: string) => {
+        const now = new Date().toISOString();
+        set((state) => ({
+          refundHistory: state.refundHistory.map(refund =>
+            refund.id === refundId
+              ? { ...refund, status, ...(completedAt && { completedAt }) }
+              : refund
+          ),
+          lastUpdated: now
+        }));
+      },
         
       updateNotificationPreference: (key, value) => {
         const now = new Date().toISOString();
@@ -324,6 +360,7 @@ export const useUserStore = create<UserState>()(
         driverRatings: state.driverRatings,
         reviews: state.reviews,
         avatars: state.avatars,
+        refundHistory: state.refundHistory,
         notificationPreferences: state.notificationPreferences,
         lastUpdated: state.lastUpdated,
       }),

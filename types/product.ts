@@ -52,3 +52,25 @@ export interface PaymentInfo {
   cardLast4?: string;
   cardType?: string;
 }
+
+export interface RefundInfo {
+  requestedAt: string;
+  processedAt?: string;
+  completedAt?: string;
+  amount: number;
+  reason?: string;
+  refundMethod: 'original_payment' | 'store_credit';
+  refundId: string;
+  estimatedCompletionDate: string;
+}
+
+export type OrderStatus = 
+  | 'pending' 
+  | 'confirmed' 
+  | 'preparing' 
+  | 'out_for_delivery' 
+  | 'delivered' 
+  | 'cancelled'
+  | 'refund_requested'
+  | 'refund_processing' 
+  | 'refunded';

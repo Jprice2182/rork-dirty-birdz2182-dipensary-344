@@ -9,7 +9,7 @@ import TipDriverModal from '@/components/TipDriverModal';
 import PromoCodeInput from '@/components/PromoCodeInput';
 import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 import { getProductById } from '@/mocks/products';
-import { Truck, CheckCircle } from 'lucide-react-native';
+import { Truck, CheckCircle, Shield } from 'lucide-react-native';
 import { PaymentMethod, PaymentInfo } from '@/types/product';
 
 export default function Checkout() {
@@ -269,6 +269,18 @@ export default function Checkout() {
           </Text>
         </View>
 
+        {/* Refund Policy */}
+        <View style={styles.refundPolicySection}>
+          <Shield size={20} color={Colors.dark.primary} />
+          <View style={styles.refundPolicyText}>
+            <Text style={styles.refundPolicyTitle}>💰 {appInfo.refundPolicy.description}</Text>
+            <Text style={styles.refundPolicySubtitle}>
+              Not satisfied? Request a full refund within {appInfo.refundPolicy.timeLimit} hours of delivery. 
+              Processing time: {appInfo.refundPolicy.processingTime}.
+            </Text>
+          </View>
+        </View>
+
         {/* Place Order Button */}
         <Pressable style={styles.placeOrderButton} onPress={handlePlaceOrder}>
           <Text style={styles.placeOrderText}>
@@ -502,6 +514,31 @@ const styles = StyleSheet.create({
     color: Colors.dark.primary,
     fontWeight: '600',
     marginTop: 8,
+  },
+  refundPolicySection: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.primary,
+  },
+  refundPolicyText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  refundPolicyTitle: {
+    color: Colors.dark.primary,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  refundPolicySubtitle: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    lineHeight: 18,
   },
   placeOrderButton: {
     backgroundColor: Colors.dark.primary,

@@ -25,6 +25,14 @@ const appInfo = {
   freeDeliveryMinimum: 50.00,
   estimatedDeliveryTime: "30-45 minutes",
   defaultTipPercentages: [15, 18, 20, 25],
+  refundPolicy: {
+    timeLimit: 24, // hours
+    description: "100% money back guarantee within 24 hours",
+    processingTime: "1-3 business days",
+    eligibleStatuses: ['delivered'],
+    excludedItems: [], // All items are refundable
+    refundMethods: ['original_payment', 'store_credit']
+  },
   operatingHours: {
     monday: "9:00 AM - 10:00 PM",
     tuesday: "9:00 AM - 10:00 PM", 

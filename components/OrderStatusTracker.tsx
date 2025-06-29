@@ -1,10 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Check, Clock, Package, Truck, AlertCircle } from 'lucide-react-native';
+import { Check, Clock, Package, Truck, AlertCircle, DollarSign, RefreshCw } from 'lucide-react-native';
 import Colors from '@/constants/colors';
+import { OrderStatus } from '@/types/product';
 
 interface OrderStatusTrackerProps {
-  status: 'pending' | 'confirmed' | 'preparing' | 'out_for_delivery' | 'delivered' | 'cancelled';
+  status: OrderStatus;
   estimatedDelivery?: string;
   estimatedProcessingTime?: string;
 }
@@ -22,18 +23,78 @@ export default function OrderStatusTracker({
       case 'out_for_delivery': return 3;
       case 'delivered': return 4;
       case 'cancelled': return -1;
+      case 'refund_requested': return 5;
+      case 'refund_processing': return 6;
+      case 'refunded': return 7;
       default: return 0;
     }
   };
 
   const statusIndex = getStatusIndex();
   const isCancelled = status === 'cancelled';
+  const isRefundFlow = ['refund_requested', 'refund_processing', 'refunded'].includes(status);
 
   if (isCancelled) {
     return (
       <View style={styles.cancelledContainer}>
         <AlertCircle size={24} color={Colors.dark.error} />
         <Text style={styles.cancelledText}>Order Cancelled</Text>
+      </View>
+    );
+  }
+
+  if (isRefundFlow) {
+    return (
+      <View style={styles.refundContainer}>
+        <View style={styles.refundTimeline}>
+          {/* Refund Requested */}
+          <View style={[styles.statusItem, statusIndex >= 5 && styles.activeStatusItem]}>
+            <View style={[styles.statusIcon, statusIndex >= 5 && styles.activeStatusIcon]}>
+              {statusIndex > 5 ? (
+                <Check size={16} color={Colors.dark.text} />
+              ) : (
+                <RefreshCw size={16} color={statusIndex >= 5 ? Colors.dark.text : Colors.dark.subtext} />
+              )}
+            </View>
+            <Text style={[styles.statusText, statusIndex >= 5 && styles.activeStatusText]}>
+              Refund Requested
+            </Text>
+          </View>
+
+          <View style={[styles.connector, statusIndex > 5 && styles.activeConnector]} />
+
+          {/* Refund Processing */}
+          <View style={[styles.statusItem, statusIndex >= 6 && styles.activeStatusItem]}>
+            <View style={[styles.statusIcon, statusIndex >= 6 && styles.activeStatusIcon]}>
+              {statusIndex > 6 ? (
+                <Check size={16} color={Colors.dark.text} />
+              ) : (
+                <RefreshCw size={16} color={statusIndex >= 6 ? Colors.dark.text : Colors.dark.subtext} />
+              )}
+            </View>
+            <Text style={[styles.statusText, statusIndex >= 6 && styles.activeStatusText]}>
+              Processing
+            </Text>
+            {statusIndex === 6 && (
+              <Text style={styles.estimatedTime}>Processing within 24 hours</Text>
+            )}
+          </View>
+
+          <View style={[styles.connector, statusIndex > 6 && styles.activeConnector]} />
+
+          {/* Refunded */}
+          <View style={[styles.statusItem, statusIndex >= 7 && styles.activeStatusItem]}>
+            <View style={[styles.statusIcon, statusIndex >= 7 && styles.activeStatusIcon]}>
+              <DollarSign size={16} color={statusIndex >= 7 ? Colors.dark.text : Colors.dark.subtext} />
+            </View>
+            <Text style={[styles.statusText, statusIndex >= 7 && styles.activeStatusText]}>
+              Refunded
+            </Text>
+            {statusIndex === 7 && (
+              <Text style={styles.estimatedTime}>Refund completed!</Text>
+            )}
+          </View>
+        </View>
       </View>
     );
   }
@@ -133,6 +194,17 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   timeline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  refundContainer: {
+    marginVertical: 16,
+    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+  },
+  refundTimeline: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

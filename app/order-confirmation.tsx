@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CheckCircle, Home, Package, Tag, Clock, Truck, CreditCard, DollarSign } from 'lucide-react-native';
+import { CheckCircle, Home, Package, Tag, Clock, Truck, CreditCard, DollarSign, Shield } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useOrderStore } from '@/store/orderStore';
 import appInfo from '@/constants/appInfo';
@@ -135,6 +135,17 @@ export default function OrderConfirmationScreen() {
                   </Text>
                 </View>
               )}
+            </View>
+          </View>
+
+          {/* Refund Policy Information */}
+          <View style={styles.refundPolicyContainer}>
+            <Shield size={20} color={Colors.dark.primary} style={styles.refundPolicyIcon} />
+            <View style={styles.refundPolicyText}>
+              <Text style={styles.refundPolicyTitle}>💰 {appInfo.refundPolicy.description}</Text>
+              <Text style={styles.refundPolicySubtitle}>
+                Not satisfied? Request a full refund within {appInfo.refundPolicy.timeLimit} hours of delivery.
+              </Text>
             </View>
           </View>
         </View>
@@ -311,6 +322,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontStyle: 'italic',
+  },
+  refundPolicyContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+  },
+  refundPolicyIcon: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  refundPolicyText: {
+    flex: 1,
+  },
+  refundPolicyTitle: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  refundPolicySubtitle: {
+    color: Colors.dark.primary,
+    fontSize: 12,
+    lineHeight: 16,
   },
   footer: {
     padding: 16,

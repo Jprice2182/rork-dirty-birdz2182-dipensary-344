@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, Pressable, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { MapPin, Phone, Clock, Package, Truck, CheckCircle, AlertCircle, Tag, Star, Map, XCircle, CreditCard, DollarSign } from 'lucide-react-native';
+import { MapPin, Phone, Clock, Package, Truck, CheckCircle, AlertCircle, Tag, Star, Map, XCircle, CreditCard, DollarSign, RefreshCw } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useOrderStore } from '@/store/orderStore';
 import { getProductById } from '@/mocks/products';
@@ -11,18 +11,20 @@ import RatingStars from '@/components/RatingStars';
 import DriverTrackingMap from '@/components/DriverTrackingMap';
 import CancelOrderModal from '@/components/CancelOrderModal';
 import TipDriverModal from '@/components/TipDriverModal';
+import RefundRequestModal from '@/components/RefundRequestModal';
 import appInfo from '@/constants/appInfo';
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getOrderById } = useOrderStore();
+  const { getOrderById, isRefundEligible, getRefundTimeRemaining } = useOrderStore();
   const { driverRatings } = useUserStore();
   const order = getOrderById(id);
   const [showRateDriverModal, setShowRateDriverModal] = useState(false);
   const [showTrackingMap, setShowTrackingMap] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showTipModal, setShowTipModal] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
 
   if (!order) {
     return (
@@ -48,6 +50,11 @@ export default function OrderDetailScreen() {
         return <CheckCircle size={24} color={Colors.dark.success} />;
       case 'cancelled':
         return <AlertCircle size={24} color={Colors.dark.error} />;
+      case 'refund_requested':
+      case 'refund_processing':
+        return <RefreshCw size={24} color={Colors.dark.warning} />;
+      case 'refunded':
+        return <DollarSign size={24} color={Colors.dark.success} />;
       default:
         return <Clock size={24} color={Colors.dark.warning} />;
     }
@@ -67,6 +74,12 @@ export default function OrderDetailScreen() {
         return 'Delivered';
       case 'cancelled':
         return 'Cancelled';
+      case 'refund_requested':
+        return 'Refund Requested';
+      case 'refund_processing':
+        return 'Processing Refund';
+      case 'refunded':
+        return 'Refunded';
       default:
         return 'Pending';
     }
@@ -143,12 +156,34 @@ export default function OrderDetailScreen() {
     setShowTipModal(true);
   };
 
+  const handleRequestRefund = () => {
+    if (!isRefundEligible(id)) {
+      const timeRemaining = getRefundTimeRemaining(id);
+      if (timeRemaining <= 0) {
+        Alert.alert(
+          "Refund Period Expired",
+          `The 24-hour refund period for this order has expired. Please contact customer service at ${appInfo.customerService.phone} for assistance.`
+        );
+      } else {
+        Alert.alert(
+          "Refund Not Available",
+          "This order is not eligible for a refund at this time."
+        );
+      }
+      return;
+    }
+    
+    setShowRefundModal(true);
+  };
+
   const driverId = order.driverId || 'unknown';
   const driverRating = driverRatings[driverId];
   const canRateDriver = order.status === 'delivered' && !order.isRated;
   const canTrackDriver = order.status === 'out_for_delivery';
   const canCancel = order.status === 'pending' || order.status === 'confirmed' || order.status === 'preparing';
   const canTip = order.status === 'out_for_delivery' || order.status === 'delivered';
+  const canRefund = isRefundEligible(id);
+  const refundTimeRemaining = getRefundTimeRemaining(id);
   const tipAmount = order.tipAmount || 0;
   const isFreeDelivery = order.deliveryFee === 0;
 
@@ -165,6 +200,43 @@ export default function OrderDetailScreen() {
           <Text style={styles.statusText}>{getStatusText()}</Text>
         </View>
       </View>
+
+      {/* Refund Status */}
+      {order.status === 'refund_requested' || order.status === 'refund_processing' || order.status === 'refunded' ? (
+        <View style={styles.refundStatusBanner}>
+          <RefreshCw size={20} color={order.status === 'refunded' ? Colors.dark.success : Colors.dark.warning} />
+          <View style={styles.refundStatusText}>
+            <Text style={[styles.refundStatusTitle, { color: order.status === 'refunded' ? Colors.dark.success : Colors.dark.warning }]}>
+              {order.status === 'refunded' ? '✅ Refund Completed' : 
+               order.status === 'refund_processing' ? '⏳ Processing Refund' : 
+               '📝 Refund Requested'}
+            </Text>
+            {order.refundInfo && (
+              <Text style={styles.refundStatusSubtitle}>
+                {order.status === 'refunded' 
+                  ? `$${order.refundInfo.amount.toFixed(2)} refunded to your ${order.refundInfo.refundMethod === 'original_payment' ? 'original payment method' : 'store credit'}`
+                  : order.status === 'refund_processing'
+                  ? `$${order.refundInfo.amount.toFixed(2)} will be refunded within 24 hours`
+                  : `$${order.refundInfo.amount.toFixed(2)} refund requested`
+                }
+              </Text>
+            )}
+          </View>
+        </View>
+      ) : null}
+
+      {/* Refund Eligibility Banner */}
+      {order.status === 'delivered' && canRefund && refundTimeRemaining > 0 && (
+        <View style={styles.refundEligibilityBanner}>
+          <DollarSign size={20} color={Colors.dark.primary} />
+          <View style={styles.refundEligibilityText}>
+            <Text style={styles.refundEligibilityTitle}>💰 100% Money Back Guarantee</Text>
+            <Text style={styles.refundEligibilitySubtitle}>
+              {refundTimeRemaining} hour{refundTimeRemaining !== 1 ? 's' : ''} left to request a full refund
+            </Text>
+          </View>
+        </View>
+      )}
 
       {/* Free Delivery Highlight */}
       {isFreeDelivery && (
@@ -270,6 +342,16 @@ export default function OrderDetailScreen() {
                 <Text style={[styles.actionButtonText, styles.tipButtonText]}>Tip Driver</Text>
               </Pressable>
             )}
+
+            {canRefund && (
+              <Pressable 
+                style={styles.refundButton}
+                onPress={handleRequestRefund}
+              >
+                <DollarSign size={20} color={Colors.dark.text} style={styles.actionButtonIcon} />
+                <Text style={styles.actionButtonText}>Request Refund</Text>
+              </Pressable>
+            )}
             
             {canCancel && (
               <Pressable 
@@ -371,6 +453,33 @@ export default function OrderDetailScreen() {
               ${(order.total + tipAmount).toFixed(2)}
             </Text>
           </View>
+
+          {/* Refund Information */}
+          {order.refundInfo && (
+            <View style={styles.refundInfoSection}>
+              <Text style={styles.refundInfoTitle}>Refund Information</Text>
+              <View style={styles.refundInfoRow}>
+                <Text style={styles.refundInfoLabel}>Refund ID:</Text>
+                <Text style={styles.refundInfoValue}>#{order.refundInfo.refundId.slice(0, 8)}</Text>
+              </View>
+              <View style={styles.refundInfoRow}>
+                <Text style={styles.refundInfoLabel}>Amount:</Text>
+                <Text style={styles.refundInfoValue}>${order.refundInfo.amount.toFixed(2)}</Text>
+              </View>
+              <View style={styles.refundInfoRow}>
+                <Text style={styles.refundInfoLabel}>Method:</Text>
+                <Text style={styles.refundInfoValue}>
+                  {order.refundInfo.refundMethod === 'original_payment' ? 'Original Payment' : 'Store Credit'}
+                </Text>
+              </View>
+              {order.refundInfo.reason && (
+                <View style={styles.refundInfoRow}>
+                  <Text style={styles.refundInfoLabel}>Reason:</Text>
+                  <Text style={styles.refundInfoValue}>{order.refundInfo.reason}</Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
       </View>
       
@@ -411,6 +520,12 @@ export default function OrderDetailScreen() {
           console.log('Tip selected:', amount);
         }}
         orderTotal={order.total}
+      />
+
+      <RefundRequestModal
+        visible={showRefundModal}
+        onClose={() => setShowRefundModal(false)}
+        orderId={id}
       />
     </ScrollView>
   );
@@ -453,6 +568,56 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 8,
+  },
+  refundStatusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.dark.card,
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.warning,
+  },
+  refundStatusText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  refundStatusTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  refundStatusSubtitle: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+  },
+  refundEligibilityBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.primary,
+  },
+  refundEligibilityText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  refundEligibilityTitle: {
+    color: Colors.dark.primary,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  refundEligibilitySubtitle: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: '500',
   },
   freeDeliveryBanner: {
     flexDirection: 'row',
@@ -586,6 +751,16 @@ const styles = StyleSheet.create({
   tipDriverButton: {
     flex: 1,
     backgroundColor: Colors.dark.success,
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: '45%',
+  },
+  refundButton: {
+    flex: 1,
+    backgroundColor: Colors.dark.primary,
     borderRadius: 8,
     padding: 12,
     flexDirection: 'row',
@@ -733,6 +908,32 @@ const styles = StyleSheet.create({
     color: Colors.dark.primary,
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  refundInfoSection: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.dark.border,
+    paddingTop: 12,
+    marginTop: 8,
+  },
+  refundInfoTitle: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  refundInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  refundInfoLabel: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+  },
+  refundInfoValue: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: '500',
   },
   notFoundContainer: {
     flex: 1,

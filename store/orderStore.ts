@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import appInfo from '@/constants/appInfo';
-import { PaymentMethod, PaymentInfo } from '@/types/product';
+import { PaymentMethod, PaymentInfo, RefundInfo, OrderStatus } from '@/types/product';
 
 export interface OrderItem {
   id: string;
@@ -20,7 +20,7 @@ export interface Order {
   tax: number;
   tip: number;
   total: number;
-  status: 'pending' | 'confirmed' | 'preparing' | 'out_for_delivery' | 'delivered' | 'cancelled';
+  status: OrderStatus;
   createdAt: string;
   estimatedDelivery?: string;
   date: string;
@@ -36,6 +36,8 @@ export interface Order {
   promoCodeApplied?: string;
   paymentMethod: PaymentMethod;
   paymentInfo?: PaymentInfo;
+  refundInfo?: RefundInfo;
+  refundEligibleUntil?: string;
 }
 
 interface OrderState {
@@ -51,8 +53,13 @@ interface OrderState {
     paymentInfo?: PaymentInfo;
   }) => string;
   getOrderById: (id: string) => Order | undefined;
-  updateOrderStatus: (id: string, status: Order['status']) => void;
+  updateOrderStatus: (id: string, status: OrderStatus) => void;
   getRecentOrders: () => Order[];
+  requestRefund: (id: string, reason?: string) => boolean;
+  processRefund: (id: string) => void;
+  completeRefund: (id: string) => void;
+  isRefundEligible: (id: string) => boolean;
+  getRefundTimeRemaining: (id: string) => number;
 }
 
 export const useOrderStore = create<OrderState>()(
@@ -64,6 +71,10 @@ export const useOrderStore = create<OrderState>()(
         const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const now = new Date().toISOString();
         const currentDate = new Date().toLocaleDateString();
+        
+        // Calculate refund eligibility deadline (24 hours after delivery)
+        const refundDeadline = new Date();
+        refundDeadline.setHours(refundDeadline.getHours() + appInfo.refundPolicy.timeLimit);
         
         // Validate delivery fee calculation
         const calculatedDeliveryFee = orderData.subtotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
@@ -90,6 +101,7 @@ export const useOrderStore = create<OrderState>()(
           tipAmount: orderData.tip,
           paymentMethod: orderData.paymentMethod,
           paymentInfo: orderData.paymentInfo,
+          refundEligibleUntil: refundDeadline.toISOString(),
         };
         
         set((state) => ({
@@ -105,11 +117,23 @@ export const useOrderStore = create<OrderState>()(
         return orders.find(order => order.id === id);
       },
       
-      updateOrderStatus: (id: string, status: Order['status']) => {
+      updateOrderStatus: (id: string, status: OrderStatus) => {
         set((state) => ({
-          orders: state.orders.map(order =>
-            order.id === id ? { ...order, status } : order
-          )
+          orders: state.orders.map(order => {
+            if (order.id === id) {
+              const updatedOrder = { ...order, status };
+              
+              // Set refund eligibility when order is delivered
+              if (status === 'delivered' && !order.refundEligibleUntil) {
+                const refundDeadline = new Date();
+                refundDeadline.setHours(refundDeadline.getHours() + appInfo.refundPolicy.timeLimit);
+                updatedOrder.refundEligibleUntil = refundDeadline.toISOString();
+              }
+              
+              return updatedOrder;
+            }
+            return order;
+          })
         }));
         console.log(`Updated order ${id} status to ${status}`);
       },
@@ -119,6 +143,131 @@ export const useOrderStore = create<OrderState>()(
         return orders
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 10);
+      },
+
+      isRefundEligible: (id: string) => {
+        const order = get().getOrderById(id);
+        if (!order) return false;
+        
+        // Check if order status is eligible for refund
+        if (!appInfo.refundPolicy.eligibleStatuses.includes(order.status)) {
+          return false;
+        }
+        
+        // Check if refund has already been requested or processed
+        if (['refund_requested', 'refund_processing', 'refunded'].includes(order.status)) {
+          return false;
+        }
+        
+        // Check if within time limit
+        if (!order.refundEligibleUntil) return false;
+        
+        const now = new Date();
+        const deadline = new Date(order.refundEligibleUntil);
+        return now <= deadline;
+      },
+
+      getRefundTimeRemaining: (id: string) => {
+        const order = get().getOrderById(id);
+        if (!order || !order.refundEligibleUntil) return 0;
+        
+        const now = new Date();
+        const deadline = new Date(order.refundEligibleUntil);
+        const timeRemaining = deadline.getTime() - now.getTime();
+        
+        return Math.max(0, Math.floor(timeRemaining / (1000 * 60 * 60))); // Return hours remaining
+      },
+
+      requestRefund: (id: string, reason?: string) => {
+        const { isRefundEligible } = get();
+        
+        if (!isRefundEligible(id)) {
+          return false;
+        }
+        
+        const now = new Date();
+        const estimatedCompletion = new Date();
+        estimatedCompletion.setDate(estimatedCompletion.getDate() + 1); // 1 day processing
+        
+        const refundId = `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        set((state) => ({
+          orders: state.orders.map(order => {
+            if (order.id === id) {
+              return {
+                ...order,
+                status: 'refund_requested' as OrderStatus,
+                refundInfo: {
+                  requestedAt: now.toISOString(),
+                  amount: order.total + (order.tipAmount || 0),
+                  reason: reason || 'Customer requested refund',
+                  refundMethod: order.paymentMethod === 'card' ? 'original_payment' : 'store_credit',
+                  refundId,
+                  estimatedCompletionDate: estimatedCompletion.toISOString(),
+                }
+              };
+            }
+            return order;
+          })
+        }));
+        
+        console.log(`Refund requested for order ${id}, refund ID: ${refundId}`);
+        
+        // Simulate automatic processing after a short delay
+        setTimeout(() => {
+          get().processRefund(id);
+        }, 2000);
+        
+        return true;
+      },
+
+      processRefund: (id: string) => {
+        const now = new Date();
+        
+        set((state) => ({
+          orders: state.orders.map(order => {
+            if (order.id === id && order.status === 'refund_requested') {
+              return {
+                ...order,
+                status: 'refund_processing' as OrderStatus,
+                refundInfo: order.refundInfo ? {
+                  ...order.refundInfo,
+                  processedAt: now.toISOString(),
+                } : undefined
+              };
+            }
+            return order;
+          })
+        }));
+        
+        console.log(`Processing refund for order ${id}`);
+        
+        // Simulate completion after processing time
+        setTimeout(() => {
+          get().completeRefund(id);
+        }, 5000);
+      },
+
+      completeRefund: (id: string) => {
+        const now = new Date();
+        
+        set((state) => ({
+          orders: state.orders.map(order => {
+            if (order.id === id && order.status === 'refund_processing') {
+              return {
+                ...order,
+                status: 'refunded' as OrderStatus,
+                refundInfo: order.refundInfo ? {
+                  ...order.refundInfo,
+                  completedAt: now.toISOString(),
+                } : undefined
+              };
+            }
+            return order;
+          })
+        }));
+        
+        console.log(`Refund completed for order ${id}`);
       },
     }),
     {
