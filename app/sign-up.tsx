@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Mail, Lock, User, ArrowLeft } from 'lucide-react-native';
+import { Mail, Lock, User, ArrowLeft, Calendar } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/store/authStore';
 import { useUserStore } from '@/store/userStore';
@@ -12,11 +12,12 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [birthday, setBirthday] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
   const { signIn } = useAuthStore();
-  const { updateUserInfo, isVerified } = useUserStore();
+  const { updateUserInfo, setBirthday: setUserBirthday, isVerified } = useUserStore();
 
   // Redirect if not verified - must verify age first
   useEffect(() => {
@@ -26,11 +27,58 @@ export default function SignUpScreen() {
     }
   }, [isVerified, router]);
 
+  const validateBirthday = (dateString: string): boolean => {
+    // Check if date is in MM/DD/YYYY format
+    const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/;
+    if (!dateRegex.test(dateString)) {
+      return false;
+    }
+
+    const [month, day, year] = dateString.split('/').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    // Check if date is valid
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      return false;
+    }
+
+    // Check if user is at least 21 years old
+    const today = new Date();
+    const age = today.getFullYear() - year;
+    const monthDiff = today.getMonth() - (month - 1);
+    const dayDiff = today.getDate() - day;
+    
+    if (age < 21 || (age === 21 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)))) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const formatBirthdayInput = (text: string): string => {
+    // Remove all non-numeric characters
+    const numbers = text.replace(/\D/g, '');
+    
+    // Add slashes automatically
+    if (numbers.length >= 5) {
+      return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+    } else if (numbers.length >= 3) {
+      return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+    } else {
+      return numbers;
+    }
+  };
+
+  const handleBirthdayChange = (text: string) => {
+    const formatted = formatBirthdayInput(text);
+    setBirthday(formatted);
+  };
+
   const handleSignUp = async () => {
     setError('');
     
     // Validate inputs
-    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim() || !birthday.trim()) {
       setError('All fields are required');
       return;
     }
@@ -44,13 +92,23 @@ export default function SignUpScreen() {
       setError('Password must be at least 6 characters');
       return;
     }
+
+    if (!validateBirthday(birthday)) {
+      setError('Please enter a valid birthday (MM/DD/YYYY) and ensure you are at least 21 years old');
+      return;
+    }
     
     setIsLoading(true);
     
     try {
+      // Convert birthday to ISO string for storage
+      const [month, day, year] = birthday.split('/').map(Number);
+      const birthdayDate = new Date(year, month - 1, day);
+      
       // In a real app, you would create the account on your backend
       // For this demo, we'll just update the user info and sign in
       updateUserInfo(name, email, '');
+      setUserBirthday(birthdayDate.toISOString());
       
       const success = await signIn(email, password);
       
@@ -105,6 +163,19 @@ export default function SignUpScreen() {
             keyboardType="email-address"
           />
         </View>
+
+        <View style={styles.inputContainer}>
+          <Calendar size={20} color={Colors.dark.subtext} style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Birthday (MM/DD/YYYY)"
+            placeholderTextColor={Colors.dark.subtext}
+            value={birthday}
+            onChangeText={handleBirthdayChange}
+            keyboardType="numeric"
+            maxLength={10}
+          />
+        </View>
         
         <View style={styles.inputContainer}>
           <Lock size={20} color={Colors.dark.subtext} style={styles.inputIcon} />
@@ -147,7 +218,7 @@ export default function SignUpScreen() {
       
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          By creating an account, you agree to our Terms of Service and Privacy Policy
+          By creating an account, you agree to our Terms of Service and Privacy Policy. You must be 21+ to use this service.
         </Text>
       </View>
     </ScrollView>

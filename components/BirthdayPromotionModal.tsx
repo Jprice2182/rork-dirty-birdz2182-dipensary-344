@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Modal, Pressable, Image } from 'react-native';
+import { StyleSheet, Text, View, Modal, Pressable, Image, TextInput, Alert } from 'react-native';
 import { X, Gift, Calendar, Check } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useUserStore } from '@/store/userStore';
@@ -10,10 +10,86 @@ interface BirthdayPromotionModalProps {
 }
 
 export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPromotionModalProps) {
-  const { birthday } = useUserStore();
+  const { birthday, setBirthday } = useUserStore();
   const [claimed, setClaimed] = useState(false);
+  const [isEditing, setIsEditing] = useState(!birthday);
+  const [editBirthday, setEditBirthday] = useState('');
+
+  const validateBirthday = (dateString: string): boolean => {
+    // Check if date is in MM/DD/YYYY format
+    const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/;
+    if (!dateRegex.test(dateString)) {
+      return false;
+    }
+
+    const [month, day, year] = dateString.split('/').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    // Check if date is valid
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      return false;
+    }
+
+    // Check if user is at least 21 years old
+    const today = new Date();
+    const age = today.getFullYear() - year;
+    const monthDiff = today.getMonth() - (month - 1);
+    const dayDiff = today.getDate() - day;
+    
+    if (age < 21 || (age === 21 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)))) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const formatBirthdayInput = (text: string): string => {
+    // Remove all non-numeric characters
+    const numbers = text.replace(/\D/g, '');
+    
+    // Add slashes automatically
+    if (numbers.length >= 5) {
+      return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+    } else if (numbers.length >= 3) {
+      return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+    } else {
+      return numbers;
+    }
+  };
+
+  const handleBirthdayChange = (text: string) => {
+    const formatted = formatBirthdayInput(text);
+    setEditBirthday(formatted);
+  };
+
+  const handleSaveBirthday = () => {
+    if (!validateBirthday(editBirthday)) {
+      Alert.alert(
+        'Invalid Birthday',
+        'Please enter a valid birthday (MM/DD/YYYY) and ensure you are at least 21 years old.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    // Convert to ISO string for storage
+    const [month, day, year] = editBirthday.split('/').map(Number);
+    const birthdayDate = new Date(year, month - 1, day);
+    setBirthday(birthdayDate.toISOString());
+    setIsEditing(false);
+    Alert.alert('Success', 'Birthday saved successfully!');
+  };
 
   const handleClaim = () => {
+    if (!birthday) {
+      Alert.alert(
+        'Birthday Required',
+        'Please set your birthday first to claim this promotion.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    
     // In a real app, this would add the free pre-roll to the user's account
     setClaimed(true);
   };
@@ -56,13 +132,41 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
             
             <View style={styles.birthdayContainer}>
               <Calendar size={20} color={Colors.dark.primary} style={styles.calendarIcon} />
-              <View>
+              <View style={styles.birthdayInfo}>
                 <Text style={styles.birthdayLabel}>Your Birthday</Text>
-                <Text style={styles.birthdayValue}>{formatBirthday(birthday)}</Text>
+                {isEditing ? (
+                  <View style={styles.birthdayEditContainer}>
+                    <TextInput
+                      style={styles.birthdayInput}
+                      value={editBirthday}
+                      onChangeText={handleBirthdayChange}
+                      placeholder="MM/DD/YYYY"
+                      placeholderTextColor={Colors.dark.subtext}
+                      keyboardType="numeric"
+                      maxLength={10}
+                    />
+                    <Pressable style={styles.saveButton} onPress={handleSaveBirthday}>
+                      <Text style={styles.saveButtonText}>Save</Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View style={styles.birthdayDisplayContainer}>
+                    <Text style={styles.birthdayValue}>{formatBirthday(birthday)}</Text>
+                    <Pressable 
+                      style={styles.editButton} 
+                      onPress={() => {
+                        setIsEditing(true);
+                        setEditBirthday(birthday ? new Date(birthday).toLocaleDateString('en-US') : '');
+                      }}
+                    >
+                      <Text style={styles.editButtonText}>Edit</Text>
+                    </Pressable>
+                  </View>
+                )}
               </View>
             </View>
             
-            {birthday ? (
+            {birthday && !isEditing ? (
               claimed ? (
                 <View style={styles.claimedContainer}>
                   <Check size={24} color={Colors.dark.success} style={styles.checkIcon} />
@@ -76,13 +180,19 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
                   <Text style={styles.claimButtonText}>Claim Birthday Gift</Text>
                 </Pressable>
               )
-            ) : (
+            ) : !isEditing ? (
               <View style={styles.noBirthdayContainer}>
                 <Text style={styles.noBirthdayText}>
-                  Please set your birthday in your profile to claim this promotion.
+                  Please set your birthday to claim this promotion.
                 </Text>
+                <Pressable 
+                  style={styles.setBirthdayButton} 
+                  onPress={() => setIsEditing(true)}
+                >
+                  <Text style={styles.setBirthdayButtonText}>Set Birthday</Text>
+                </Pressable>
               </View>
-            )}
+            ) : null}
             
             <Text style={styles.termsText}>
               * Limit one per customer. Must be 21+ with valid ID. Cannot be combined with other offers. Pre-roll selection based on availability.
@@ -162,14 +272,57 @@ const styles = StyleSheet.create({
   calendarIcon: {
     marginRight: 12,
   },
+  birthdayInfo: {
+    flex: 1,
+  },
   birthdayLabel: {
     color: Colors.dark.subtext,
     fontSize: 14,
     marginBottom: 4,
   },
+  birthdayEditContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  birthdayInput: {
+    flex: 1,
+    backgroundColor: Colors.dark.card,
+    borderRadius: 8,
+    padding: 8,
+    color: Colors.dark.text,
+    fontSize: 16,
+  },
+  saveButton: {
+    backgroundColor: Colors.dark.primary,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  saveButtonText: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  birthdayDisplayContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   birthdayValue: {
     color: Colors.dark.text,
     fontSize: 16,
+    fontWeight: '500',
+  },
+  editButton: {
+    backgroundColor: Colors.dark.primary,
+    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  editButtonText: {
+    color: Colors.dark.text,
+    fontSize: 12,
     fontWeight: '500',
   },
   claimButton: {
@@ -214,11 +367,24 @@ const styles = StyleSheet.create({
     padding: 16,
     width: '100%',
     marginBottom: 24,
+    alignItems: 'center',
   },
   noBirthdayText: {
     color: Colors.dark.error,
     fontSize: 14,
     textAlign: 'center',
+    marginBottom: 12,
+  },
+  setBirthdayButton: {
+    backgroundColor: Colors.dark.primary,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  setBirthdayButtonText: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: '500',
   },
   termsText: {
     color: Colors.dark.subtext,

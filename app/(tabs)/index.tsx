@@ -18,7 +18,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const cartItemsCount = useCartStore(state => state.getCartItemsCount());
   const { getEighthsPromotion } = useCartStore();
-  const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified } = useUserStore();
+  const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified, birthday } = useUserStore();
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [showEighthsBanner, setShowEighthsBanner] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -32,6 +32,21 @@ export default function HomeScreen() {
       return;
     }
 
+    // Check if birthday is required and not set
+    if (!birthday) {
+      Alert.alert(
+        "Birthday Required",
+        "Please set your birthday in your profile to continue using the app.",
+        [
+          {
+            text: "Go to Profile",
+            onPress: () => router.push('/(tabs)/profile')
+          }
+        ]
+      );
+      return;
+    }
+
     const validation = validateProducts();
     if (!validation.valid) {
       console.warn('Product validation errors:', validation.errors);
@@ -41,7 +56,7 @@ export default function HomeScreen() {
 
     const counts = getProductCountsByCategory();
     console.log('Product counts by category on mount:', counts);
-  }, [isVerified, router]);
+  }, [isVerified, birthday, router]);
 
   const navigateToCart = useCallback(() => {
     router.push('/cart');
@@ -90,6 +105,26 @@ export default function HomeScreen() {
 
   if (!isVerified) {
     return null;
+  }
+
+  // Show birthday requirement notice if not set
+  if (!birthday) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.birthdayRequiredContainer}>
+          <Text style={styles.birthdayRequiredTitle}>Birthday Required</Text>
+          <Text style={styles.birthdayRequiredText}>
+            Please set your birthday in your profile to continue using the app.
+          </Text>
+          <Pressable 
+            style={styles.birthdayRequiredButton}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <Text style={styles.birthdayRequiredButtonText}>Go to Profile</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -296,6 +331,37 @@ const styles = StyleSheet.create({
   cartBadgeText: {
     color: Colors.dark.text,
     fontSize: 10,
+    fontWeight: 'bold',
+  },
+  birthdayRequiredContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  birthdayRequiredTitle: {
+    color: Colors.dark.text,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  birthdayRequiredText: {
+    color: Colors.dark.subtext,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  birthdayRequiredButton: {
+    backgroundColor: Colors.dark.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+  },
+  birthdayRequiredButtonText: {
+    color: Colors.dark.text,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   biographySection: {

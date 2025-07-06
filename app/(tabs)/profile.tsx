@@ -29,7 +29,8 @@ export default function ProfileScreen() {
     reviews,
     avatars,
     birthday,
-    isVerified
+    isVerified,
+    removeAddress
   } = useUserStore();
   
   const { 
@@ -181,6 +182,28 @@ export default function ProfileScreen() {
     setShowAddressModal(true);
   };
 
+  const handleDeleteAddress = (index: number) => {
+    const address = addresses[index];
+    Alert.alert(
+      "Delete Address",
+      `Are you sure you want to delete this address?\n\n${address.street}, ${address.city}, ${address.state} ${address.zipCode}`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            removeAddress(index);
+            Alert.alert("Success", "Address deleted successfully!");
+          }
+        }
+      ]
+    );
+  };
+
   const getBiometricIcon = () => {
     if (biometricInfo.biometryType === 'FaceID') {
       return <Scan size={20} color={Colors.dark.primary} />;
@@ -318,6 +341,13 @@ export default function ProfileScreen() {
               <Text style={styles.infoLabel}>Phone</Text>
               <Text style={styles.infoValue}>{phone || "Not set"}</Text>
             </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Birthday</Text>
+              <Text style={[styles.infoValue, !birthday && styles.requiredField]}>
+                {birthday ? new Date(birthday).toLocaleDateString() : "Required - Please set"}
+              </Text>
+            </View>
             
             <Pressable 
               style={styles.birthdayButton}
@@ -351,20 +381,34 @@ export default function ProfileScreen() {
         
         {addresses.length > 0 ? (
           addresses.map((address, index) => (
-            <Pressable 
-              key={index} 
-              style={styles.addressCard}
-              onPress={() => handleEditAddress(index)}
-              android_ripple={{ color: Colors.dark.primary }}
-            >
+            <View key={index} style={styles.addressCard}>
               <MapPin size={16} color={Colors.dark.primary} style={styles.addressIcon} />
-              <View style={styles.addressContent}>
+              <Pressable 
+                style={styles.addressContent}
+                onPress={() => handleEditAddress(index)}
+                android_ripple={{ color: Colors.dark.primary }}
+              >
                 <Text style={styles.addressText}>
                   {address.street}, {address.city}, {address.state} {address.zipCode}
                 </Text>
+              </Pressable>
+              <View style={styles.addressActions}>
+                <Pressable 
+                  style={styles.addressActionButton}
+                  onPress={() => handleEditAddress(index)}
+                  android_ripple={{ color: Colors.dark.primary, borderless: true }}
+                >
+                  <Edit2 size={16} color={Colors.dark.primary} />
+                </Pressable>
+                <Pressable 
+                  style={styles.addressActionButton}
+                  onPress={() => handleDeleteAddress(index)}
+                  android_ripple={{ color: Colors.dark.error, borderless: true }}
+                >
+                  <Trash2 size={16} color={Colors.dark.error} />
+                </Pressable>
               </View>
-              <ChevronRight size={16} color={Colors.dark.subtext} />
-            </Pressable>
+            </View>
           ))
         ) : (
           <View style={styles.emptyAddressContainer}>
@@ -647,6 +691,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  requiredField: {
+    color: Colors.dark.error,
+    fontStyle: 'italic',
+  },
   birthdayButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -738,10 +786,22 @@ const styles = StyleSheet.create({
   },
   addressContent: {
     flex: 1,
+    padding: 4,
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   addressText: {
     color: Colors.dark.text,
     fontSize: 14,
+  },
+  addressActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  addressActionButton: {
+    padding: 8,
+    borderRadius: 6,
+    overflow: 'hidden',
   },
   emptyAddressContainer: {
     alignItems: 'center',
