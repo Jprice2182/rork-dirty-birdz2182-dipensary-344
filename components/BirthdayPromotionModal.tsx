@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Modal, Pressable, Image, TextInput, Alert } from 'react-native';
-import { X, Gift, Calendar, Check } from 'lucide-react-native';
+import { X, Gift, Calendar, Check, PartyPopper } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useUserStore } from '@/store/userStore';
 
@@ -10,10 +10,22 @@ interface BirthdayPromotionModalProps {
 }
 
 export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPromotionModalProps) {
-  const { birthday, setBirthday } = useUserStore();
+  const { birthday, setBirthday, hasBirthdayPromotionThisYear } = useUserStore();
   const [claimed, setClaimed] = useState(false);
   const [isEditing, setIsEditing] = useState(!birthday);
   const [editBirthday, setEditBirthday] = useState('');
+  const [isTodayBirthday, setIsTodayBirthday] = useState(false);
+
+  // Check if today is the user's birthday
+  useEffect(() => {
+    if (birthday) {
+      const today = new Date();
+      const birthdayDate = new Date(birthday);
+      const isToday = today.getMonth() === birthdayDate.getMonth() && 
+                     today.getDate() === birthdayDate.getDate();
+      setIsTodayBirthday(isToday);
+    }
+  }, [birthday]);
 
   const validateBirthday = (dateString: string): boolean => {
     // Check if date is in MM/DD/YYYY format
@@ -116,10 +128,16 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
           
           <View style={styles.content}>
             <View style={styles.iconContainer}>
-              <Gift size={60} color={Colors.dark.primary} />
+              {isTodayBirthday ? (
+                <PartyPopper size={60} color={Colors.dark.primary} />
+              ) : (
+                <Gift size={60} color={Colors.dark.primary} />
+              )}
             </View>
             
-            <Text style={styles.title}>Birthday Promotion</Text>
+            <Text style={styles.title}>
+              {isTodayBirthday ? '🎉 Happy Birthday! 🎉' : 'Birthday Promotion'}
+            </Text>
             
             <Image 
               source={{ uri: 'https://images.unsplash.com/photo-1603909223429-69858b7e1482?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80' }} 
@@ -127,7 +145,10 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
             />
             
             <Text style={styles.description}>
-              Celebrate your birthday with a free 1g pre-roll on us! Visit any Dirty Birdz2182 Dispensary location on your birthday to claim your gift.
+              {isTodayBirthday 
+                ? "It's your special day! Claim your free 1g pre-roll birthday gift today at any Dirty Birdz2182 Dispensary location. Happy Birthday from all of us!" 
+                : "Celebrate your birthday with a free 1g pre-roll on us! Visit any Dirty Birdz2182 Dispensary location on your birthday to claim your gift."
+              }
             </Text>
             
             <View style={styles.birthdayContainer}>
@@ -167,17 +188,27 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
             </View>
             
             {birthday && !isEditing ? (
-              claimed ? (
+              claimed || hasBirthdayPromotionThisYear ? (
                 <View style={styles.claimedContainer}>
                   <Check size={24} color={Colors.dark.success} style={styles.checkIcon} />
-                  <Text style={styles.claimedText}>Promotion Claimed!</Text>
+                  <Text style={styles.claimedText}>
+                    {isTodayBirthday ? 'Birthday Gift Available!' : 'Promotion Claimed!'}
+                  </Text>
                   <Text style={styles.claimedDescription}>
-                    Your free 1g pre-roll has been added to your account. Show this to the budtender on your next visit.
+                    {isTodayBirthday 
+                      ? 'Visit any Dirty Birdz2182 location today to claim your free 1g pre-roll birthday gift!' 
+                      : 'Your free 1g pre-roll has been added to your account. Show this to the budtender on your next visit.'
+                    }
                   </Text>
                 </View>
               ) : (
-                <Pressable style={styles.claimButton} onPress={handleClaim}>
-                  <Text style={styles.claimButtonText}>Claim Birthday Gift</Text>
+                <Pressable 
+                  style={[styles.claimButton, isTodayBirthday && styles.birthdayClaimButton]} 
+                  onPress={handleClaim}
+                >
+                  <Text style={styles.claimButtonText}>
+                    {isTodayBirthday ? '🎂 Claim Today\'s Birthday Gift!' : 'Claim Birthday Gift'}
+                  </Text>
                 </Pressable>
               )
             ) : !isEditing ? (
@@ -195,7 +226,7 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
             ) : null}
             
             <Text style={styles.termsText}>
-              * Limit one per customer. Must be 21+ with valid ID. Cannot be combined with other offers. Pre-roll selection based on availability.
+              * Limit one per customer per year. Must be 21+ with valid ID. Cannot be combined with other offers. Pre-roll selection based on availability. {isTodayBirthday ? 'Valid today only!' : 'Valid on your birthday only.'}
             </Text>
           </View>
         </View>
@@ -338,6 +369,17 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  birthdayClaimButton: {
+    backgroundColor: Colors.dark.primary,
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   claimedContainer: {
     backgroundColor: 'rgba(46, 204, 113, 0.1)',

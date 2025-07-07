@@ -55,8 +55,11 @@ export interface UserState {
     promotions: boolean;
     orderUpdates: boolean;
     refundUpdates: boolean;
+    birthdayPromotions: boolean;
   };
   lastUpdated: string | null;
+  lastBirthdayNotificationYear: number | null;
+  hasBirthdayPromotionThisYear: boolean;
   
   setVerified: (verified: boolean) => void;
   verifyAge: () => void;
@@ -81,6 +84,9 @@ export interface UserState {
   updateNotificationPreference: (key: keyof UserState['notificationPreferences'], value: boolean) => void;
   refreshUserData: () => Promise<void>;
   resetUserData: () => void;
+  checkBirthdayNotification: () => boolean;
+  markBirthdayNotificationShown: () => void;
+  resetBirthdayPromotion: () => void;
 }
 
 const initialState = {
@@ -108,8 +114,11 @@ const initialState = {
     promotions: true,
     orderUpdates: true,
     refundUpdates: true,
+    birthdayPromotions: true,
   },
   lastUpdated: null,
+  lastBirthdayNotificationYear: null,
+  hasBirthdayPromotionThisYear: false,
 };
 
 export const useUserStore = create<UserState>()(
@@ -340,6 +349,44 @@ export const useUserStore = create<UserState>()(
       resetUserData: () => {
         set(initialState);
       },
+      
+      checkBirthdayNotification: () => {
+        const state = get();
+        if (!state.birthday || !state.notificationPreferences.birthdayPromotions) {
+          return false;
+        }
+        
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const birthdayDate = new Date(state.birthday);
+        
+        // Check if today is the user's birthday
+        const isBirthday = today.getMonth() === birthdayDate.getMonth() && 
+                          today.getDate() === birthdayDate.getDate();
+        
+        // Check if we haven't shown the notification this year
+        const hasNotShownThisYear = state.lastBirthdayNotificationYear !== currentYear;
+        
+        return isBirthday && hasNotShownThisYear;
+      },
+      
+      markBirthdayNotificationShown: () => {
+        const now = new Date().toISOString();
+        const currentYear = new Date().getFullYear();
+        set({ 
+          lastBirthdayNotificationYear: currentYear,
+          hasBirthdayPromotionThisYear: true,
+          lastUpdated: now 
+        });
+      },
+      
+      resetBirthdayPromotion: () => {
+        const now = new Date().toISOString();
+        set({ 
+          hasBirthdayPromotionThisYear: false,
+          lastUpdated: now 
+        });
+      },
     }),
     {
       name: 'user-storage',
@@ -363,6 +410,8 @@ export const useUserStore = create<UserState>()(
         refundHistory: state.refundHistory,
         notificationPreferences: state.notificationPreferences,
         lastUpdated: state.lastUpdated,
+        lastBirthdayNotificationYear: state.lastBirthdayNotificationYear,
+        hasBirthdayPromotionThisYear: state.hasBirthdayPromotionThisYear,
       }),
     }
   )

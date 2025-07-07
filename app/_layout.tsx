@@ -8,6 +8,13 @@ import Colors from "@/constants/colors";
 import { BackHandler, Alert, Platform } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useBirthdayNotification } from "@/hooks/useBirthdayNotification";
+import BirthdayPromotionModal from "@/components/BirthdayPromotionModal";
+
+// Import test utils in development
+if (__DEV__) {
+  require('@/utils/birthdayTestUtils');
+}
 
 export const unstable_settings = {
   initialRouteName: "index",
@@ -74,6 +81,8 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const { showBirthdayModal, setShowBirthdayModal } = useBirthdayNotification();
+
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
@@ -202,6 +211,12 @@ function RootLayoutNav() {
             }} 
           />
         </Stack>
+        
+        {/* Global Birthday Notification Modal */}
+        <BirthdayPromotionModal 
+          visible={showBirthdayModal} 
+          onClose={() => setShowBirthdayModal(false)} 
+        />
       </QueryClientProvider>
     </trpc.Provider>
   );

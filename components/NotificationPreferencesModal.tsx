@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, Modal, Pressable, Switch, ScrollView } from 'react-native';
-import { X, Bell, Flower, Cigarette, Cookie, Scroll, Gift, ShoppingBag } from 'lucide-react-native';
+import { X, Bell, Flower, Cigarette, Cookie, Scroll, Gift, ShoppingBag, Calendar, PartyPopper } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useUserStore } from '@/store/userStore';
 
@@ -130,6 +130,23 @@ export default function NotificationPreferencesModal({ visible, onClose }: Notif
                   value={notificationPreferences.promotions}
                 />
               </View>
+              
+              <View style={styles.preferenceItem}>
+                <View style={styles.preferenceInfo}>
+                  <PartyPopper size={20} color={Colors.dark.text} style={styles.preferenceIcon} />
+                  <View>
+                    <Text style={styles.preferenceName}>Birthday Promotions</Text>
+                    <Text style={styles.preferenceDescription}>Get notified on your birthday about your free gift</Text>
+                  </View>
+                </View>
+                <Switch
+                  trackColor={{ false: Colors.dark.border, true: Colors.dark.primary }}
+                  thumbColor={Colors.dark.text}
+                  ios_backgroundColor={Colors.dark.border}
+                  onValueChange={() => toggleSwitch('birthdayPromotions')}
+                  value={notificationPreferences.birthdayPromotions}
+                />
+              </View>
             </View>
             
             <View style={styles.notificationSection}>
@@ -152,6 +169,23 @@ export default function NotificationPreferencesModal({ visible, onClose }: Notif
                   ios_backgroundColor={Colors.dark.border}
                   onValueChange={() => toggleSwitch('orderUpdates')}
                   value={notificationPreferences.orderUpdates}
+                />
+              </View>
+              
+              <View style={styles.preferenceItem}>
+                <View style={styles.preferenceInfo}>
+                  <Gift size={20} color={Colors.dark.text} style={styles.preferenceIcon} />
+                  <View>
+                    <Text style={styles.preferenceName}>Refund Updates</Text>
+                    <Text style={styles.preferenceDescription}>Get notified about refund status changes</Text>
+                  </View>
+                </View>
+                <Switch
+                  trackColor={{ false: Colors.dark.border, true: Colors.dark.primary }}
+                  thumbColor={Colors.dark.text}
+                  ios_backgroundColor={Colors.dark.border}
+                  onValueChange={() => toggleSwitch('refundUpdates')}
+                  value={notificationPreferences.refundUpdates}
                 />
               </View>
             </View>

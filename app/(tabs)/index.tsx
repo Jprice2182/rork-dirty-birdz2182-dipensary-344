@@ -8,6 +8,8 @@ import { getFeaturedProducts } from '@/mocks/products';
 import CategoryCard from '@/components/CategoryCard';
 import ProductCard from '@/components/ProductCard';
 import DiscountBanner from '@/components/DiscountBanner';
+import BirthdayNotificationBanner from '@/components/BirthdayNotificationBanner';
+import BirthdayPromotionModal from '@/components/BirthdayPromotionModal';
 import SafeText from '@/components/SafeText';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
@@ -21,6 +23,7 @@ export default function HomeScreen() {
   const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified, birthday } = useUserStore();
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [showEighthsBanner, setShowEighthsBanner] = useState(true);
+  const [showBirthdayModal, setShowBirthdayModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const eighthsPromo = getEighthsPromotion();
@@ -179,6 +182,10 @@ export default function HomeScreen() {
           />
         )}
 
+        <BirthdayNotificationBanner 
+          onPress={() => setShowBirthdayModal(true)}
+        />
+
         <View style={styles.biographySection}>
           <SafeText style={styles.biographyTitle}>Atlanta: The Heart of the South</SafeText>
           <SafeText style={styles.biographySubtitle}>Where Culture Meets Cannabis Freedom</SafeText>
@@ -257,6 +264,11 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
+      
+      <BirthdayPromotionModal 
+        visible={showBirthdayModal} 
+        onClose={() => setShowBirthdayModal(false)} 
+      />
     </View>
   );
 }
