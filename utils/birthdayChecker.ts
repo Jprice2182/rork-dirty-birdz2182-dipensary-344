@@ -60,7 +60,8 @@ export class BirthdayChecker {
 
   // Method to manually check if today is birthday (for testing)
   isTodayBirthday(): boolean {
-    return this.checkBirthday() || false;
+    const result = this.checkBirthday();
+    return result !== undefined ? result : false;
   }
 
   // Method to get days until next birthday

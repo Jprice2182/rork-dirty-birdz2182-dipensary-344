@@ -78,7 +78,6 @@ export class BirthdayNotificationService {
           data: { type: 'birthday_promotion' },
         },
         trigger: {
-          type: 'date',
           date: thisYearBirthday,
           repeats: true,
         },
