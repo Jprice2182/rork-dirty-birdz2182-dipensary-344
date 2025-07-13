@@ -8,6 +8,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -76,6 +78,7 @@ export class BirthdayNotificationService {
           data: { type: 'birthday_promotion' },
         },
         trigger: {
+          type: 'date',
           date: thisYearBirthday,
           repeats: true,
         },
