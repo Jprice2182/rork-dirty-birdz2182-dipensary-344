@@ -71,20 +71,45 @@ export class BirthdayNotificationService {
         thisYearBirthday.setFullYear(currentYear + 1);
       }
 
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: '🎉 Happy Birthday!',
-          body: 'Claim your free 1g pre-roll birthday gift at Dirty Birdz2182 Dispensary!',
-          data: { type: 'birthday_promotion' },
-        },
-        trigger: {
-          date: thisYearBirthday,
-          repeats: true,
-        },
-        identifier: 'birthday_notification',
-      });
+      // Calculate seconds until birthday
+      const now = new Date();
+      const secondsUntilBirthday = Math.floor((thisYearBirthday.getTime() - now.getTime()) / 1000);
+      
+      if (secondsUntilBirthday > 0) {
+        // Schedule the notification using seconds
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: '🎉 Happy Birthday!',
+            body: 'Claim your free 1g pre-roll birthday gift at Dirty Birdz2182 Dispensary!',
+            data: { type: 'birthday_promotion' },
+          },
+          trigger: {
+            seconds: secondsUntilBirthday,
+          } as any,
+          identifier: `birthday_notification_${thisYearBirthday.getFullYear()}`,
+        });
+      }
 
-      console.log('Birthday notification scheduled for:', thisYearBirthday);
+      // Schedule for next year as well
+      const nextYearBirthday = new Date(thisYearBirthday);
+      nextYearBirthday.setFullYear(thisYearBirthday.getFullYear() + 1);
+      const secondsUntilNextYear = Math.floor((nextYearBirthday.getTime() - now.getTime()) / 1000);
+      
+      if (secondsUntilNextYear > 0) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: '🎉 Happy Birthday!',
+            body: 'Claim your free 1g pre-roll birthday gift at Dirty Birdz2182 Dispensary!',
+            data: { type: 'birthday_promotion' },
+          },
+          trigger: {
+            seconds: secondsUntilNextYear,
+          } as any,
+          identifier: `birthday_notification_${nextYearBirthday.getFullYear()}`,
+        });
+      }
+
+      console.log('Birthday notifications scheduled for:', thisYearBirthday, 'and', nextYearBirthday);
     } catch (error) {
       console.error('Failed to schedule birthday notification:', error);
     }
@@ -96,7 +121,16 @@ export class BirthdayNotificationService {
     }
 
     try {
-      await Notifications.cancelScheduledNotificationAsync('birthday_notification');
+      // Cancel all scheduled notifications that start with 'birthday_notification'
+      const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+      const birthdayNotifications = scheduledNotifications.filter(
+        notification => notification.identifier.startsWith('birthday_notification')
+      );
+      
+      for (const notification of birthdayNotifications) {
+        await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+      }
+      
       console.log('Birthday notifications cancelled');
     } catch (error) {
       console.error('Failed to cancel birthday notifications:', error);
