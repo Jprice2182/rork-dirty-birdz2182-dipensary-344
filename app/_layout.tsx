@@ -5,7 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import Colors from "@/constants/colors";
-import { BackHandler, Alert, Platform } from "react-native";
+import { BackHandler, Platform } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
 import { useBirthdayNotification } from "@/hooks/useBirthdayNotification";
@@ -45,15 +45,17 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) {
       console.error("Font loading error:", error);
-      throw error;
+      // Don't throw the error, just log it and continue
+      // The app can still function without custom fonts
     }
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded || error) {
+      // Hide splash screen even if fonts failed to load
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, error]);
 
   // Android-specific back button handling
   useEffect(() => {
@@ -73,7 +75,7 @@ export default function RootLayout() {
     }
   }, []);
 
-  if (!loaded) {
+  if (!loaded && !error) {
     return null;
   }
 
