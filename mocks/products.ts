@@ -56,7 +56,7 @@ export const products: Product[] = [
     weight: '3.5g',
     strain: 'Sativa Hybrid',
     rating: 4.6,
-    image: 'https://images.unsplash.com/photo-1589140915708-20ff586fe767?q=80&w=1000',
+    image: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/icqz3coz9l1mm7mm0o5jt',
     description: "Purple Punch is an indica-dominant hybrid cross between Larry OG and Granddaddy Purple. Known for its sweet grape and berry flavors, it delivers relaxing and sedating effects.",
     effects: ['Creative', 'Euphoric', 'Relaxed'],
     featured: true,
