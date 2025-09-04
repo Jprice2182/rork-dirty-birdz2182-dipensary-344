@@ -40,7 +40,7 @@ export const products: Product[] = [
     weight: '3.5g', // Default display weight
     strain: 'Indica',
     rating: 4.8,
-    image: 'https://images.unsplash.com/photo-1603909223429-69bb7101f420?q=80&w=1000',
+    image: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/o8c1rj5oscr9bvaqq9iwf',
     description: "Pineapple Express is a sativa-dominant hybrid strain known for its tropical, fruity aroma and energizing effects. This strain delivers a burst of creativity and euphoria with sweet pineapple flavors.",
     effects: ['Relaxed', 'Sleepy', 'Happy'],
     featured: true,
