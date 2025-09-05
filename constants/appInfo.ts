@@ -49,7 +49,14 @@ const appInfo = {
   },
   legalDisclaimer: "This product has not been analyzed or approved by the FDA. For use only by adults 21 years of age and older. Keep out of reach of children and pets.",
   privacyPolicyUrl: "https://dirtybirdz2182.com/privacy",
-  termsOfServiceUrl: "https://dirtybirdz2182.com/terms"
+  termsOfServiceUrl: "https://dirtybirdz2182.com/terms",
+  mascot: {
+    image: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/oqe6i71mgly4c6ubgn0jm",
+    name: "Atlanta Hawk",
+    bio: "Meet our Atlanta Hawk, the majestic guardian of premium cannabis in the heart of Georgia. With keen eyes for quality and wings that soar above the competition, this powerful bird of prey represents our commitment to delivering the finest cannabis products to Atlanta and beyond. Just like the hawk's precision in flight, we ensure every product meets our exacting standards for purity, potency, and excellence.",
+    location: "Atlanta, GA",
+    symbolism: "Precision, Quality, Excellence"
+  }
 } as const;
 
 export default appInfo;

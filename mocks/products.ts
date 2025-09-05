@@ -121,7 +121,7 @@ export const products: Product[] = [
     price: 20,
     count: '10 pieces (10mg each)',
     rating: 4.7,
-    image: 'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?q=80&w=1000',
+    image: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/glbfmpbpgvu50gzazfgvl',
     description: "Our premium chocolate bar contains 100mg THC total (10mg per piece) and is made with organic fair-trade chocolate for a delicious experience.",
     effects: ['Relaxed', 'Euphoric', 'Happy'],
     featured: true,
