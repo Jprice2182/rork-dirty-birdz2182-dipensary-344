@@ -72,6 +72,9 @@ export default function PaymentMethodSelector({ selectedMethod, onSelectMethod }
             ]}>
               Pay with cash when delivered
             </Text>
+            <Text style={styles.smallPrint}>
+              MUST SHOW ID BEFORE HANDING OVER MERCHANDISE
+            </Text>
           </View>
           <View style={[
             styles.radioButton,
@@ -148,5 +151,11 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: Colors.dark.primary,
+  },
+  smallPrint: {
+    fontSize: 10,
+    color: Colors.dark.subtext,
+    marginTop: 4,
+    fontWeight: '500',
   },
 });
