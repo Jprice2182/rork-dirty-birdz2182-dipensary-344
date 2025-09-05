@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl, Alert } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ShoppingCart } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -185,6 +185,14 @@ export default function HomeScreen() {
         <BirthdayNotificationBanner 
           onPress={() => setShowBirthdayModal(true)}
         />
+
+        <View style={styles.hawkSection}>
+          <Image 
+            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/swco5gs1d6k8wvvhe3pgd' }}
+            style={styles.hawkImage}
+            resizeMode="cover"
+          />
+        </View>
 
         <View style={styles.biographySection}>
           <SafeText style={styles.biographyTitle}>Atlanta: The Heart of the South</SafeText>
@@ -451,5 +459,23 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 8,
+  },
+  hawkSection: {
+    marginBottom: 24,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  hawkImage: {
+    width: '100%',
+    height: 240,
+    borderRadius: 20,
   },
 });
