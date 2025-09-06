@@ -8,25 +8,26 @@ import Colors from '@/constants/colors';
 export default function Index() {
   const router = useRouter();
   const isVerified = useUserStore(state => state.isVerified);
+  const birthday = useUserStore(state => state.birthday);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [hasNavigated, setHasNavigated] = useState(false);
 
   useEffect(() => {
-    // Check verification status immediately
-    if (isVerified && !hasNavigated) {
+    // Check verification status and birthday requirement
+    if (isVerified && birthday && !hasNavigated) {
       setHasNavigated(true);
       router.replace('/(tabs)');
       return;
     }
 
-    // Show age verification if not verified
-    if (!isVerified && !hasNavigated) {
+    // Show age verification if not verified or no birthday
+    if ((!isVerified || !birthday) && !hasNavigated) {
       const timer = setTimeout(() => {
         setShowAgeVerification(true);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isVerified, hasNavigated, router]);
+  }, [isVerified, birthday, hasNavigated, router]);
 
   const handleVerification = useCallback(() => {
     setShowAgeVerification(false);
@@ -39,8 +40,8 @@ export default function Index() {
     setShowAgeVerification(false);
   }, []);
 
-  // If already verified, don't render anything while navigating
-  if (isVerified && hasNavigated) {
+  // If already verified and has birthday, don't render anything while navigating
+  if (isVerified && birthday && hasNavigated) {
     return null;
   }
 
