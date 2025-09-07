@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, Modal, Pressable, Switch, ScrollView } from 'react-native';
-import { X, Bell, Flower, Cigarette, Cookie, Scroll, Gift, ShoppingBag, Calendar, PartyPopper } from 'lucide-react-native';
+import { X, Bell, Flower, Cookie, Scroll, Gift, ShoppingBag, PartyPopper } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useUserStore } from '@/store/userStore';
 
@@ -56,22 +56,7 @@ export default function NotificationPreferencesModal({ visible, onClose }: Notif
                 />
               </View>
               
-              <View style={styles.preferenceItem}>
-                <View style={styles.preferenceInfo}>
-                  <Cigarette size={20} color={Colors.dark.text} style={styles.preferenceIcon} />
-                  <View>
-                    <Text style={styles.preferenceName}>New Vape Products</Text>
-                    <Text style={styles.preferenceDescription}>Get notified when new vape products are available</Text>
-                  </View>
-                </View>
-                <Switch
-                  trackColor={{ false: Colors.dark.border, true: Colors.dark.primary }}
-                  thumbColor={Colors.dark.text}
-                  ios_backgroundColor={Colors.dark.border}
-                  onValueChange={() => toggleSwitch('newVapes')}
-                  value={notificationPreferences.newVapes}
-                />
-              </View>
+
               
               <View style={styles.preferenceItem}>
                 <View style={styles.preferenceInfo}>

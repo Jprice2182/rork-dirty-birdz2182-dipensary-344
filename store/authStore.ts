@@ -47,7 +47,11 @@ export const useAuthStore = create<AuthState>()(
       },
       
       signOut: () => {
-        set({ isAuthenticated: false });
+        set({ 
+          isAuthenticated: false,
+          email: '',
+          password: ''
+        });
       },
       
       authenticateWithBiometrics: async () => {

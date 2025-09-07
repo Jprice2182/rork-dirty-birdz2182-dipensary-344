@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useCartStore } from '@/store/cartStore';
 import { useOrderStore, OrderItem } from '@/store/orderStore';
+import { useUserStore } from '@/store/userStore';
 import Colors from '@/constants/colors';
 import appInfo from '@/constants/appInfo';
 import TipDriverModal from '@/components/TipDriverModal';
@@ -16,6 +17,7 @@ export default function Checkout() {
   const router = useRouter();
   const { items, getCartTotal, getEighthsPromotion, clearCart } = useCartStore();
   const { createOrder } = useOrderStore();
+  const { addPoints } = useUserStore();
   const [showTipModal, setShowTipModal] = useState(false);
   const [selectedTip, setSelectedTip] = useState(0);
   const [promoDiscount, setPromoDiscount] = useState(0);
@@ -59,6 +61,25 @@ export default function Checkout() {
       return;
     }
 
+    // Check purchase limit (1 ounce per day)
+    const totalWeight = items.reduce((total, item) => {
+      const product = getProductById(item.id);
+      if (product?.weight) {
+        const weightInOz = parseFloat(product.weight.replace('oz', '').replace('g', '')) / (product.weight.includes('g') ? 28.35 : 1);
+        return total + (weightInOz * item.quantity);
+      }
+      return total;
+    }, 0);
+
+    if (totalWeight > 1) {
+      Alert.alert(
+        'Purchase Limit Exceeded',
+        'You can only purchase up to 1 ounce per day. Please reduce your order quantity.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     const orderItems = getOrderItems();
     if (orderItems.length === 0) {
       Alert.alert('Error', 'No valid items in cart');
@@ -85,6 +106,10 @@ export default function Checkout() {
       paymentMethod,
       paymentInfo,
     });
+
+    // Add loyalty points (1 point per $1 spent)
+    const pointsEarned = Math.floor(finalTotal);
+    addPoints(pointsEarned, `Order #${orderId}`, orderId);
 
     clearCart();
     router.replace(`/order-confirmation?orderId=${orderId}`);

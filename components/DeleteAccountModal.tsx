@@ -4,6 +4,9 @@ import { X, AlertTriangle } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/store/authStore';
 import { useUserStore } from '@/store/userStore';
+import { useCartStore } from '@/store/cartStore';
+import { useOrderStore } from '@/store/orderStore';
+import { usePromoStore } from '@/store/promoStore';
 import { useRouter } from 'expo-router';
 
 interface DeleteAccountModalProps {
@@ -17,7 +20,10 @@ export default function DeleteAccountModal({ visible, onClose }: DeleteAccountMo
   const [error, setError] = useState('');
   
   const { deleteAccount } = useAuthStore();
-  const { setVerified } = useUserStore();
+  const { resetUserData } = useUserStore();
+  const { clearCart } = useCartStore();
+  const { clearOrders } = useOrderStore();
+  const { resetPromoState } = usePromoStore();
   const router = useRouter();
 
   const handleDeleteAccount = () => {
@@ -31,8 +37,13 @@ export default function DeleteAccountModal({ visible, onClose }: DeleteAccountMo
     
     // Simulate API call
     setTimeout(() => {
+      // Clear all user data
       deleteAccount();
-      setVerified(false);
+      resetUserData();
+      clearCart();
+      clearOrders();
+      resetPromoState();
+      
       setIsLoading(false);
       onClose();
       router.replace('/sign-in');

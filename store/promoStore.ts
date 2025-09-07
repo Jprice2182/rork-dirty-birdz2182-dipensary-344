@@ -6,6 +6,7 @@ import appInfo from '@/constants/appInfo';
 interface PromoState {
   validPromoCodes: Record<string, number>;
   validatePromoCode: (code: string) => number | null;
+  resetPromoState: () => void;
 }
 
 export const usePromoStore = create<PromoState>()(
@@ -20,6 +21,16 @@ export const usePromoStore = create<PromoState>()(
         const { validPromoCodes } = get();
         const normalizedCode = code.trim().toUpperCase();
         return validPromoCodes[normalizedCode] !== undefined ? validPromoCodes[normalizedCode] : null;
+      },
+      
+      resetPromoState: () => {
+        set({
+          validPromoCodes: {
+            [appInfo.promoCode]: appInfo.promoDiscount,
+            ...(appInfo.eighthsPromotion?.code ? { [appInfo.eighthsPromotion.code]: 0 } : {}),
+          }
+        });
+        console.log('Promo state reset');
       },
     }),
     {

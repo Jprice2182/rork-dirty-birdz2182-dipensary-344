@@ -61,6 +61,7 @@ interface OrderState {
   completeRefund: (id: string) => void;
   isRefundEligible: (id: string) => boolean;
   getRefundTimeRemaining: (id: string) => number;
+  clearOrders: () => void;
 }
 
 export const useOrderStore = create<OrderState>()(
@@ -281,6 +282,11 @@ export const useOrderStore = create<OrderState>()(
         }));
         
         console.log(`Refund completed for order ${id}`);
+      },
+      
+      clearOrders: () => {
+        set({ orders: [] });
+        console.log('All orders cleared');
       },
     }),
     {

@@ -58,7 +58,6 @@ export interface UserState {
   refundHistory: RefundHistory[];
   notificationPreferences: {
     newFlower: boolean;
-    newVapes: boolean;
     newEdibles: boolean;
     newPreRolls: boolean;
     promotions: boolean;
@@ -122,7 +121,6 @@ const initialState = {
   refundHistory: [],
   notificationPreferences: {
     newFlower: true,
-    newVapes: true,
     newEdibles: true,
     newPreRolls: true,
     promotions: true,

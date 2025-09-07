@@ -185,7 +185,7 @@ export default function HomeScreen() {
           </View>
           <SafeText style={styles.pointsBalance}>{points} Points</SafeText>
           <SafeText style={styles.pointsDescription}>
-            Earn 1 point for every $1 spent • Redeem points for rewards inside the dispensary
+            Earn 1 point for every $1 spent • Points never expire • Redeem points for rewards inside the dispensary
           </SafeText>
         </View>
 
