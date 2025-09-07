@@ -28,6 +28,50 @@ const flowerVariants: ProductVariant[] = [
   },
 ];
 
+// Classic Pre-Roll variants with quantity pricing
+const classicPreRollVariants: ProductVariant[] = [
+  {
+    id: 'single',
+    name: '1 Pre-Roll',
+    weight: '1g',
+    price: 8,
+  },
+  {
+    id: 'double',
+    name: '2 Pre-Rolls',
+    weight: '2g',
+    price: 12,
+  },
+  {
+    id: 'triple',
+    name: '3 Pre-Rolls',
+    weight: '3g',
+    price: 15,
+  },
+];
+
+// Infused Pre-Roll variants with quantity pricing
+const infusedPreRollVariants: ProductVariant[] = [
+  {
+    id: 'single',
+    name: '1 Infused Pre-Roll',
+    weight: '1g',
+    price: 15,
+  },
+  {
+    id: 'double',
+    name: '2 Infused Pre-Rolls',
+    weight: '2g',
+    price: 25,
+  },
+  {
+    id: 'triple',
+    name: '3 Infused Pre-Rolls',
+    weight: '3g',
+    price: 35,
+  },
+];
+
 export const products: Product[] = [
   // FLOWER PRODUCTS (Category '1') - 5 products with variants
   {
@@ -190,14 +234,15 @@ export const products: Product[] = [
     category: '5',
     thc: 20,
     cbd: 0,
-    price: 12,
-    weight: '1g',
+    price: 8, // Base price for single
+    weight: '1g', // Default display weight
     strain: 'Hybrid',
     rating: 4.4,
     image: 'https://images.unsplash.com/photo-1603909223429-69bb7101f420?q=80&w=1000',
     description: "Our classic pre-rolls are made with premium flower and rolled to perfection. Ready to smoke convenience with quality you can trust.",
     effects: ['Convenient', 'Balanced', 'Smooth'],
     featured: true,
+    variants: classicPreRollVariants,
   },
   {
     id: '501',
@@ -250,14 +295,15 @@ export const products: Product[] = [
     category: '5',
     thc: 35,
     cbd: 0,
-    price: 18,
-    weight: '1g',
+    price: 15, // Base price for single
+    weight: '1g', // Default display weight
     strain: 'Hybrid',
     rating: 4.8,
     image: 'https://images.unsplash.com/photo-1589140915708-20ff586fe767?q=80&w=1000',
     description: "Premium flower pre-roll infused with concentrate for extra potency. Perfect for experienced users looking for enhanced effects.",
     effects: ['Potent', 'Enhanced', 'Long-lasting'],
     featured: true,
+    variants: infusedPreRollVariants,
   },
 ];
 
