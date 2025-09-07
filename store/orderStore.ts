@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import appInfo from '@/constants/appInfo';
 import { PaymentMethod, PaymentInfo, RefundInfo, OrderStatus } from '@/types/product';
+import { useUserStore } from './userStore';
 
 export interface OrderItem {
   id: string;
@@ -128,6 +129,17 @@ export const useOrderStore = create<OrderState>()(
                 const refundDeadline = new Date();
                 refundDeadline.setHours(refundDeadline.getHours() + appInfo.refundPolicy.timeLimit);
                 updatedOrder.refundEligibleUntil = refundDeadline.toISOString();
+                
+                // Award points when order is delivered (1 point per $1 spent)
+                const pointsToAward = Math.floor(order.total);
+                if (pointsToAward > 0) {
+                  const userStore = useUserStore.getState();
+                  userStore.addPoints(
+                    pointsToAward,
+                    `Order #${order.id.slice(-8)} delivered`,
+                    order.id
+                  );
+                }
               }
               
               return updatedOrder;

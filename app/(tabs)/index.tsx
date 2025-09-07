@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingCart } from 'lucide-react-native';
+import { ShoppingCart, Star } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { categories } from '@/constants/categories';
 import { getFeaturedProducts } from '@/mocks/products';
@@ -20,7 +20,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const cartItemsCount = useCartStore(state => state.getCartItemsCount());
   const { getEighthsPromotion } = useCartStore();
-  const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified, birthday } = useUserStore();
+  const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified, birthday, points } = useUserStore();
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [showEighthsBanner, setShowEighthsBanner] = useState(true);
   const [showBirthdayModal, setShowBirthdayModal] = useState(false);
@@ -154,21 +154,39 @@ export default function HomeScreen() {
             <SafeText style={styles.subtitle}>{appInfo.slogan}</SafeText>
           </View>
           
-          <Pressable 
-            style={styles.cartButton} 
-            onPress={navigateToCart}
-            accessibilityLabel={`Shopping cart with ${cartItemsCount} items`}
-            accessibilityRole="button"
-          >
-            <ShoppingCart size={24} color={Colors.dark.text} />
-            {cartItemsCount > 0 && (
-              <View style={styles.cartBadge}>
-                <SafeText style={styles.cartBadgeText}>
-                  {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                </SafeText>
-              </View>
-            )}
-          </Pressable>
+          <View style={styles.headerActions}>
+            <View style={styles.pointsContainer}>
+              <Star size={16} color={Colors.dark.primary} fill={Colors.dark.primary} />
+              <SafeText style={styles.pointsText}>{points}</SafeText>
+            </View>
+            
+            <Pressable 
+              style={styles.cartButton} 
+              onPress={navigateToCart}
+              accessibilityLabel={`Shopping cart with ${cartItemsCount} items`}
+              accessibilityRole="button"
+            >
+              <ShoppingCart size={24} color={Colors.dark.text} />
+              {cartItemsCount > 0 && (
+                <View style={styles.cartBadge}>
+                  <SafeText style={styles.cartBadgeText}>
+                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                  </SafeText>
+                </View>
+              )}
+            </Pressable>
+          </View>
+        </View>
+        
+        <View style={styles.pointsInfoCard}>
+          <View style={styles.pointsInfoHeader}>
+            <Star size={20} color={Colors.dark.primary} fill={Colors.dark.primary} />
+            <SafeText style={styles.pointsInfoTitle}>Loyalty Points</SafeText>
+          </View>
+          <SafeText style={styles.pointsBalance}>{points} Points</SafeText>
+          <SafeText style={styles.pointsDescription}>
+            Earn 1 point for every $1 spent • Redeem points for rewards inside the dispensary
+          </SafeText>
         </View>
 
         {shouldShowDiscountBanner && (
@@ -298,7 +316,33 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
-    marginRight: 16,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  pointsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.dark.card,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  pointsText: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   greeting: {
     color: Colors.dark.subtext,
@@ -477,5 +521,41 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 240,
     borderRadius: 20,
+  },
+  pointsInfoCard: {
+    backgroundColor: Colors.dark.card,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  pointsInfoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  pointsInfoTitle: {
+    color: Colors.dark.text,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  pointsBalance: {
+    color: Colors.dark.primary,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  pointsDescription: {
+    color: Colors.dark.subtext,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

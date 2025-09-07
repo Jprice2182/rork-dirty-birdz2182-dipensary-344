@@ -267,6 +267,11 @@ export default function Checkout() {
           <Text style={styles.paymentMethodInfo}>
             Payment method: {paymentMethod === 'card' ? 'Credit/Debit Card' : 'Cash on Delivery'}
           </Text>
+          {paymentMethod === 'cash' && (
+            <Text style={styles.cashDeliveryNote}>
+              MUST SHOW ID BEFORE HANDING OVER MERCHANDISE
+            </Text>
+          )}
         </View>
 
         {/* Refund Policy */}
@@ -514,6 +519,18 @@ const styles = StyleSheet.create({
     color: Colors.dark.primary,
     fontWeight: '600',
     marginTop: 8,
+  },
+  cashDeliveryNote: {
+    fontSize: 12,
+    color: Colors.dark.error || '#ff6b6b',
+    fontWeight: 'bold',
+    marginTop: 8,
+    textAlign: 'center',
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    padding: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: Colors.dark.error || '#ff6b6b',
   },
   refundPolicySection: {
     flexDirection: 'row',

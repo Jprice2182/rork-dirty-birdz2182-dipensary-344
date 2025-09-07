@@ -25,6 +25,15 @@ export interface RefundHistory {
   reason?: string;
 }
 
+export interface PointsTransaction {
+  id: string;
+  type: 'earned' | 'redeemed';
+  amount: number;
+  description: string;
+  orderId?: string;
+  date: string;
+}
+
 export interface UserState {
   isVerified: boolean;
   name: string;
@@ -60,6 +69,8 @@ export interface UserState {
   lastUpdated: string | null;
   lastBirthdayNotificationYear: number | null;
   hasBirthdayPromotionThisYear: boolean;
+  points: number;
+  pointsHistory: PointsTransaction[];
   
   setVerified: (verified: boolean) => void;
   verifyAge: () => void;
@@ -87,6 +98,9 @@ export interface UserState {
   checkBirthdayNotification: () => boolean;
   markBirthdayNotificationShown: () => void;
   resetBirthdayPromotion: () => void;
+  addPoints: (amount: number, description: string, orderId?: string) => void;
+  redeemPoints: (amount: number, description: string) => boolean;
+  getPointsHistory: () => PointsTransaction[];
 }
 
 const initialState = {
@@ -119,6 +133,8 @@ const initialState = {
   lastUpdated: null,
   lastBirthdayNotificationYear: null,
   hasBirthdayPromotionThisYear: false,
+  points: 0,
+  pointsHistory: [],
 };
 
 export const useUserStore = create<UserState>()(
@@ -387,6 +403,58 @@ export const useUserStore = create<UserState>()(
           lastUpdated: now 
         });
       },
+      
+      addPoints: (amount: number, description: string, orderId?: string) => {
+        const now = new Date().toISOString();
+        if (amount > 0) {
+          set((state) => {
+            const transaction: PointsTransaction = {
+              id: Date.now().toString(),
+              type: 'earned',
+              amount,
+              description,
+              orderId,
+              date: now
+            };
+            
+            return {
+              points: state.points + amount,
+              pointsHistory: [transaction, ...state.pointsHistory],
+              lastUpdated: now
+            };
+          });
+          console.log(`Added ${amount} points: ${description}`);
+        }
+      },
+      
+      redeemPoints: (amount: number, description: string) => {
+        const state = get();
+        if (amount > 0 && state.points >= amount) {
+          const now = new Date().toISOString();
+          const transaction: PointsTransaction = {
+            id: Date.now().toString(),
+            type: 'redeemed',
+            amount,
+            description,
+            date: now
+          };
+          
+          set({
+            points: state.points - amount,
+            pointsHistory: [transaction, ...state.pointsHistory],
+            lastUpdated: now
+          });
+          
+          console.log(`Redeemed ${amount} points: ${description}`);
+          return true;
+        }
+        return false;
+      },
+      
+      getPointsHistory: () => {
+        const { pointsHistory } = get();
+        return pointsHistory.slice(0, 50); // Return last 50 transactions
+      },
     }),
     {
       name: 'user-storage',
@@ -412,6 +480,8 @@ export const useUserStore = create<UserState>()(
         lastUpdated: state.lastUpdated,
         lastBirthdayNotificationYear: state.lastBirthdayNotificationYear,
         hasBirthdayPromotionThisYear: state.hasBirthdayPromotionThisYear,
+        points: state.points,
+        pointsHistory: state.pointsHistory,
       }),
     }
   )
