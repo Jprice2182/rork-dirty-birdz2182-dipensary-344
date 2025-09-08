@@ -128,17 +128,6 @@ export default function ProfileScreen() {
     checkBiometrics();
   }, [checkBiometricAvailability]);
 
-  // Show age verification if not verified - this should be the first thing checked
-  if (!isVerified) {
-    return (
-      <AgeVerificationModal 
-        isVisible={true} 
-        onClose={handleAgeVerificationClose}
-        onVerified={handleAgeVerified}
-      />
-    );
-  }
-
   const handleSave = () => {
     updateUserInfo(editName, editEmail, editPhone);
     setIsEditing(false);
@@ -223,6 +212,17 @@ export default function ProfileScreen() {
       setRefreshing(false);
     }, 1000);
   }, []);
+
+  // Show age verification if not verified
+  if (!isVerified) {
+    return (
+      <AgeVerificationModal 
+        isVisible={true} 
+        onClose={handleAgeVerificationClose}
+        onVerified={handleAgeVerified}
+      />
+    );
+  }
 
   return (
     <ScrollView 
