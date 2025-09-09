@@ -22,7 +22,7 @@ const appInfo = {
   version: "1.0.0",
   minAge: 21,
   deliveryFee: 5.99,
-  freeDeliveryMinimum: 50.00,
+  freeDeliveryMinimum: 70.00,
   estimatedDeliveryTime: "30-45 minutes",
   defaultTipPercentages: [15, 18, 20, 25],
   refundPolicy: {

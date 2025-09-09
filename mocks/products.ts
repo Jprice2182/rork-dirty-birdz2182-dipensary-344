@@ -12,13 +12,13 @@ const flowerVariants: ProductVariant[] = [
     id: 'quarter',
     name: 'Quarter (1/4 oz)',
     weight: '7g',
-    price: 35,
+    price: 40,
   },
   {
     id: 'half',
     name: 'Half (1/2 oz)',
     weight: '14g',
-    price: 55,
+    price: 60,
   },
   {
     id: 'oz',
