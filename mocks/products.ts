@@ -154,6 +154,22 @@ export const products: Product[] = [
     featured: true,
     variants: flowerVariants,
   },
+  {
+    id: '6',
+    name: 'Green Crack',
+    category: '1',
+    thc: 23,
+    cbd: 0.1,
+    price: 20,
+    weight: '3.5g',
+    strain: 'Sativa',
+    rating: 4.9,
+    image: 'https://r2-pub.rork.com/generated-images/7736354b-82d8-40fb-b606-d0581e3568ed.png',
+    description: "Green Crack is a potent sativa strain known for its invigorating mental buzz and energizing effects. Despite its name, this strain is purely cannabis and delivers sharp focus and energy with a sweet, fruity flavor profile.",
+    effects: ['Energetic', 'Focused', 'Creative'],
+    featured: true,
+    variants: flowerVariants,
+  },
 
   // EDIBLE PRODUCTS (Category '2') - 4 products
   {
