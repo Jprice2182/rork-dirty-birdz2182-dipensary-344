@@ -82,7 +82,7 @@ export const products: Product[] = [
     cbd: 0.1,
     price: 20, // Base price for eighth
     weight: '3.5g', // Default display weight
-    strain: 'Indica',
+    strain: 'Hybrid',
     rating: 4.8,
     image: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/o8c1rj5oscr9bvaqq9iwf',
     description: "Pineapple Express is a sativa-dominant hybrid strain known for its tropical, fruity aroma and energizing effects. This strain delivers a burst of creativity and euphoria with sweet pineapple flavors.",
@@ -98,7 +98,7 @@ export const products: Product[] = [
     cbd: 0.2,
     price: 20,
     weight: '3.5g',
-    strain: 'Sativa Hybrid',
+    strain: 'Indica',
     rating: 4.6,
     image: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/icqz3coz9l1mm7mm0o5jt',
     description: "Purple Punch is an indica-dominant hybrid cross between Larry OG and Granddaddy Purple. Known for its sweet grape and berry flavors, it delivers relaxing and sedating effects.",
@@ -333,7 +333,26 @@ export const getProductsByCategory = (categoryId: string): Product[] => {
     return [];
   }
   
-  const filteredProducts = products.filter(product => product.category === categoryId);
+  let filteredProducts: Product[] = [];
+  
+  // Handle strain-specific filtering for flower products
+  if (categoryId === '1-sativa') {
+    filteredProducts = products.filter(product => 
+      product.category === '1' && product.strain === 'Sativa'
+    );
+  } else if (categoryId === '1-indica') {
+    filteredProducts = products.filter(product => 
+      product.category === '1' && product.strain === 'Indica'
+    );
+  } else if (categoryId === '1-hybrid') {
+    filteredProducts = products.filter(product => 
+      product.category === '1' && product.strain === 'Hybrid'
+    );
+  } else {
+    // Regular category filtering
+    filteredProducts = products.filter(product => product.category === categoryId);
+  }
+  
   console.log(`Category ${categoryId} has ${filteredProducts.length} products`);
   return filteredProducts;
 };

@@ -1,3 +1,10 @@
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  parentCategory?: string;
+}
+
 export interface ProductVariant {
   id: string;
   name: string;

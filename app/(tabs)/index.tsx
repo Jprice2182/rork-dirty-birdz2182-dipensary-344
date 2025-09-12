@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl, Alert, I
 import { useRouter } from 'expo-router';
 import { ShoppingCart, Star } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-import { categories } from '@/constants/categories';
+import { getMainCategories } from '@/constants/categories';
 import { getFeaturedProducts } from '@/mocks/products';
 import CategoryCard from '@/components/CategoryCard';
 import ProductCard from '@/components/ProductCard';
@@ -258,7 +258,7 @@ export default function HomeScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContainer}
           >
-            {categories.map(category => (
+            {getMainCategories().map(category => (
               <CategoryCard 
                 key={category.id}
                 id={category.id}

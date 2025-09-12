@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { ArrowLeft, Filter } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { products } from '@/mocks/products';
-import { categories } from '@/constants/categories';
+import { categories, getFlowerStrainCategories } from '@/constants/categories';
 import ProductCard from '@/components/ProductCard';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
 import SafeText from '@/components/SafeText';
@@ -22,7 +22,22 @@ export default function CategoryScreen() {
   const [showAgeModal, setShowAgeModal] = useState(false);
 
   const category = categories.find(cat => cat.id === id);
-  const categoryProducts = products.filter(product => product.category === id);
+  const categoryProducts = products.filter(product => {
+    // Handle strain-specific filtering for flower products
+    if (id === '1-sativa') {
+      return product.category === '1' && product.strain === 'Sativa';
+    } else if (id === '1-indica') {
+      return product.category === '1' && product.strain === 'Indica';
+    } else if (id === '1-hybrid') {
+      return product.category === '1' && product.strain === 'Hybrid';
+    } else {
+      return product.category === id;
+    }
+  });
+  
+  // Show strain categories if this is the main flower category
+  const isFlowerCategory = id === '1';
+  const strainCategories = isFlowerCategory ? getFlowerStrainCategories() : [];
 
   useEffect(() => {
     if (!isVerified) {
@@ -143,6 +158,36 @@ export default function CategoryScreen() {
               </SafeText>
             </Pressable>
           ))}
+        </View>
+      )}
+
+      {/* Strain Categories for Flower */}
+      {isFlowerCategory && strainCategories.length > 0 && (
+        <View style={styles.strainCategoriesSection}>
+          <SafeText style={styles.strainCategoriesTitle}>Shop by Strain Type</SafeText>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.strainCategoriesContainer}
+          >
+            {strainCategories.map(strainCategory => (
+              <Pressable
+                key={strainCategory.id}
+                style={styles.strainCategoryCard}
+                onPress={() => router.push(`/category/${strainCategory.id}`)}
+              >
+                <SafeText style={styles.strainCategoryIcon}>
+                  {safeTextContent(strainCategory.icon)}
+                </SafeText>
+                <SafeText style={styles.strainCategoryName}>
+                  {safeTextContent(strainCategory.name)}
+                </SafeText>
+                <SafeText style={styles.strainCategoryCount}>
+                  {products.filter(p => p.category === '1' && p.strain === strainCategory.name).length} strains
+                </SafeText>
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
       )}
 
@@ -288,5 +333,48 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 50,
+  },
+  strainCategoriesSection: {
+    backgroundColor: Colors.dark.card,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.dark.border,
+  },
+  strainCategoriesTitle: {
+    color: Colors.dark.text,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  strainCategoriesContainer: {
+    paddingBottom: 8,
+  },
+  strainCategoryCard: {
+    backgroundColor: Colors.dark.background,
+    borderRadius: 12,
+    padding: 16,
+    marginRight: 12,
+    alignItems: 'center',
+    minWidth: 100,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+  },
+  strainCategoryIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  strainCategoryName: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  strainCategoryCount: {
+    color: Colors.dark.primary,
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });
