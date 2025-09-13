@@ -15,7 +15,7 @@ interface CartItemProps {
 }
 
 export default function CartItem({ id, quantity, variantId, variantName }: CartItemProps) {
-  const { updateQuantity, removeItem } = useCartStore();
+  const { updateQuantity, removeItem, weightLimitError, clearWeightLimitError } = useCartStore();
   const product = getProductById(id);
 
   if (!product) return null;
@@ -32,19 +32,13 @@ export default function CartItem({ id, quantity, variantId, variantName }: CartI
       }
     }
     
-    try {
-      updateQuantity(id, quantity + 1, variantId);
-    } catch (error) {
-      if (error instanceof Error && error.message.startsWith('WEIGHT_LIMIT_EXCEEDED:')) {
-        const exceedsBy = error.message.split(':')[1];
-        Alert.alert(
-          'Purchase Limit Exceeded',
-          `Adding this item would exceed the 1 ounce daily limit by ${exceedsBy} oz. Please reduce your cart or choose a smaller size.`,
-          [{ text: 'OK' }]
-        );
-      } else {
-        console.error('Error updating quantity:', error);
-      }
+    const success = updateQuantity(id, quantity + 1, variantId);
+    if (!success && weightLimitError) {
+      Alert.alert(
+        'Purchase Limit Exceeded',
+        weightLimitError,
+        [{ text: 'OK', onPress: () => clearWeightLimitError() }]
+      );
     }
   };
 

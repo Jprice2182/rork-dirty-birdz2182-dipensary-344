@@ -23,7 +23,7 @@ interface ProductCardProps {
 
 const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }: ProductCardProps) => {
   const router = useRouter();
-  const { items, addItem, updateQuantity, removeItem } = useCartStore();
+  const { items, addItem, updateQuantity, removeItem, weightLimitError, clearWeightLimitError } = useCartStore();
   const [showVariantModal, setShowVariantModal] = useState(false);
   
   const product = getProductById(id);
@@ -57,39 +57,27 @@ const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }
     if (hasVariants) {
       setShowVariantModal(true);
     } else {
-      try {
-        addItem(id);
-      } catch (error) {
-        if (error instanceof Error && error.message.startsWith('WEIGHT_LIMIT_EXCEEDED:')) {
-          const exceedsBy = error.message.split(':')[1];
-          Alert.alert(
-            'Purchase Limit Exceeded',
-            `Adding this item would exceed the 1 ounce daily limit by ${exceedsBy} oz. Please reduce your cart or choose a smaller size.`,
-            [{ text: 'OK' }]
-          );
-        } else {
-          console.error('Error adding item to cart:', error);
-        }
+      const success = addItem(id);
+      if (!success && weightLimitError) {
+        Alert.alert(
+          'Purchase Limit Exceeded',
+          weightLimitError,
+          [{ text: 'OK', onPress: () => clearWeightLimitError() }]
+        );
       }
     }
   };
 
   const handleVariantSelect = (variantId: string) => {
-    try {
-      addItem(id, variantId);
-      setShowVariantModal(false);
-    } catch (error) {
-      if (error instanceof Error && error.message.startsWith('WEIGHT_LIMIT_EXCEEDED:')) {
-        const exceedsBy = error.message.split(':')[1];
-        Alert.alert(
-          'Purchase Limit Exceeded',
-          `Adding this item would exceed the 1 ounce daily limit by ${exceedsBy} oz. Please reduce your cart or choose a smaller size.`,
-          [{ text: 'OK' }]
-        );
-      } else {
-        console.error('Error adding variant to cart:', error);
-      }
-      setShowVariantModal(false);
+    const success = addItem(id, variantId);
+    setShowVariantModal(false);
+    
+    if (!success && weightLimitError) {
+      Alert.alert(
+        'Purchase Limit Exceeded',
+        weightLimitError,
+        [{ text: 'OK', onPress: () => clearWeightLimitError() }]
+      );
     }
   };
 
@@ -110,23 +98,19 @@ const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }
       const cartItem = items.find(item => item.id === id && !item.variantId);
       const quantity = cartItem ? cartItem.quantity : 0;
       
-      try {
-        if (quantity === 0) {
-          addItem(id);
-        } else {
-          updateQuantity(id, quantity + 1);
-        }
-      } catch (error) {
-        if (error instanceof Error && error.message.startsWith('WEIGHT_LIMIT_EXCEEDED:')) {
-          const exceedsBy = error.message.split(':')[1];
-          Alert.alert(
-            'Purchase Limit Exceeded',
-            `Adding this item would exceed the 1 ounce daily limit by ${exceedsBy} oz. Please reduce your cart or choose a smaller size.`,
-            [{ text: 'OK' }]
-          );
-        } else {
-          console.error('Error updating quantity:', error);
-        }
+      let success = false;
+      if (quantity === 0) {
+        success = addItem(id);
+      } else {
+        success = updateQuantity(id, quantity + 1);
+      }
+      
+      if (!success && weightLimitError) {
+        Alert.alert(
+          'Purchase Limit Exceeded',
+          weightLimitError,
+          [{ text: 'OK', onPress: () => clearWeightLimitError() }]
+        );
       }
     }
   };

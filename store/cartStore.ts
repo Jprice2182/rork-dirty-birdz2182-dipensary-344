@@ -33,9 +33,10 @@ interface CartState {
   items: CartItem[];
   lastUpdated: string | null;
   total: number;
-  addItem: (id: string, variantId?: string) => void;
+  weightLimitError: string | null;
+  addItem: (id: string, variantId?: string) => boolean;
   removeItem: (id: string, variantId?: string) => void;
-  updateQuantity: (id: string, quantity: number, variantId?: string) => void;
+  updateQuantity: (id: string, quantity: number, variantId?: string) => boolean;
   clearCart: () => void;
   getCartTotal: () => number;
   getCartItemsCount: () => number;
@@ -45,6 +46,7 @@ interface CartState {
   validateCart: () => void;
   getTotalWeight: () => number;
   validateWeightLimit: (additionalItems?: { id: string; variantId?: string; quantity: number }[]) => WeightValidation;
+  clearWeightLimitError: () => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -53,11 +55,12 @@ export const useCartStore = create<CartState>()(
       items: [],
       lastUpdated: null,
       total: 0,
+      weightLimitError: null,
       
-      addItem: (id: string, variantId?: string) => {
+      addItem: (id: string, variantId?: string): boolean => {
         if (!id || typeof id !== 'string' || !id.trim()) {
           console.warn('Invalid product ID provided to addItem:', id);
-          return;
+          return false;
         }
         
         const { items } = get();
@@ -71,7 +74,7 @@ export const useCartStore = create<CartState>()(
         const product = getProductById(id);
         if (!product) {
           console.warn(`Product with id ${id} not found`);
-          return;
+          return false;
         }
 
         // Verify variant exists if specified
@@ -79,15 +82,17 @@ export const useCartStore = create<CartState>()(
           const variant = getProductVariant(id, variantId);
           if (!variant) {
             console.warn(`Variant ${variantId} not found for product ${id}`);
-            return;
+            return false;
           }
         }
         
         // Check weight limit before adding
         const weightValidation = get().validateWeightLimit([{ id, variantId, quantity: 1 }]);
         if (!weightValidation.isValid) {
-          console.warn(`Cannot add item: would exceed 1 ounce daily limit by ${weightValidation.exceedsBy?.toFixed(2)} oz`);
-          throw new Error(`WEIGHT_LIMIT_EXCEEDED:${weightValidation.exceedsBy?.toFixed(2)}`);
+          const errorMsg = `Cannot add item: would exceed 1 ounce daily limit by ${weightValidation.exceedsBy?.toFixed(2)} oz`;
+          console.warn(errorMsg);
+          set({ weightLimitError: errorMsg });
+          return false;
         }
         
         const price = getProductPrice(id, variantId);
@@ -119,8 +124,10 @@ export const useCartStore = create<CartState>()(
         set({
           items: newItems,
           lastUpdated: now,
-          total: newTotal
+          total: newTotal,
+          weightLimitError: null
         });
+        return true;
       },
       
       removeItem: (id: string, variantId?: string) => {
@@ -137,20 +144,21 @@ export const useCartStore = create<CartState>()(
         set({ 
           items: newItems,
           lastUpdated: new Date().toISOString(),
-          total: newTotal
+          total: newTotal,
+          weightLimitError: null
         });
         console.log(`Removed product ${id}${variantId ? ` variant ${variantId}` : ''} from cart`);
       },
       
-      updateQuantity: (id: string, quantity: number, variantId?: string) => {
+      updateQuantity: (id: string, quantity: number, variantId?: string): boolean => {
         if (!id || typeof id !== 'string' || !id.trim()) {
           console.warn('Invalid product ID provided to updateQuantity:', id);
-          return;
+          return false;
         }
         
         if (typeof quantity !== 'number' || quantity < 0) {
           console.warn('Invalid quantity provided to updateQuantity:', quantity);
-          return;
+          return false;
         }
         
         const { items } = get();
@@ -167,7 +175,7 @@ export const useCartStore = create<CartState>()(
           const product = getProductById(id);
           if (!product) {
             console.warn(`Product with id ${id} not found during quantity update`);
-            return;
+            return false;
           }
 
           // Verify variant exists if specified
@@ -175,7 +183,7 @@ export const useCartStore = create<CartState>()(
             const variant = getProductVariant(id, variantId);
             if (!variant) {
               console.warn(`Variant ${variantId} not found for product ${id} during quantity update`);
-              return;
+              return false;
             }
           }
           
@@ -188,8 +196,10 @@ export const useCartStore = create<CartState>()(
           if (quantityDifference > 0) {
             const weightValidation = get().validateWeightLimit([{ id, variantId, quantity: quantityDifference }]);
             if (!weightValidation.isValid) {
-              console.warn(`Cannot update quantity: would exceed 1 ounce daily limit by ${weightValidation.exceedsBy?.toFixed(2)} oz`);
-              throw new Error(`WEIGHT_LIMIT_EXCEEDED:${weightValidation.exceedsBy?.toFixed(2)}`);
+              const errorMsg = `Cannot update quantity: would exceed 1 ounce daily limit by ${weightValidation.exceedsBy?.toFixed(2)} oz`;
+              console.warn(errorMsg);
+              set({ weightLimitError: errorMsg });
+              return false;
             }
           }
           
@@ -215,15 +225,18 @@ export const useCartStore = create<CartState>()(
         set({
           items: newItems,
           lastUpdated: now,
-          total: newTotal
+          total: newTotal,
+          weightLimitError: null
         });
+        return true;
       },
       
       clearCart: () => {
         set({ 
           items: [],
           lastUpdated: new Date().toISOString(),
-          total: 0
+          total: 0,
+          weightLimitError: null
         });
         console.log('Cart cleared');
       },
@@ -289,7 +302,8 @@ export const useCartStore = create<CartState>()(
           set({ 
             items: validItems,
             lastUpdated: now,
-            total: newTotal
+            total: newTotal,
+            weightLimitError: null
           });
           
           console.log(`Cart refreshed. ${validItems.length} valid items remaining.`);
@@ -325,7 +339,8 @@ export const useCartStore = create<CartState>()(
         set({
           items: [],
           lastUpdated: null,
-          total: 0
+          total: 0,
+          weightLimitError: null
         });
         console.log('Cart reset to initial state');
       },
@@ -354,6 +369,10 @@ export const useCartStore = create<CartState>()(
           exceedsBy: totalWeight > maxWeight ? totalWeight - maxWeight : undefined
         };
       },
+      
+      clearWeightLimitError: () => {
+        set({ weightLimitError: null });
+      },
     }),
     {
       name: 'cart-storage',
@@ -361,7 +380,8 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({ 
         items: state.items,
         lastUpdated: state.lastUpdated,
-        total: state.total
+        total: state.total,
+        weightLimitError: state.weightLimitError
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
