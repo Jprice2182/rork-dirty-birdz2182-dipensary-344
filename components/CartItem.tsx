@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Image, Pressable, Alert } from 'react-native';
 import { Minus, Plus, Trash2 } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useCartStore } from '@/store/cartStore';
@@ -31,7 +31,21 @@ export default function CartItem({ id, quantity, variantId, variantName }: CartI
         console.log('Haptics not available:', error);
       }
     }
-    updateQuantity(id, quantity + 1, variantId);
+    
+    try {
+      updateQuantity(id, quantity + 1, variantId);
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('WEIGHT_LIMIT_EXCEEDED:')) {
+        const exceedsBy = error.message.split(':')[1];
+        Alert.alert(
+          'Purchase Limit Exceeded',
+          `Adding this item would exceed the 1 ounce daily limit by ${exceedsBy} oz. Please reduce your cart or choose a smaller size.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        console.error('Error updating quantity:', error);
+      }
+    }
   };
 
   const handleDecrement = () => {

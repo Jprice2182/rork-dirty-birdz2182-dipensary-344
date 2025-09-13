@@ -15,6 +15,13 @@ export interface CartItem {
   variantName?: string;
 }
 
+export interface WeightValidation {
+  isValid: boolean;
+  currentWeight: number;
+  maxWeight: number;
+  exceedsBy?: number;
+}
+
 export interface EighthsPromotion {
   eligible: boolean;
   totalEighths: number;
@@ -36,6 +43,8 @@ interface CartState {
   refreshCart: () => Promise<void>;
   resetCart: () => void;
   validateCart: () => void;
+  getTotalWeight: () => number;
+  validateWeightLimit: (additionalItems?: { id: string; variantId?: string; quantity: number }[]) => WeightValidation;
 }
 
 export const useCartStore = create<CartState>()(
@@ -72,6 +81,13 @@ export const useCartStore = create<CartState>()(
             console.warn(`Variant ${variantId} not found for product ${id}`);
             return;
           }
+        }
+        
+        // Check weight limit before adding
+        const weightValidation = get().validateWeightLimit([{ id, variantId, quantity: 1 }]);
+        if (!weightValidation.isValid) {
+          console.warn(`Cannot add item: would exceed 1 ounce daily limit by ${weightValidation.exceedsBy?.toFixed(2)} oz`);
+          throw new Error(`WEIGHT_LIMIT_EXCEEDED:${weightValidation.exceedsBy?.toFixed(2)}`);
         }
         
         const price = getProductPrice(id, variantId);
@@ -160,6 +176,20 @@ export const useCartStore = create<CartState>()(
             if (!variant) {
               console.warn(`Variant ${variantId} not found for product ${id} during quantity update`);
               return;
+            }
+          }
+          
+          // Check weight limit for the new quantity
+          const currentItem = items.find(item => 
+            item.id === id && (item.variantId || '') === (variantId || '')
+          );
+          const quantityDifference = quantity - (currentItem?.quantity || 0);
+          
+          if (quantityDifference > 0) {
+            const weightValidation = get().validateWeightLimit([{ id, variantId, quantity: quantityDifference }]);
+            if (!weightValidation.isValid) {
+              console.warn(`Cannot update quantity: would exceed 1 ounce daily limit by ${weightValidation.exceedsBy?.toFixed(2)} oz`);
+              throw new Error(`WEIGHT_LIMIT_EXCEEDED:${weightValidation.exceedsBy?.toFixed(2)}`);
             }
           }
           
@@ -299,6 +329,31 @@ export const useCartStore = create<CartState>()(
         });
         console.log('Cart reset to initial state');
       },
+      
+      getTotalWeight: () => {
+        const { items } = get();
+        return calculateTotalWeight(items);
+      },
+      
+      validateWeightLimit: (additionalItems: { id: string; variantId?: string; quantity: number }[] = []) => {
+        const { items } = get();
+        const currentWeight = calculateTotalWeight(items);
+        const additionalWeight = calculateTotalWeight(additionalItems.map(item => ({
+          id: item.id,
+          quantity: item.quantity,
+          variantId: item.variantId
+        })));
+        
+        const totalWeight = currentWeight + additionalWeight;
+        const maxWeight = 1; // 1 ounce limit
+        
+        return {
+          isValid: totalWeight <= maxWeight,
+          currentWeight: totalWeight,
+          maxWeight,
+          exceedsBy: totalWeight > maxWeight ? totalWeight - maxWeight : undefined
+        };
+      },
     }),
     {
       name: 'cart-storage',
@@ -374,6 +429,39 @@ function calculateEighthsPromotion(items: CartItem[]): EighthsPromotion {
     discountedEighths,
     savings
   };
+}
+
+// Helper function to calculate total weight in ounces
+function calculateTotalWeight(items: { id: string; quantity: number; variantId?: string }[]): number {
+  return items.reduce((totalWeight, item) => {
+    const product = getProductById(item.id);
+    if (!product) return totalWeight;
+    
+    let weightStr = '';
+    
+    // Get weight from variant if specified, otherwise use product weight
+    if (item.variantId && product.variants) {
+      const variant = getProductVariant(item.id, item.variantId);
+      weightStr = variant?.weight || product.weight || '';
+    } else {
+      weightStr = product.weight || '';
+    }
+    
+    if (!weightStr) return totalWeight;
+    
+    // Convert weight to ounces
+    let weightInOz = 0;
+    if (weightStr.includes('g')) {
+      // Convert grams to ounces (1 oz = 28.35g)
+      const grams = parseFloat(weightStr.replace('g', ''));
+      weightInOz = grams / 28.35;
+    } else if (weightStr.includes('oz')) {
+      // Already in ounces
+      weightInOz = parseFloat(weightStr.replace('oz', ''));
+    }
+    
+    return totalWeight + (weightInOz * item.quantity);
+  }, 0);
 }
 
 // Helper function to calculate total with eighths promotion

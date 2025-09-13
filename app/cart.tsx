@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingBag, ArrowLeft, Truck } from 'lucide-react-native';
+import { ShoppingBag, ArrowLeft, Truck, Scale } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useCartStore } from '@/store/cartStore';
 import CartItem from '@/components/CartItem';
@@ -10,10 +10,12 @@ import appInfo from '@/constants/appInfo';
 
 export default function CartScreen() {
   const router = useRouter();
-  const { items, getCartTotal, getEighthsPromotion, clearCart } = useCartStore();
+  const { items, getCartTotal, getEighthsPromotion, clearCart, getTotalWeight } = useCartStore();
   const [refreshing, setRefreshing] = useState(false);
   const cartTotal = getCartTotal();
   const eighthsPromo = getEighthsPromotion();
+  const totalWeight = getTotalWeight();
+  const weightPercentage = Math.min((totalWeight / 1) * 100, 100); // 1 oz limit
 
   // Calculate delivery fee based on cart total
   const deliveryFee = cartTotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
@@ -36,6 +38,10 @@ export default function CartScreen() {
   }, []);
 
   const handleCheckout = () => {
+    if (totalWeight > 1) {
+      // Don't navigate if weight limit exceeded
+      return;
+    }
     router.push('/checkout');
   };
 
@@ -116,6 +122,33 @@ export default function CartScreen() {
           <Text style={styles.itemCount}>
             {items.length} {items.length === 1 ? 'item' : 'items'}
           </Text>
+        </View>
+
+        {/* Weight Limit Status */}
+        <View style={[
+          styles.weightLimitContainer,
+          totalWeight >= 1 ? styles.weightLimitExceeded : styles.weightLimitNormal
+        ]}>
+          <Scale size={20} color={totalWeight >= 1 ? Colors.dark.error : Colors.dark.primary} />
+          <View style={styles.weightLimitText}>
+            <Text style={[
+              styles.weightLimitTitle,
+              totalWeight >= 1 && styles.weightLimitExceededText
+            ]}>
+              {totalWeight >= 1 ? '⚠️ Daily Limit Reached' : '📏 Daily Purchase Limit'}
+            </Text>
+            <Text style={[
+              styles.weightLimitSubtitle,
+              totalWeight >= 1 && styles.weightLimitExceededText
+            ]}>
+              {totalWeight.toFixed(2)} oz / 1.00 oz ({weightPercentage.toFixed(0)}%)
+            </Text>
+            {totalWeight >= 1 && (
+              <Text style={styles.weightLimitWarning}>
+                Remove items to add more products
+              </Text>
+            )}
+          </View>
         </View>
 
         {/* Free Delivery Status */}
@@ -209,8 +242,20 @@ export default function CartScreen() {
             <Text style={styles.continueButtonText}>Continue Shopping</Text>
           </Pressable>
           
-          <Pressable style={styles.checkoutButton} onPress={handleCheckout}>
-            <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+          <Pressable 
+            style={[
+              styles.checkoutButton,
+              totalWeight > 1 && styles.checkoutButtonDisabled
+            ]} 
+            onPress={handleCheckout}
+            disabled={totalWeight > 1}
+          >
+            <Text style={[
+              styles.checkoutButtonText,
+              totalWeight > 1 && styles.checkoutButtonTextDisabled
+            ]}>
+              {totalWeight > 1 ? 'Reduce Cart to Checkout' : 'Proceed to Checkout'}
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -458,5 +503,52 @@ const styles = StyleSheet.create({
     color: Colors.dark.subtext,
     fontSize: 14,
     marginLeft: 6,
+  },
+  weightLimitContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.dark.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  weightLimitNormal: {
+    borderColor: Colors.dark.primary,
+  },
+  weightLimitExceeded: {
+    borderColor: Colors.dark.error,
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+  },
+  weightLimitText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  weightLimitTitle: {
+    color: Colors.dark.primary,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  weightLimitSubtitle: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  weightLimitExceededText: {
+    color: Colors.dark.error,
+  },
+  weightLimitWarning: {
+    color: Colors.dark.error,
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  checkoutButtonDisabled: {
+    backgroundColor: Colors.dark.border,
+    opacity: 0.6,
+  },
+  checkoutButtonTextDisabled: {
+    color: Colors.dark.subtext,
   },
 });

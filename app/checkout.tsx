@@ -61,20 +61,14 @@ export default function Checkout() {
       return;
     }
 
-    // Check purchase limit (1 ounce per day)
-    const totalWeight = items.reduce((total, item) => {
-      const product = getProductById(item.id);
-      if (product?.weight) {
-        const weightInOz = parseFloat(product.weight.replace('oz', '').replace('g', '')) / (product.weight.includes('g') ? 28.35 : 1);
-        return total + (weightInOz * item.quantity);
-      }
-      return total;
-    }, 0);
-
-    if (totalWeight > 1) {
+    // Check purchase limit (1 ounce per day) using cart store validation
+    const { getTotalWeight, validateWeightLimit } = useCartStore.getState();
+    const weightValidation = validateWeightLimit();
+    
+    if (!weightValidation.isValid) {
       Alert.alert(
         'Purchase Limit Exceeded',
-        'You can only purchase up to 1 ounce per day. Please reduce your order quantity.',
+        `You can only purchase up to 1 ounce per day. Your current cart contains ${weightValidation.currentWeight.toFixed(2)} oz. Please reduce your order quantity.`,
         [{ text: 'OK' }]
       );
       return;

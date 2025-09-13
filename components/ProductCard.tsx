@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { StyleSheet, Text, View, Pressable, Image, Modal } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Image, Modal, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Plus, Minus, ShoppingBag, X } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -57,13 +57,40 @@ const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }
     if (hasVariants) {
       setShowVariantModal(true);
     } else {
-      addItem(id);
+      try {
+        addItem(id);
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith('WEIGHT_LIMIT_EXCEEDED:')) {
+          const exceedsBy = error.message.split(':')[1];
+          Alert.alert(
+            'Purchase Limit Exceeded',
+            `Adding this item would exceed the 1 ounce daily limit by ${exceedsBy} oz. Please reduce your cart or choose a smaller size.`,
+            [{ text: 'OK' }]
+          );
+        } else {
+          console.error('Error adding item to cart:', error);
+        }
+      }
     }
   };
 
   const handleVariantSelect = (variantId: string) => {
-    addItem(id, variantId);
-    setShowVariantModal(false);
+    try {
+      addItem(id, variantId);
+      setShowVariantModal(false);
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('WEIGHT_LIMIT_EXCEEDED:')) {
+        const exceedsBy = error.message.split(':')[1];
+        Alert.alert(
+          'Purchase Limit Exceeded',
+          `Adding this item would exceed the 1 ounce daily limit by ${exceedsBy} oz. Please reduce your cart or choose a smaller size.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        console.error('Error adding variant to cart:', error);
+      }
+      setShowVariantModal(false);
+    }
   };
 
   const handleIncrement = (e: any) => {
@@ -83,10 +110,23 @@ const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }
       const cartItem = items.find(item => item.id === id && !item.variantId);
       const quantity = cartItem ? cartItem.quantity : 0;
       
-      if (quantity === 0) {
-        addItem(id);
-      } else {
-        updateQuantity(id, quantity + 1);
+      try {
+        if (quantity === 0) {
+          addItem(id);
+        } else {
+          updateQuantity(id, quantity + 1);
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith('WEIGHT_LIMIT_EXCEEDED:')) {
+          const exceedsBy = error.message.split(':')[1];
+          Alert.alert(
+            'Purchase Limit Exceeded',
+            `Adding this item would exceed the 1 ounce daily limit by ${exceedsBy} oz. Please reduce your cart or choose a smaller size.`,
+            [{ text: 'OK' }]
+          );
+        } else {
+          console.error('Error updating quantity:', error);
+        }
       }
     }
   };
