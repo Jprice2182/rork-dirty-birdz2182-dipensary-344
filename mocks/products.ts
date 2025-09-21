@@ -186,6 +186,22 @@ export const products: Product[] = [
     featured: true,
     variants: flowerVariants,
   },
+  {
+    id: '8',
+    name: 'Zkittlez',
+    category: '1',
+    thc: 20,
+    cbd: 0.1,
+    price: 20,
+    weight: '3.5g',
+    strain: 'Indica',
+    rating: 4.8,
+    image: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/3iyrhsoz78ow6xofbs6zq',
+    description: "Zkittlez is an indica-dominant hybrid strain known for its fruity, candy-like aroma and flavor profile. This colorful strain delivers a relaxing body high with sweet tropical fruit flavors that taste like a rainbow of skittles.",
+    effects: ['Relaxed', 'Happy', 'Euphoric'],
+    featured: true,
+    variants: flowerVariants,
+  },
 
   // EDIBLE PRODUCTS (Category '2') - 4 products
   {
