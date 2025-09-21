@@ -202,6 +202,22 @@ export const products: Product[] = [
     featured: true,
     variants: flowerVariants,
   },
+  {
+    id: '9',
+    name: 'Godfather OG',
+    category: '1',
+    thc: 28,
+    cbd: 0.1,
+    price: 20,
+    weight: '3.5g',
+    strain: 'Indica',
+    rating: 4.9,
+    image: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/3ghfgs2u6jx3kyzdl9161',
+    description: "Godfather OG is a potent indica strain known as one of the strongest strains available. With deep purple hues and frosty trichomes, this strain delivers powerful sedating effects perfect for nighttime use. Its earthy, pine flavors are complemented by hints of grape and spice.",
+    effects: ['Relaxed', 'Sleepy', 'Euphoric'],
+    featured: true,
+    variants: flowerVariants,
+  },
 
   // EDIBLE PRODUCTS (Category '2') - 4 products
   {
