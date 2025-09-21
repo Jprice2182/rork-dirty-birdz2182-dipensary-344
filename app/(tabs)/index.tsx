@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl, Alert, I
 import { useRouter } from 'expo-router';
 import { ShoppingCart, Star } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-import { getMainCategories } from '@/constants/categories';
+import { getMainCategories, getFlowerStrainCategories } from '@/constants/categories';
 import { getFeaturedProducts } from '@/mocks/products';
 import CategoryCard from '@/components/CategoryCard';
 import ProductCard from '@/components/ProductCard';
@@ -267,6 +267,51 @@ export default function HomeScreen() {
               />
             ))}
           </ScrollView>
+        </View>
+
+        {/* Flower Strain Selection Section */}
+        <View style={styles.strainSelectionSection}>
+          <SafeText style={styles.sectionTitle}>Choose Your Strain</SafeText>
+          <SafeText style={styles.sectionSubtitle}>Select from our premium flower varieties</SafeText>
+          
+          <View style={styles.strainCardsContainer}>
+            {getFlowerStrainCategories().map(strain => {
+              const strainProducts = getFeaturedProducts().filter(product => 
+                product.category === '1' && product.strain === strain.name
+              );
+              
+              return (
+                <Pressable
+                  key={strain.id}
+                  style={styles.strainCard}
+                  onPress={() => router.push(`/category/${strain.id}`)}
+                >
+                  <View style={styles.strainCardHeader}>
+                    <SafeText style={styles.strainIcon}>{strain.icon}</SafeText>
+                    <View style={styles.strainInfo}>
+                      <SafeText style={styles.strainName}>{strain.name}</SafeText>
+                      <SafeText style={styles.strainCount}>
+                        {strainProducts.length} premium strains available
+                      </SafeText>
+                    </View>
+                  </View>
+                  
+                  <SafeText style={styles.strainDescription}>
+                    {strain.name === 'Sativa' && 'Energizing • Creative • Uplifting • Perfect for daytime use'}
+                    {strain.name === 'Indica' && 'Relaxing • Calming • Sedating • Ideal for evening and sleep'}
+                    {strain.name === 'Hybrid' && 'Balanced • Versatile • Best of both worlds • Any time of day'}
+                  </SafeText>
+                  
+                  <View style={styles.strainProductPreview}>
+                    {strainProducts.slice(0, 3).map((product, index) => (
+                      <View key={product.id} style={[styles.productPreviewDot, { left: index * 8 }]} />
+                    ))}
+                    <SafeText style={styles.viewAllText}>View All →</SafeText>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
 
         {/* Featured Products Section */}
@@ -557,5 +602,74 @@ const styles = StyleSheet.create({
     color: Colors.dark.subtext,
     fontSize: 14,
     lineHeight: 20,
+  },
+  strainSelectionSection: {
+    marginBottom: 32,
+  },
+  strainCardsContainer: {
+    gap: 16,
+  },
+  strainCard: {
+    backgroundColor: Colors.dark.card,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: Colors.dark.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+  },
+  strainCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  strainIcon: {
+    fontSize: 32,
+    marginRight: 16,
+  },
+  strainInfo: {
+    flex: 1,
+  },
+  strainName: {
+    color: Colors.dark.text,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  strainCount: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  strainDescription: {
+    color: Colors.dark.subtext,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  strainProductPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    position: 'relative',
+  },
+  productPreviewDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.dark.primary,
+    position: 'absolute',
+  },
+  viewAllText: {
+    color: Colors.dark.primary,
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 'auto',
   },
 });
