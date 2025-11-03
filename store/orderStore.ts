@@ -61,6 +61,7 @@ interface OrderState {
   completeRefund: (id: string) => void;
   isRefundEligible: (id: string) => boolean;
   getRefundTimeRemaining: (id: string) => number;
+  markOrderAsRated: (id: string) => void;
   clearOrders: () => void;
 }
 
@@ -282,6 +283,15 @@ export const useOrderStore = create<OrderState>()(
         }));
         
         console.log(`Refund completed for order ${id}`);
+      },
+
+      markOrderAsRated: (id: string) => {
+        set((state) => ({
+          orders: state.orders.map(order => 
+            order.id === id ? { ...order, isRated: true } : order
+          )
+        }));
+        console.log(`Order ${id} marked as rated`);
       },
       
       clearOrders: () => {

@@ -1,4 +1,4 @@
-import { publicProcedure } from "../../create-context";
+import { publicProcedure } from "../../../create-context";
 
 export default publicProcedure.query(() => {
   return {
