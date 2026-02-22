@@ -146,8 +146,8 @@ export default function BirthdayPromotionModal({ visible, onClose }: BirthdayPro
             
             <Text style={styles.description}>
               {isTodayBirthday 
-                ? "It's your special day! Claim your free 1g pre-roll birthday gift today at any Dirty Birdz2182 Dispensary location. Happy Birthday from all of us!" 
-                : "Celebrate your birthday with a free 1g pre-roll on us! Visit any Dirty Birdz2182 Dispensary location on your birthday to claim your gift."
+                ? "It's your special day! Claim your free 1g pre-roll birthday gift today with your next Dirty Birdz2182 delivery order. Happy Birthday from all of us!" 
+                : "Celebrate your birthday with a free 1g pre-roll on us! Place a Dirty Birdz2182 delivery order on your birthday to claim your gift."
               }
             </Text>
             

@@ -185,7 +185,7 @@ export default function HomeScreen() {
           </View>
           <SafeText style={styles.pointsBalance}>{points} Points</SafeText>
           <SafeText style={styles.pointsDescription}>
-            Earn 1 point for every $1 spent • Points never expire • Redeem points for rewards inside the dispensary
+            Earn 1 point for every $1 spent • Points never expire • Redeem points for rewards with your orders
           </SafeText>
         </View>
 
@@ -244,7 +244,7 @@ export default function HomeScreen() {
               </SafeText>
               
               <SafeText style={styles.biographyText}>
-                From premium flower grown with Georgia's rich soil to innovative edibles and concentrates, our dispensary brings you the finest cannabis products available. We are proud to serve Atlanta's cannabis community with the same warmth and excellence that defines this incredible city.
+                From premium flower grown with Georgia's rich soil to innovative edibles and concentrates, we bring you the finest cannabis products available via shipping and delivery only. We are proud to serve Atlanta's cannabis community with the same warmth and excellence that defines this incredible city.
               </SafeText>
             </View>
           </View>

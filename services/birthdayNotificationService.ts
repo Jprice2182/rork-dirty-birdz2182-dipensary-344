@@ -80,7 +80,7 @@ export class BirthdayNotificationService {
         await Notifications.scheduleNotificationAsync({
           content: {
             title: '🎉 Happy Birthday!',
-            body: 'Claim your free 1g pre-roll birthday gift at Dirty Birdz2182 Dispensary!',
+            body: 'Claim your free 1g pre-roll birthday gift with your next Dirty Birdz2182 delivery order!',
             data: { type: 'birthday_promotion' },
           },
           trigger: {
@@ -99,7 +99,7 @@ export class BirthdayNotificationService {
         await Notifications.scheduleNotificationAsync({
           content: {
             title: '🎉 Happy Birthday!',
-            body: 'Claim your free 1g pre-roll birthday gift at Dirty Birdz2182 Dispensary!',
+            body: 'Claim your free 1g pre-roll birthday gift with your next Dirty Birdz2182 delivery order!',
             data: { type: 'birthday_promotion' },
           },
           trigger: {
