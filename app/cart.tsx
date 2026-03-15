@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingBag, ArrowLeft, Truck, Scale } from 'lucide-react-native';
+import { ShoppingBag, ArrowLeft, Truck } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useCartStore } from '@/store/cartStore';
 import CartItem from '@/components/CartItem';
@@ -10,14 +10,10 @@ import appInfo from '@/constants/appInfo';
 
 export default function CartScreen() {
   const router = useRouter();
-  const { items, getCartTotal, getEighthsPromotion, clearCart, getTotalWeight } = useCartStore();
+  const { items, getCartTotal, getEighthsPromotion, clearCart } = useCartStore();
   const [refreshing, setRefreshing] = useState(false);
   const cartTotal = getCartTotal();
   const eighthsPromo = getEighthsPromotion();
-  const totalWeight = getTotalWeight();
-  const exceedsPurchaseLimit = totalWeight > appInfo.purchaseLimitOunces;
-  const weightPercentage = Math.min((totalWeight / appInfo.purchaseLimitOunces) * 100, 100);
-
   // Calculate delivery fee based on cart total
   const deliveryFee = cartTotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
   const amountForFreeDelivery = appInfo.freeDeliveryMinimum - cartTotal;
@@ -39,9 +35,6 @@ export default function CartScreen() {
   }, []);
 
   const handleCheckout = () => {
-    if (exceedsPurchaseLimit) {
-      return;
-    }
     router.push('/checkout');
   };
 
@@ -122,33 +115,6 @@ export default function CartScreen() {
           <Text style={styles.itemCount}>
             {items.length} {items.length === 1 ? 'item' : 'items'}
           </Text>
-        </View>
-
-        {/* Weight Limit Status */}
-        <View style={[
-          styles.weightLimitContainer,
-          exceedsPurchaseLimit ? styles.weightLimitExceeded : styles.weightLimitNormal
-        ]}>
-          <Scale size={20} color={exceedsPurchaseLimit ? Colors.dark.error : Colors.dark.primary} />
-          <View style={styles.weightLimitText}>
-            <Text style={[
-              styles.weightLimitTitle,
-              exceedsPurchaseLimit && styles.weightLimitExceededText
-            ]}>
-              {exceedsPurchaseLimit ? '⚠️ 2 Ounces Limit Exceeded' : '📏 Purchase Limit'}
-            </Text>
-            <Text style={[
-              styles.weightLimitSubtitle,
-              exceedsPurchaseLimit && styles.weightLimitExceededText
-            ]}>
-              {totalWeight.toFixed(2)} oz / {appInfo.purchaseLimitOunces.toFixed(2)} oz ({weightPercentage.toFixed(0)}%)
-            </Text>
-            {exceedsPurchaseLimit && (
-              <Text style={styles.weightLimitWarning}>
-                Reduce your cart before checkout
-              </Text>
-            )}
-          </View>
         </View>
 
         {/* Free Delivery Status */}
@@ -243,19 +209,12 @@ export default function CartScreen() {
           </Pressable>
           
           <Pressable 
-            style={[
-              styles.checkoutButton,
-              exceedsPurchaseLimit && styles.checkoutButtonDisabled
-            ]}
+            style={styles.checkoutButton}
             onPress={handleCheckout}
-            disabled={exceedsPurchaseLimit}
             testID="proceed-to-checkout-button"
           >
-            <Text style={[
-              styles.checkoutButtonText,
-              exceedsPurchaseLimit && styles.checkoutButtonTextDisabled
-            ]}>
-              {exceedsPurchaseLimit ? '2 Ounces Limit Exceeded' : 'Proceed to Checkout'}
+            <Text style={styles.checkoutButtonText}>
+              Proceed to Checkout
             </Text>
           </Pressable>
         </View>

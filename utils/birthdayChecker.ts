@@ -2,7 +2,7 @@ import { useUserStore } from '@/store/userStore';
 
 export class BirthdayChecker {
   private static instance: BirthdayChecker;
-  private checkInterval: NodeJS.Timeout | null = null;
+  private checkInterval: ReturnType<typeof setInterval> | null = null;
 
   static getInstance(): BirthdayChecker {
     if (!BirthdayChecker.instance) {

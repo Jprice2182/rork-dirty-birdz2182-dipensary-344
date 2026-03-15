@@ -35,7 +35,7 @@ const queryClient = new QueryClient({
 });
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -53,7 +53,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded || error) {
       // Hide splash screen even if fonts failed to load
-      SplashScreen.hideAsync();
+      void SplashScreen.hideAsync();
     }
   }, [loaded, error]);
 
@@ -141,6 +141,15 @@ function RootLayoutNav() {
             name="checkout" 
             options={{ 
               title: "Checkout",
+              ...(Platform.OS === 'android' && {
+                headerBackTitleVisible: false,
+              }),
+            }} 
+          />
+          <Stack.Screen 
+            name="bulk-order" 
+            options={{ 
+              title: "Bulk Orders",
               ...(Platform.OS === 'android' && {
                 headerBackTitleVisible: false,
               }),

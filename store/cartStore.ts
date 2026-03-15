@@ -85,15 +85,6 @@ export const useCartStore = create<CartState>()(
           }
         }
         
-        // Check weight limit before adding
-        const weightValidation = get().validateWeightLimit([{ id, variantId, quantity: 1 }]);
-        if (!weightValidation.isValid) {
-          const errorMsg = `2 ounces limit exceeded. Remove ${weightValidation.exceedsBy?.toFixed(2)} oz to continue.`;
-          console.warn(errorMsg);
-          set({ weightLimitError: errorMsg });
-          return false;
-        }
-        
         const price = getProductPrice(id, variantId);
         const displayName = getProductDisplayName(id, variantId);
         const variant = variantId ? getProductVariant(id, variantId) : null;
@@ -182,22 +173,6 @@ export const useCartStore = create<CartState>()(
             const variant = getProductVariant(id, variantId);
             if (!variant) {
               console.warn(`Variant ${variantId} not found for product ${id} during quantity update`);
-              return false;
-            }
-          }
-          
-          // Check weight limit for the new quantity
-          const currentItem = items.find(item => 
-            item.id === id && (item.variantId || '') === (variantId || '')
-          );
-          const quantityDifference = quantity - (currentItem?.quantity || 0);
-          
-          if (quantityDifference > 0) {
-            const weightValidation = get().validateWeightLimit([{ id, variantId, quantity: quantityDifference }]);
-            if (!weightValidation.isValid) {
-              const errorMsg = `2 ounces limit exceeded. Remove ${weightValidation.exceedsBy?.toFixed(2)} oz to continue.`;
-              console.warn(errorMsg);
-              set({ weightLimitError: errorMsg });
               return false;
             }
           }
@@ -357,15 +332,13 @@ export const useCartStore = create<CartState>()(
           quantity: item.quantity,
           variantId: item.variantId
         })));
-        
         const totalWeight = currentWeight + additionalWeight;
-        const maxWeight = appInfo.purchaseLimitOunces;
-        
+
         return {
-          isValid: totalWeight <= maxWeight,
+          isValid: true,
           currentWeight: totalWeight,
-          maxWeight,
-          exceedsBy: totalWeight > maxWeight ? totalWeight - maxWeight : undefined
+          maxWeight: totalWeight,
+          exceedsBy: undefined
         };
       },
       

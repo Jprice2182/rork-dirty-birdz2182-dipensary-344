@@ -25,8 +25,6 @@ export default function Checkout() {
 
   const subtotal = getCartTotal();
   const eighthsPromo = getEighthsPromotion();
-  const totalWeight = useCartStore((state) => state.getTotalWeight());
-  const exceedsPurchaseLimit = totalWeight > appInfo.purchaseLimitOunces;
   const deliveryFee = subtotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
   const tax = subtotal * 0.08; // 8% tax
   const promoDiscountAmount = subtotal * promoDiscount;
@@ -60,18 +58,6 @@ export default function Checkout() {
   const handlePlaceOrder = () => {
     if (items.length === 0) {
       Alert.alert('Error', 'Your cart is empty');
-      return;
-    }
-
-    const { validateWeightLimit } = useCartStore.getState();
-    const weightValidation = validateWeightLimit();
-
-    if (!weightValidation.isValid) {
-      Alert.alert(
-        'Payment Denied',
-        `2 ounces limit exceeded. Your cart contains ${weightValidation.currentWeight.toFixed(2)} oz and the max is ${weightValidation.maxWeight.toFixed(2)} oz.`,
-        [{ text: 'OK' }]
-      );
       return;
     }
 
@@ -306,26 +292,13 @@ export default function Checkout() {
           </View>
         </View>
 
-        {exceedsPurchaseLimit && (
-          <View style={styles.limitWarning}>
-            <Text style={styles.limitWarningTitle}>Payment denied</Text>
-            <Text style={styles.limitWarningText}>
-              2 ounces limit exceeded. Reduce your cart below {appInfo.purchaseLimitOunces.toFixed(0)} oz to continue.
-            </Text>
-          </View>
-        )}
-
         <Pressable
-          style={[
-            styles.placeOrderButton,
-            exceedsPurchaseLimit && styles.placeOrderButtonDisabled,
-          ]}
+          style={styles.placeOrderButton}
           onPress={handlePlaceOrder}
-          disabled={exceedsPurchaseLimit}
           testID="place-order-button"
         >
           <Text style={styles.placeOrderText}>
-            {exceedsPurchaseLimit ? '2 Ounces Limit Exceeded' : `Place Order • ${finalTotal.toFixed(2)}`}
+            {`Place Order • ${finalTotal.toFixed(2)}`}
           </Text>
         </Pressable>
       </View>

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingCart, Star } from 'lucide-react-native';
+import { ShoppingCart, Star, Building2, ArrowRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { getMainCategories, getFlowerStrainCategories } from '@/constants/categories';
 import { getFeaturedProducts } from '@/mocks/products';
@@ -10,6 +10,7 @@ import CategoryCard from '@/components/CategoryCard';
 import DiscountBanner from '@/components/DiscountBanner';
 import BirthdayNotificationBanner from '@/components/BirthdayNotificationBanner';
 import BirthdayPromotionModal from '@/components/BirthdayPromotionModal';
+import AgeVerificationModal from '@/components/AgeVerificationModal';
 import SafeText from '@/components/SafeText';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
@@ -20,10 +21,11 @@ export default function HomeScreen() {
   const router = useRouter();
   const cartItemsCount = useCartStore(state => state.getCartItemsCount());
   const { getEighthsPromotion } = useCartStore();
-  const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified, birthday, points } = useUserStore();
+  const { isNewUser, hasUsedDiscount, name, markAsExistingUser, isVerified, birthday, points, setVerified } = useUserStore();
   const [showDiscountBanner, setShowDiscountBanner] = useState(true);
   const [showEighthsBanner, setShowEighthsBanner] = useState(true);
   const [showBirthdayModal, setShowBirthdayModal] = useState(false);
+  const [showAgeModal, setShowAgeModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const eighthsPromo = getEighthsPromotion();
@@ -31,9 +33,11 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!isVerified) {
-      router.replace('/');
+      setShowAgeModal(true);
       return;
     }
+
+    setShowAgeModal(false);
 
     // Check if birthday is required and not set
     if (!birthday) {
@@ -107,7 +111,17 @@ export default function HomeScreen() {
   const shouldShowEighthsBanner = showEighthsBanner && !eighthsPromo.eligible;
 
   if (!isVerified) {
-    return null;
+    return (
+      <AgeVerificationModal
+        isVisible={showAgeModal}
+        onClose={() => setShowAgeModal(false)}
+        onVerified={() => {
+          console.log('Age verified from home screen');
+          setVerified(true);
+          setShowAgeModal(false);
+        }}
+      />
+    );
   }
 
   // Show birthday requirement notice if not set
@@ -249,6 +263,31 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
+
+        <Pressable
+          style={styles.bulkOrderCard}
+          onPress={() => {
+            console.log('Navigating to bulk order page');
+            router.push('/bulk-order');
+          }}
+          testID="bulk-order-link"
+        >
+          <View style={styles.bulkOrderGlow} />
+          <View style={styles.bulkOrderHeader}>
+            <View style={styles.bulkOrderBadge}>
+              <Building2 size={18} color={Colors.dark.text} />
+              <SafeText style={styles.bulkOrderBadgeText}>Business orders</SafeText>
+            </View>
+            <ArrowRight size={18} color={Colors.dark.primary} />
+          </View>
+          <SafeText style={styles.bulkOrderTitle}>Need bulk products for your business?</SafeText>
+          <SafeText style={styles.bulkOrderText}>
+            Submit your business name, phone number, address, and a message so our team can contact you about bulk purchasing.
+          </SafeText>
+          <View style={styles.bulkOrderButton}>
+            <SafeText style={styles.bulkOrderButtonText}>Open bulk inquiry form</SafeText>
+          </View>
+        </Pressable>
 
         <View style={styles.categoriesSection}>
           <SafeText style={styles.sectionTitle}>Shop Categories</SafeText>
@@ -553,6 +592,71 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  bulkOrderCard: {
+    backgroundColor: '#11241d',
+    borderRadius: 24,
+    padding: 22,
+    marginBottom: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.28)',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  bulkOrderGlow: {
+    position: 'absolute',
+    right: -40,
+    top: -30,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(16, 185, 129, 0.14)',
+  },
+  bulkOrderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  bulkOrderBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.22)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  bulkOrderBadgeText: {
+    color: Colors.dark.text,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  bulkOrderTitle: {
+    color: Colors.dark.text,
+    fontSize: 24,
+    fontWeight: 'bold',
+    lineHeight: 30,
+    marginBottom: 10,
+  },
+  bulkOrderText: {
+    color: '#b7c9c2',
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 18,
+  },
+  bulkOrderButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.dark.primary,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  bulkOrderButtonText: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontWeight: '700',
   },
   pointsInfoHeader: {
     flexDirection: 'row',
