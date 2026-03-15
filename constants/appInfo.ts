@@ -25,6 +25,7 @@ const appInfo = {
   freeDeliveryMinimum: 70.00,
   estimatedDeliveryTime: "30-45 minutes",
   defaultTipPercentages: [15, 18, 20, 25],
+  purchaseLimitOunces: 2,
   refundPolicy: {
     timeLimit: 24, // hours
     description: "100% money back guarantee within 24 hours",

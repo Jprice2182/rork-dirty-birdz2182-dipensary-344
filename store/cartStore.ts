@@ -64,7 +64,6 @@ export const useCartStore = create<CartState>()(
         }
         
         const { items } = get();
-        const itemKey = variantId ? `${id}-${variantId}` : id;
         const existingItem = items.find(item => 
           item.id === id && (item.variantId || '') === (variantId || '')
         );
@@ -89,7 +88,7 @@ export const useCartStore = create<CartState>()(
         // Check weight limit before adding
         const weightValidation = get().validateWeightLimit([{ id, variantId, quantity: 1 }]);
         if (!weightValidation.isValid) {
-          const errorMsg = `Cannot add item: would exceed 1 ounce daily limit by ${weightValidation.exceedsBy?.toFixed(2)} oz`;
+          const errorMsg = `2 ounces limit exceeded. Remove ${weightValidation.exceedsBy?.toFixed(2)} oz to continue.`;
           console.warn(errorMsg);
           set({ weightLimitError: errorMsg });
           return false;
@@ -196,7 +195,7 @@ export const useCartStore = create<CartState>()(
           if (quantityDifference > 0) {
             const weightValidation = get().validateWeightLimit([{ id, variantId, quantity: quantityDifference }]);
             if (!weightValidation.isValid) {
-              const errorMsg = `Cannot update quantity: would exceed 1 ounce daily limit by ${weightValidation.exceedsBy?.toFixed(2)} oz`;
+              const errorMsg = `2 ounces limit exceeded. Remove ${weightValidation.exceedsBy?.toFixed(2)} oz to continue.`;
               console.warn(errorMsg);
               set({ weightLimitError: errorMsg });
               return false;
@@ -331,7 +330,7 @@ export const useCartStore = create<CartState>()(
         
         if (invalidItems.length > 0) {
           console.warn('Found invalid items in cart:', invalidItems);
-          get().refreshCart();
+          void get().refreshCart();
         }
       },
       
@@ -360,7 +359,7 @@ export const useCartStore = create<CartState>()(
         })));
         
         const totalWeight = currentWeight + additionalWeight;
-        const maxWeight = 1; // 1 ounce limit
+        const maxWeight = appInfo.purchaseLimitOunces;
         
         return {
           isValid: totalWeight <= maxWeight,

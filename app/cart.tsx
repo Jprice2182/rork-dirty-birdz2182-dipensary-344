@@ -15,7 +15,8 @@ export default function CartScreen() {
   const cartTotal = getCartTotal();
   const eighthsPromo = getEighthsPromotion();
   const totalWeight = getTotalWeight();
-  const weightPercentage = Math.min((totalWeight / 1) * 100, 100); // 1 oz limit
+  const exceedsPurchaseLimit = totalWeight > appInfo.purchaseLimitOunces;
+  const weightPercentage = Math.min((totalWeight / appInfo.purchaseLimitOunces) * 100, 100);
 
   // Calculate delivery fee based on cart total
   const deliveryFee = cartTotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
@@ -38,8 +39,7 @@ export default function CartScreen() {
   }, []);
 
   const handleCheckout = () => {
-    if (totalWeight > 1) {
-      // Don't navigate if weight limit exceeded
+    if (exceedsPurchaseLimit) {
       return;
     }
     router.push('/checkout');
@@ -127,25 +127,25 @@ export default function CartScreen() {
         {/* Weight Limit Status */}
         <View style={[
           styles.weightLimitContainer,
-          totalWeight >= 1 ? styles.weightLimitExceeded : styles.weightLimitNormal
+          exceedsPurchaseLimit ? styles.weightLimitExceeded : styles.weightLimitNormal
         ]}>
-          <Scale size={20} color={totalWeight >= 1 ? Colors.dark.error : Colors.dark.primary} />
+          <Scale size={20} color={exceedsPurchaseLimit ? Colors.dark.error : Colors.dark.primary} />
           <View style={styles.weightLimitText}>
             <Text style={[
               styles.weightLimitTitle,
-              totalWeight >= 1 && styles.weightLimitExceededText
+              exceedsPurchaseLimit && styles.weightLimitExceededText
             ]}>
-              {totalWeight >= 1 ? '⚠️ Daily Limit Reached' : '📏 Daily Purchase Limit'}
+              {exceedsPurchaseLimit ? '⚠️ 2 Ounces Limit Exceeded' : '📏 Purchase Limit'}
             </Text>
             <Text style={[
               styles.weightLimitSubtitle,
-              totalWeight >= 1 && styles.weightLimitExceededText
+              exceedsPurchaseLimit && styles.weightLimitExceededText
             ]}>
-              {totalWeight.toFixed(2)} oz / 1.00 oz ({weightPercentage.toFixed(0)}%)
+              {totalWeight.toFixed(2)} oz / {appInfo.purchaseLimitOunces.toFixed(2)} oz ({weightPercentage.toFixed(0)}%)
             </Text>
-            {totalWeight >= 1 && (
+            {exceedsPurchaseLimit && (
               <Text style={styles.weightLimitWarning}>
-                Remove items to add more products
+                Reduce your cart before checkout
               </Text>
             )}
           </View>
@@ -245,16 +245,17 @@ export default function CartScreen() {
           <Pressable 
             style={[
               styles.checkoutButton,
-              totalWeight > 1 && styles.checkoutButtonDisabled
-            ]} 
+              exceedsPurchaseLimit && styles.checkoutButtonDisabled
+            ]}
             onPress={handleCheckout}
-            disabled={totalWeight > 1}
+            disabled={exceedsPurchaseLimit}
+            testID="proceed-to-checkout-button"
           >
             <Text style={[
               styles.checkoutButtonText,
-              totalWeight > 1 && styles.checkoutButtonTextDisabled
+              exceedsPurchaseLimit && styles.checkoutButtonTextDisabled
             ]}>
-              {totalWeight > 1 ? 'Reduce Cart to Checkout' : 'Proceed to Checkout'}
+              {exceedsPurchaseLimit ? '2 Ounces Limit Exceeded' : 'Proceed to Checkout'}
             </Text>
           </Pressable>
         </View>

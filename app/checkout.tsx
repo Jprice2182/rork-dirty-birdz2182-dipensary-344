@@ -25,6 +25,8 @@ export default function Checkout() {
 
   const subtotal = getCartTotal();
   const eighthsPromo = getEighthsPromotion();
+  const totalWeight = useCartStore((state) => state.getTotalWeight());
+  const exceedsPurchaseLimit = totalWeight > appInfo.purchaseLimitOunces;
   const deliveryFee = subtotal >= appInfo.freeDeliveryMinimum ? 0 : appInfo.deliveryFee;
   const tax = subtotal * 0.08; // 8% tax
   const promoDiscountAmount = subtotal * promoDiscount;
@@ -61,14 +63,13 @@ export default function Checkout() {
       return;
     }
 
-    // Check purchase limit (1 ounce per day) using cart store validation
-    const { getTotalWeight, validateWeightLimit } = useCartStore.getState();
+    const { validateWeightLimit } = useCartStore.getState();
     const weightValidation = validateWeightLimit();
-    
+
     if (!weightValidation.isValid) {
       Alert.alert(
-        'Purchase Limit Exceeded',
-        `You can only purchase up to 1 ounce per day. Your current cart contains ${weightValidation.currentWeight.toFixed(2)} oz. Please reduce your order quantity.`,
+        'Payment Denied',
+        `2 ounces limit exceeded. Your cart contains ${weightValidation.currentWeight.toFixed(2)} oz and the max is ${weightValidation.maxWeight.toFixed(2)} oz.`,
         [{ text: 'OK' }]
       );
       return;
@@ -305,10 +306,26 @@ export default function Checkout() {
           </View>
         </View>
 
-        {/* Place Order Button */}
-        <Pressable style={styles.placeOrderButton} onPress={handlePlaceOrder}>
+        {exceedsPurchaseLimit && (
+          <View style={styles.limitWarning}>
+            <Text style={styles.limitWarningTitle}>Payment denied</Text>
+            <Text style={styles.limitWarningText}>
+              2 ounces limit exceeded. Reduce your cart below {appInfo.purchaseLimitOunces.toFixed(0)} oz to continue.
+            </Text>
+          </View>
+        )}
+
+        <Pressable
+          style={[
+            styles.placeOrderButton,
+            exceedsPurchaseLimit && styles.placeOrderButtonDisabled,
+          ]}
+          onPress={handlePlaceOrder}
+          disabled={exceedsPurchaseLimit}
+          testID="place-order-button"
+        >
           <Text style={styles.placeOrderText}>
-            Place Order • ${finalTotal.toFixed(2)}
+            {exceedsPurchaseLimit ? '2 Ounces Limit Exceeded' : `Place Order • ${finalTotal.toFixed(2)}`}
           </Text>
         </Pressable>
       </View>
@@ -551,6 +568,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.dark.error || '#ff6b6b',
   },
+  limitWarning: {
+    backgroundColor: 'rgba(231, 76, 60, 0.12)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.dark.error,
+    padding: 16,
+    marginBottom: 16,
+  },
+  limitWarningTitle: {
+    color: Colors.dark.error,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  limitWarningText: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    lineHeight: 20,
+  },
   refundPolicySection: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -583,6 +619,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 40,
+  },
+  placeOrderButtonDisabled: {
+    backgroundColor: Colors.dark.border,
   },
   placeOrderText: {
     color: Colors.dark.text,
