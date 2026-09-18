@@ -17,7 +17,7 @@ if (__DEV__) {
 }
 
 export const unstable_settings = {
-  initialRouteName: "index",
+  initialRouteName: "(tabs)",
 };
 
 // Create a client
@@ -108,7 +108,6 @@ function RootLayoutNav() {
             }),
           }}
         >
-          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen 
             name="product/[id]" 

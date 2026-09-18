@@ -1,0 +1,15 @@
+{
+  "apps": [
+    {
+      "name": "Expo",
+      "path": "expo",
+      "framework": "react-native"
+    },
+    {
+      "name": "Dirty Birdz2182",
+      "path": "ios-dirty-birdz2182",
+      "framework": "swift"
+    }
+  ],
+  "$schema": "https://rork.com/schema/rork.json"
+}
