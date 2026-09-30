@@ -152,13 +152,14 @@ struct LegalDocumentView: View {
 nonisolated enum LegalContent {
     static let terms: [(heading: String, body: String)] = [
         ("1. Eligibility", "You must be at least \(AppInfo.minAge) years of age to create an account, browse products, or place an order with \(AppInfo.name). We verify age at signup and our drivers verify a valid government-issued ID at the time of delivery."),
-        ("2. Shipping & Delivery Only", "\(AppInfo.name) operates exclusively as a shipping and delivery service. We do not offer walk-in or in-person pickup. Deliveries are made within our published service area during operating hours."),
-        ("3. Orders & Pricing", "All prices are listed in US dollars and are subject to change. Delivery is \(AppInfo.deliveryFee.currency), waived on orders of \(AppInfo.freeDeliveryMinimum.currency) or more. Applicable taxes are calculated at checkout."),
-        ("4. Identification at Delivery", "A valid, unexpired government-issued photo ID matching the account holder must be presented before merchandise is released. Orders that cannot be verified will be returned and may be subject to a restocking fee."),
-        ("5. Loyalty Points", "You earn 1 point for every $1 spent on delivered orders. Points never expire and may be redeemed toward future orders. Points carry no cash value and cannot be transferred or sold."),
-        ("6. Refunds", "\(AppInfo.RefundPolicy.description). Refund requests must be submitted within \(AppInfo.RefundPolicy.timeLimitHours) hours of delivery. Approved refunds are processed within \(AppInfo.RefundPolicy.processingTime)."),
-        ("7. Acceptable Use", "You agree not to resell products purchased through \(AppInfo.name) unless you have entered a separate wholesale agreement with us. Accounts engaged in fraudulent activity may be suspended."),
-        ("8. Limitation of Liability", "Products are provided as-is. \(AppInfo.name) is not liable for indirect or consequential damages arising from product use. Consult a physician before use if you are pregnant, nursing, or taking medication.")
+        ("2. Federal Compliance (2018 Farm Bill)", AppInfo.farmBillCompliance),
+        ("3. Shipping & Delivery Only", "\(AppInfo.name) operates exclusively as a shipping and delivery service. We do not offer walk-in or in-person pickup. Deliveries are made within our published service area during operating hours."),
+        ("4. Orders & Pricing", "All prices are listed in US dollars and are subject to change. Delivery is \(AppInfo.deliveryFee.currency), waived on orders of \(AppInfo.freeDeliveryMinimum.currency) or more. Applicable taxes are calculated at checkout."),
+        ("5. Identification at Delivery", "A valid, unexpired government-issued photo ID matching the account holder must be presented before merchandise is released. Orders that cannot be verified will be returned and may be subject to a restocking fee."),
+        ("6. Loyalty Points", "You earn 1 point for every $1 spent on delivered orders. Points never expire and may be redeemed toward future orders. Points carry no cash value and cannot be transferred or sold."),
+        ("7. Refunds", "\(AppInfo.RefundPolicy.description). Refund requests must be submitted within \(AppInfo.RefundPolicy.timeLimitHours) hours of delivery. Approved refunds are processed within \(AppInfo.RefundPolicy.processingTime)."),
+        ("8. Acceptable Use", "You agree not to resell products purchased through \(AppInfo.name) unless you have entered a separate wholesale agreement with us. Accounts engaged in fraudulent activity may be suspended."),
+        ("9. Limitation of Liability", "Products are provided as-is. \(AppInfo.name) is not liable for indirect or consequential damages arising from product use. Consult a physician before use if you are pregnant, nursing, or taking medication.")
     ]
 
     static let privacy: [(heading: String, body: String)] = [

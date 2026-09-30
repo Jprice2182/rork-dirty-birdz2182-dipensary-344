@@ -64,6 +64,8 @@ struct ProductDetailView: View {
                 descriptionBlock(product)
                 effectsBlock(product)
 
+                farmBillNote
+
                 if product.category == "1" {
                     eighthsNote
                 }
@@ -112,7 +114,7 @@ struct ProductDetailView: View {
 
     private func statsRow(_ product: Product) -> some View {
         HStack(spacing: 12) {
-            statTile(title: "THC", value: "\(Int(product.thc))%", icon: "bolt.fill", tint: Theme.warning)
+            statTile(title: "THCa", value: "\(Int(product.thc))%", icon: "bolt.fill", tint: Theme.warning)
             statTile(
                 title: "CBD",
                 value: product.cbd < 1 ? String(format: "%.1f%%", product.cbd) : "\(Int(product.cbd))%",
@@ -245,6 +247,28 @@ struct ProductDetailView: View {
         .background(Theme.warning.opacity(0.1), in: .rect(cornerRadius: 14))
         .overlay {
             RoundedRectangle(cornerRadius: 14).stroke(Theme.warning.opacity(0.3), lineWidth: 1)
+        }
+    }
+
+    private var farmBillNote: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "leaf.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Theme.primary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Hemp-Derived THCA")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Theme.text)
+                Text("Federally compliant under the 2018 Farm Bill (less than 0.3% Delta-9 THC)")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.subtext)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .background(Theme.primary.opacity(0.1), in: .rect(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14).stroke(Theme.primary.opacity(0.3), lineWidth: 1)
         }
     }
 

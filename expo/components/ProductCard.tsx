@@ -164,9 +164,9 @@ const ProductCard = memo(({ id, name, price, image, thc, weight, count, volume }
 
   const formatTHC = (thc: number) => {
     if (typeof thc !== 'number' || isNaN(thc)) {
-      return 'THC: 0%';
+      return 'THCa: 0%';
     }
-    return `THC: ${thc}%`;
+    return `THCa: ${thc}%`;
   };
 
   return (

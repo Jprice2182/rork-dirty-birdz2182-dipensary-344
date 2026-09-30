@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ShoppingBag, Plus, Minus } from 'lucide-react-native';
+import { ShoppingBag, Plus, Minus, Leaf } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { getProductById } from '@/mocks/products';
 import { useCartStore } from '@/store/cartStore';
@@ -147,7 +147,7 @@ export default function ProductDetailScreen() {
           
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>THC</Text>
+              <Text style={styles.statLabel}>THCa</Text>
               <Text style={styles.statValue}>{product.thc}%</Text>
             </View>
             
@@ -174,6 +174,13 @@ export default function ProductDetailScreen() {
                 <Text style={styles.effectText}>{effect}</Text>
               </View>
             ))}
+          </View>
+
+          <View style={styles.complianceNote}>
+            <Leaf size={16} color={Colors.dark.primary} />
+            <Text style={styles.complianceText}>
+              Hemp-derived THCA — federally compliant under the 2018 Farm Bill (less than 0.3% Delta-9 THC)
+            </Text>
           </View>
 
           {/* Quick Add Buttons */}
@@ -352,6 +359,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginBottom: 16,
+  },
+  complianceNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: Colors.dark.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+    padding: 12,
+    marginBottom: 16,
+  },
+  complianceText: {
+    flex: 1,
+    color: Colors.dark.subtext,
+    fontSize: 12,
+    lineHeight: 16,
   },
   effectTag: {
     backgroundColor: Colors.dark.card,

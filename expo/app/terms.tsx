@@ -31,8 +31,14 @@ export default function Terms() {
 
         <Text style={styles.sectionTitle}>Product Information</Text>
         <Text style={styles.text}>
-          All products sold through this app are intended for adult use only. Products have not 
-          been evaluated by the FDA and are not intended to diagnose, treat, cure, or prevent any disease.
+          All products sold through this app are hemp-derived THCA products intended for adult use 
+          only. Products have not been evaluated by the FDA and are not intended to diagnose, treat, 
+          cure, or prevent any disease.
+        </Text>
+
+        <Text style={styles.sectionTitle}>Federal Compliance (2018 Farm Bill)</Text>
+        <Text style={styles.text}>
+          {appInfo.farmBillCompliance}
         </Text>
 
         <Text style={styles.sectionTitle}>Delivery Terms</Text>

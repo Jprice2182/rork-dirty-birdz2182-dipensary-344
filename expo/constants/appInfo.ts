@@ -48,7 +48,8 @@ const appInfo = {
     twitter: "@dirtybirdz2182",
     facebook: "DirtyBirdz2182"
   },
-  legalDisclaimer: "This product has not been analyzed or approved by the FDA. For use only by adults 21 years of age and older. Keep out of reach of children and pets.",
+  farmBillCompliance: "All products sold through this app are hemp-derived THCA products, federally legal under the 2018 Agriculture Improvement Act (Farm Bill). All products contain no more than 0.3% Delta-9 THC on a dry weight basis and are derived from legally cultivated, licensed hemp.",
+  legalDisclaimer: "All products are hemp-derived THCA products containing no more than 0.3% Delta-9 THC on a dry weight basis, in compliance with the 2018 Agriculture Improvement Act (Federal Farm Bill). This product has not been analyzed or approved by the FDA. For use only by adults 21 years of age and older. Keep out of reach of children and pets.",
   privacyPolicyUrl: "https://dirtybirdz2182.com/privacy",
   termsOfServiceUrl: "https://dirtybirdz2182.com/terms",
   mascot: {
