@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable, RefreshControl, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingCart, Star, Building2, ArrowRight } from 'lucide-react-native';
+import { ShoppingCart, Star, Building2, ArrowRight, Sparkles } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { getMainCategories, getFlowerStrainCategories } from '@/constants/categories';
 import { getFeaturedProducts } from '@/mocks/products';
@@ -217,6 +217,25 @@ export default function HomeScreen() {
         <BirthdayNotificationBanner 
           onPress={() => setShowBirthdayModal(true)}
         />
+
+        <Pressable
+          style={styles.aiCard}
+          onPress={() => router.push('/ai-budtender')}
+          testID="ai-budtender-link"
+          accessibilityRole="button"
+          accessibilityLabel="Chat with our AI budtender"
+        >
+          <View style={styles.aiIconCircle}>
+            <Sparkles size={20} color={Colors.dark.text} />
+          </View>
+          <View style={styles.aiCardContent}>
+            <SafeText style={styles.aiCardTitle}>Ask the Hawk</SafeText>
+            <SafeText style={styles.aiCardText}>
+              Your AI budtender — strain picks, deals & answers, 24/7
+            </SafeText>
+          </View>
+          <ArrowRight size={18} color={Colors.dark.primary} />
+        </Pressable>
 
         <View style={styles.hawkSection}>
           <Image 
@@ -592,6 +611,40 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  aiCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#11241d',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.28)',
+  },
+  aiIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.dark.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  aiCardContent: {
+    flex: 1,
+    marginRight: 8,
+  },
+  aiCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.dark.text,
+    marginBottom: 2,
+  },
+  aiCardText: {
+    fontSize: 13,
+    color: Colors.dark.subtext,
+    lineHeight: 18,
   },
   bulkOrderCard: {
     backgroundColor: '#11241d',
